@@ -5,7 +5,8 @@
   "scripts": {
     "dev:next": "next dev",
     "dev:php": "php -S localhost:8000 cors_router.php",
-    "dev": "concurrently \"pnpm run dev:php\" \"pnpm run dev:next\"",
+    "dev:css": "npx @tailwindcss/cli -i src/app/globals.css -o src/app/compiled-tailwind.css --watch",
+    "dev": "concurrently \"pnpm run dev:php\" \"pnpm run dev:css\" \"pnpm run dev:next\"",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
@@ -27,6 +28,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "pdf-parse": "^1.1.1",
+    "postcss": "^8.5.10",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

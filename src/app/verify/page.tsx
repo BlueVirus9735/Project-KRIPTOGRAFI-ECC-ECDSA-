@@ -1,7 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import DashboardLayout from "../../components/DashboardLayout";
+import DashboardLayout from "@/components/DashboardLayout";
+import { Shield, CheckCircle, XCircle, Upload, FileKey } from "lucide-react";
+
+const API = "http://localhost:8000/api";
 
 function VerifyContent() {
   const [docFile, setDocFile] = useState<File | null>(null);
@@ -19,14 +22,10 @@ function VerifyContent() {
     formData.append("signature", sigFile);
 
     try {
-      const response = await fetch("http://localhost:8000/api/verify.php", {
-        method: "POST",
-        body: formData,
-      });
+      const response = await fetch(`${API}/verify.php`, { method: "POST", body: formData });
       const data = await response.json();
       setResult(data);
     } catch (error) {
-      console.error("Error:", error);
       alert("Gagal terhubung ke backend.");
     } finally {
       setLoading(false);
@@ -34,53 +33,75 @@ function VerifyContent() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <div className="text-center pt-8">
-        <h1 className="text-4xl font-black text-white tracking-tight">Verifikasi Keaslian Kriptografi</h1>
-        <p className="text-zinc-400 mt-3 text-lg font-medium">Bandingkan dokumen asli dengan tanda tangan digital ECDSA.</p>
+    <div className="max-w-[800px] mx-auto space-y-6 animate-fade-in">
+      <div className="pb-6 border-b border-white/[0.04]">
+        <h1 className="text-xl font-bold text-white">Verifikasi Tanda Tangan Digital</h1>
+        <p className="text-slate-500 text-[13px] mt-1 font-medium">Verifikasi keaslian dokumen menggunakan ECDSA (Elliptic Curve Digital Signature Algorithm)</p>
       </div>
 
-      <div className="bg-[#1C1C1F] p-8 rounded-xl shadow-sm border border-zinc-800">
-        <form onSubmit={handleVerify} className="space-y-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <label className="text-sm font-black uppercase tracking-widest text-zinc-500 ml-2">1. Dokumen PDF Asli</label>
-              <div className="relative border border-zinc-800 rounded-xl p-8 text-center hover:border-emerald-500 transition-all group bg-[#111111]">
+      <div className="glass-card p-7">
+        <form onSubmit={handleVerify} className="space-y-6">
+          <div className="grid grid-cols-2 gap-5">
+            <div>
+              <label className="block text-[11px] font-semibold text-slate-400 mb-2">1. Dokumen / Data</label>
+              <div className={`relative border rounded-xl p-8 text-center transition-all cursor-pointer ${docFile ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-white/[0.08] bg-slate-900/30 hover:border-emerald-500/20 hover:bg-slate-900/50'}`}>
                 <input type="file" id="doc-upload" className="hidden" onChange={(e) => setDocFile(e.target.files?.[0] || null)} />
                 <label htmlFor="doc-upload" className="cursor-pointer flex flex-col items-center gap-3">
-                  <span className="text-sm font-bold text-zinc-300 break-all px-2">{docFile ? docFile.name : "+ Pilih PDF Asli"}</span>
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${docFile ? 'bg-emerald-500/15 text-emerald-400' : 'bg-slate-800 text-slate-500'}`}>
+                    <Upload size={22} />
+                  </div>
+                  <span className="text-[13px] font-medium text-slate-300 break-all">{docFile ? docFile.name : "Pilih File Dokumen"}</span>
+                  {!docFile && <span className="text-[11px] text-slate-600">PDF, DOCX, atau file lainnya</span>}
                 </label>
               </div>
             </div>
-
-            <div className="space-y-4">
-              <label className="text-sm font-black uppercase tracking-widest text-zinc-500 ml-2">2. Digital Signature (.sig)</label>
-              <div className="relative border border-zinc-800 rounded-xl p-8 text-center hover:border-emerald-500 transition-all group bg-[#111111]">
+            <div>
+              <label className="block text-[11px] font-semibold text-slate-400 mb-2">2. File Signature (.sig)</label>
+              <div className={`relative border rounded-xl p-8 text-center transition-all cursor-pointer ${sigFile ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-white/[0.08] bg-slate-900/30 hover:border-emerald-500/20 hover:bg-slate-900/50'}`}>
                 <input type="file" id="sig-upload" className="hidden" onChange={(e) => setSigFile(e.target.files?.[0] || null)} />
                 <label htmlFor="sig-upload" className="cursor-pointer flex flex-col items-center gap-3">
-                  <span className="text-sm font-bold text-zinc-700 dark:text-zinc-300 break-all px-2">{sigFile ? sigFile.name : "+ Pilih File .sig"}</span>
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${sigFile ? 'bg-emerald-500/15 text-emerald-400' : 'bg-slate-800 text-slate-500'}`}>
+                    <FileKey size={22} />
+                  </div>
+                  <span className="text-[13px] font-medium text-slate-300 break-all">{sigFile ? sigFile.name : "Pilih File Signature"}</span>
+                  {!sigFile && <span className="text-[11px] text-slate-600">File .sig dari proses signing</span>}
                 </label>
               </div>
             </div>
           </div>
 
-          <button type="submit" disabled={!docFile || !sigFile || loading} className="w-full py-5 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-2xl font-black text-xl hover:opacity-90 disabled:opacity-50 transition-all shadow-xl">
-            {loading ? "Memverifikasi ECC ECDSA..." : "Jalankan Tes Keaslian Algoritma"}
+          <button type="submit" disabled={!docFile || !sigFile || loading} className="btn-primary w-full py-3.5 text-[13px] font-bold disabled:opacity-50 flex items-center justify-center gap-2">
+            {loading ? (
+              <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Memverifikasi ECDSA...</>
+            ) : (
+              <><Shield size={16} /> Jalankan Verifikasi</>
+            )}
           </button>
         </form>
 
         {result && (
-          <div className={`mt-10 p-1 rounded-[2.5rem] animate-in zoom-in-95 duration-500 ${result.is_valid ? "bg-gradient-to-br from-emerald-400 to-teal-500 shadow-2xl shadow-emerald-200" : "bg-gradient-to-br from-rose-400 to-red-600 shadow-2xl shadow-rose-200"}`}>
-            <div className="bg-white dark:bg-zinc-900 rounded-[2.3rem] p-10 text-center">
-              <h3 className={`font-black text-5xl mb-4 tracking-tighter ${result.is_valid ? "text-emerald-600" : "text-rose-600"}`}>
-                {result.is_valid ? "DOKUMEN ASLI / SESUAI" : "DOKUMEN PALSU!"}
-              </h3>
-              <p className="text-2xl font-bold text-zinc-800 dark:text-zinc-200 max-w-xl mx-auto leading-tight mb-8">
-                {result.is_valid ? "Integritas dokumen terbukti autentik." : "Isi dokumen tidak cocok dengan jejak digital kunci!"}
-              </p>
-            </div>
+          <div className={`mt-6 p-7 rounded-2xl text-center animate-scale-in ${result.is_valid ? 'bg-emerald-500/10 border border-emerald-500/20' : 'bg-red-500/10 border border-red-500/20'}`}>
+            {result.is_valid ? (
+              <CheckCircle size={48} className="text-emerald-400 mx-auto mb-4" />
+            ) : (
+              <XCircle size={48} className="text-red-400 mx-auto mb-4" />
+            )}
+            <h3 className={`text-2xl font-extrabold mb-2 ${result.is_valid ? 'text-emerald-400' : 'text-red-400'}`}>
+              {result.is_valid ? "DOKUMEN VALID ✓" : "DOKUMEN TIDAK VALID ✗"}
+            </h3>
+            <p className="text-slate-400 text-[13px] font-medium">{result.is_valid ? "Tanda tangan digital cocok — dokumen asli dan tidak dimodifikasi" : "Tanda tangan tidak cocok — dokumen mungkin telah diubah"}</p>
           </div>
         )}
+      </div>
+
+      {/* Info Section */}
+      <div className="glass-card p-6">
+        <h3 className="text-white font-bold text-[14px] mb-3">Tentang Verifikasi ECDSA</h3>
+        <div className="space-y-2.5 text-[13px] text-slate-500 font-medium">
+          <p>• <span className="text-slate-300">ECDSA</span> (Elliptic Curve Digital Signature Algorithm) menggunakan kurva <span className="text-emerald-400">SECP256K1</span></p>
+          <p>• Tanda tangan digital menjamin <span className="text-slate-300">authenticity</span> (keaslian), <span className="text-slate-300">integrity</span> (integritas), dan <span className="text-slate-300">non-repudiation</span></p>
+          <p>• Proses verifikasi menggunakan <span className="text-slate-300">public key</span> untuk memastikan dokumen tidak dimodifikasi</p>
+        </div>
       </div>
     </div>
   );
