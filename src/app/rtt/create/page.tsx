@@ -26,6 +26,8 @@ function RttCreateContent() {
   const [tebangan, setTebangan] = useState<any[]>([{ petak: "", anak_petak: "", luas: "", jenis_tanaman: "", volume: "", jumlah_pohon: "", keterangan: "" }]);
   const [beritaAcara, setBeritaAcara] = useState<any[]>([{ tanggal: "", nama_petugas: "", jabatan: "", hasil_pemeriksaan: "" }]);
   const [pengesahan, setPengesahan] = useState<any[]>([{ nama_pejabat: "", jabatan: "", npk: "", tanggal: "" }]);
+  const [petaFile, setPetaFile] = useState<File | null>(null);
+  const [lampiranFile, setLampiranFile] = useState<File | null>(null);
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -86,6 +88,25 @@ function RttCreateContent() {
     if (!rttId) return;
     setLoading(true);
     try {
+      // 1. Upload files first if any
+      if (petaFile) {
+        const pForm = new FormData();
+        pForm.append('file', petaFile);
+        pForm.append('rtt_id', rttId.toString());
+        pForm.append('type', 'peta');
+        pForm.append('token', token || '');
+        await fetch(`${API}/rtt/upload_file.php`, { method: 'POST', body: pForm });
+      }
+      if (lampiranFile) {
+        const lForm = new FormData();
+        lForm.append('file', lampiranFile);
+        lForm.append('rtt_id', rttId.toString());
+        lForm.append('type', 'lampiran');
+        lForm.append('token', token || '');
+        await fetch(`${API}/rtt/upload_file.php`, { method: 'POST', body: lForm });
+      }
+
+      // 2. Save text data
       const res = await fetch(`${API}/rtt/save_all.php`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ rtt_id: rttId, token, identitas, sk, keputusan, tebangan, berita_acara: beritaAcara, pengesahan }),
@@ -100,14 +121,14 @@ function RttCreateContent() {
           const subData = await subRes.json();
           if (subData.status === "success") {
             localStorage.removeItem('rtt_draft'); // Clear draft
-            alert(`RTT berhasil disimpan & dikirim untuk review!\nHash: ${data.hash}`);
+            alert(`RTT berhasil disimpan & dikirim untuk review!`);
             router.push("/rtt");
-          } else alert(subData.message);
+          } else alert("Gagal submit: " + subData.message);
         } else {
-          alert(`Data berhasil disimpan!\nHash: ${data.hash}`);
+          alert(`Data RTT berhasil disimpan!`);
         }
-      } else alert(data.message);
-    } catch (e) { alert("Gagal menyimpan"); }
+      } else alert("Gagal update data: " + data.message);
+    } catch (e) { alert("Terjadi kesalahan jaringan saat menyimpan"); }
     finally { setLoading(false); }
   };
 
@@ -294,16 +315,18 @@ function RttCreateContent() {
         {step === 5 && (
           <div className="space-y-5">
             <h3 className="text-white font-bold text-lg">🗺️ Peta Lokasi</h3>
-            <div className="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-xl">
-              <p className="text-emerald-400 text-[13px] font-medium flex items-center gap-2">
-                <CheckCircle size={16} />
-                Upload peta dilakukan di halaman Detail RTT setelah dokumen disimpan.
-              </p>
-            </div>
-            <p className="text-slate-500 text-[13px]">Klik "Simpan & Kirim Review" di langkah terakhir, lalu buka dokumen RTT untuk upload file peta.</p>
-            <div className="bg-slate-900/30 p-6 rounded-xl border border-slate-700/50">
-              <p className="text-slate-400 text-[13px]">Format yang didukung: PDF, JPG, JPEG, PNG, GIF, BMP, TIFF</p>
-              <p className="text-slate-500 text-[12px] mt-2">Maksimal ukuran file: 10MB</p>
+            <div className="bg-slate-900/30 p-6 rounded-xl border border-slate-700/50 space-y-4">
+              <div className="space-y-2">
+                <label className={labelClass}>Upload File Peta (Opsional namun disarankan)</label>
+                <input 
+                  type="file" 
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  onChange={(e) => setPetaFile(e.target.files?.[0] || null)}
+                  className="glass-input w-full px-4 py-3 text-[13px] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-emerald-500/20 file:text-emerald-400 hover:file:bg-emerald-500/30"
+                />
+                {petaFile && <p className="text-emerald-400 text-xs">✓ File peta siap diunggah: {petaFile.name}</p>}
+                <p className="text-slate-400 text-[12px] mt-2">Format: PDF, JPG, PNG. Max: 10MB</p>
+              </div>
             </div>
           </div>
         )}
@@ -335,14 +358,20 @@ function RttCreateContent() {
         {/* STEP 7: Lampiran */}
         {step === 7 && (
           <div className="space-y-5">
-            <h3 className="text-white font-bold text-lg">📎 Lampiran</h3>
-            <div className="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-xl">
-              <p className="text-emerald-400 text-[13px] font-medium flex items-center gap-2">
-                <CheckCircle size={16} />
-                Upload lampiran dilakukan di halaman Detail RTT setelah dokumen disimpan.
-              </p>
+            <h3 className="text-white font-bold text-lg">📎 Lampiran Dokumen</h3>
+            <div className="bg-slate-900/30 p-6 rounded-xl border border-slate-700/50 space-y-4">
+              <div className="space-y-2">
+                <label className={labelClass}>Upload Dokumen Lampiran Lainnya (Opsional)</label>
+                <input 
+                  type="file" 
+                  accept=".pdf,.doc,.docx,.jpg,.png"
+                  onChange={(e) => setLampiranFile(e.target.files?.[0] || null)}
+                  className="glass-input w-full px-4 py-3 text-[13px] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-emerald-500/20 file:text-emerald-400 hover:file:bg-emerald-500/30"
+                />
+                {lampiranFile && <p className="text-emerald-400 text-xs">✓ File lampiran siap diunggah: {lampiranFile.name}</p>}
+                <p className="text-slate-400 text-[12px] mt-2">Format: PDF, DOC, JPG, PNG. Max: 10MB</p>
+              </div>
             </div>
-            <p className="text-slate-500 text-[13px]">Lampiran seperti foto lapangan, dokumen pendukung, dll diupload melalui halaman detail RTT.</p>
           </div>
         )}
 

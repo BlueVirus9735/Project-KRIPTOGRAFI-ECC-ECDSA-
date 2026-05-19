@@ -9,17 +9,19 @@ const API = "http://localhost:8000/api";
 function VerifyContent() {
   const [docFile, setDocFile] = useState<File | null>(null);
   const [sigFile, setSigFile] = useState<File | null>(null);
+  const [pubKeyFile, setPubKeyFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!docFile || !sigFile) return;
+    if (!docFile || !sigFile || !pubKeyFile) return;
 
     setLoading(true);
     const formData = new FormData();
     formData.append("document", docFile);
     formData.append("signature", sigFile);
+    formData.append("public_key", pubKeyFile);
 
     try {
       const response = await fetch(`${API}/verify.php`, { method: "POST", body: formData });
@@ -33,44 +35,54 @@ function VerifyContent() {
   };
 
   return (
-    <div className="max-w-[800px] mx-auto space-y-6 animate-fade-in">
+    <div className="max-w-[1100px] mx-auto space-y-6 animate-fade-in">
       <div className="pb-6 border-b border-white/[0.04]">
-        <h1 className="text-xl font-bold text-white">Verifikasi Tanda Tangan Digital</h1>
-        <p className="text-slate-500 text-[13px] mt-1 font-medium">Verifikasi keaslian dokumen menggunakan ECDSA (Elliptic Curve Digital Signature Algorithm)</p>
+        <h1 className="text-xl font-bold text-white">Verifikasi Sertifikat Digital</h1>
+        <p className="text-slate-500 text-[13px] mt-1 font-medium">Verifikasi keaslian dan integritas data RTT menggunakan Sertifikat JSON dan ECDSA</p>
       </div>
 
       <div className="glass-card p-7">
         <form onSubmit={handleVerify} className="space-y-6">
-          <div className="grid grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             <div>
-              <label className="block text-[11px] font-semibold text-slate-400 mb-2">1. Dokumen / Data</label>
-              <div className={`relative border rounded-xl p-8 text-center transition-all cursor-pointer ${docFile ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-white/[0.08] bg-slate-900/30 hover:border-emerald-500/20 hover:bg-slate-900/50'}`}>
+              <label className="block text-[11px] font-semibold text-slate-400 mb-2 uppercase">1. Sertifikat Data (.json)</label>
+              <div className={`relative border rounded-xl p-6 text-center transition-all cursor-pointer h-[160px] flex items-center justify-center ${docFile ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-white/[0.08] bg-slate-900/30 hover:border-emerald-500/20 hover:bg-slate-900/50'}`}>
                 <input type="file" id="doc-upload" className="hidden" onChange={(e) => setDocFile(e.target.files?.[0] || null)} />
-                <label htmlFor="doc-upload" className="cursor-pointer flex flex-col items-center gap-3">
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${docFile ? 'bg-emerald-500/15 text-emerald-400' : 'bg-slate-800 text-slate-500'}`}>
-                    <Upload size={22} />
+                <label htmlFor="doc-upload" className="cursor-pointer flex flex-col items-center gap-3 w-full">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${docFile ? 'bg-emerald-500/15 text-emerald-400' : 'bg-slate-800 text-slate-500'}`}>
+                    <Upload size={18} />
                   </div>
-                  <span className="text-[13px] font-medium text-slate-300 break-all">{docFile ? docFile.name : "Pilih File Dokumen"}</span>
-                  {!docFile && <span className="text-[11px] text-slate-600">PDF, DOCX, atau file lainnya</span>}
+                  <span className="text-[12px] font-medium text-slate-300 line-clamp-2 px-2">{docFile ? docFile.name : "Pilih Sertifikat .json"}</span>
                 </label>
               </div>
             </div>
             <div>
-              <label className="block text-[11px] font-semibold text-slate-400 mb-2">2. File Signature (.sig)</label>
-              <div className={`relative border rounded-xl p-8 text-center transition-all cursor-pointer ${sigFile ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-white/[0.08] bg-slate-900/30 hover:border-emerald-500/20 hover:bg-slate-900/50'}`}>
+              <label className="block text-[11px] font-semibold text-slate-400 mb-2 uppercase">2. File Signature (.sig)</label>
+              <div className={`relative border rounded-xl p-6 text-center transition-all cursor-pointer h-[160px] flex items-center justify-center ${sigFile ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-white/[0.08] bg-slate-900/30 hover:border-emerald-500/20 hover:bg-slate-900/50'}`}>
                 <input type="file" id="sig-upload" className="hidden" onChange={(e) => setSigFile(e.target.files?.[0] || null)} />
-                <label htmlFor="sig-upload" className="cursor-pointer flex flex-col items-center gap-3">
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${sigFile ? 'bg-emerald-500/15 text-emerald-400' : 'bg-slate-800 text-slate-500'}`}>
-                    <FileKey size={22} />
+                <label htmlFor="sig-upload" className="cursor-pointer flex flex-col items-center gap-3 w-full">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${sigFile ? 'bg-emerald-500/15 text-emerald-400' : 'bg-slate-800 text-slate-500'}`}>
+                    <FileKey size={18} />
                   </div>
-                  <span className="text-[13px] font-medium text-slate-300 break-all">{sigFile ? sigFile.name : "Pilih File Signature"}</span>
-                  {!sigFile && <span className="text-[11px] text-slate-600">File .sig dari proses signing</span>}
+                  <span className="text-[12px] font-medium text-slate-300 line-clamp-2 px-2">{sigFile ? sigFile.name : "Pilih .sig"}</span>
+                </label>
+              </div>
+            </div>
+            <div>
+              <label className="block text-[11px] font-semibold text-slate-400 mb-2 uppercase">3. File Public Key (.pem)</label>
+              <div className={`relative border rounded-xl p-6 text-center transition-all cursor-pointer h-[160px] flex items-center justify-center ${pubKeyFile ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-white/[0.08] bg-slate-900/30 hover:border-emerald-500/20 hover:bg-slate-900/50'}`}>
+                <input type="file" id="pub-upload" className="hidden" onChange={(e) => setPubKeyFile(e.target.files?.[0] || null)} />
+                <label htmlFor="pub-upload" className="cursor-pointer flex flex-col items-center gap-3 w-full">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${pubKeyFile ? 'bg-emerald-500/15 text-emerald-400' : 'bg-slate-800 text-slate-500'}`}>
+                    <Shield size={18} />
+                  </div>
+                  <span className="text-[12px] font-medium text-slate-300 line-clamp-2 px-2">{pubKeyFile ? pubKeyFile.name : "Pilih .pem"}</span>
                 </label>
               </div>
             </div>
           </div>
 
-          <button type="submit" disabled={!docFile || !sigFile || loading} className="btn-primary w-full py-3.5 text-[13px] font-bold disabled:opacity-50 flex items-center justify-center gap-2">
+          <button type="submit" disabled={!docFile || !sigFile || !pubKeyFile || loading} className="btn-primary w-full py-4 text-[13px] font-bold disabled:opacity-50 flex items-center justify-center gap-2">
             {loading ? (
               <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Memverifikasi ECDSA...</>
             ) : (
@@ -87,9 +99,9 @@ function VerifyContent() {
               <XCircle size={48} className="text-red-400 mx-auto mb-4" />
             )}
             <h3 className={`text-2xl font-extrabold mb-2 ${result.is_valid ? 'text-emerald-400' : 'text-red-400'}`}>
-              {result.is_valid ? "DOKUMEN VALID ✓" : "DOKUMEN TIDAK VALID ✗"}
+              {result.is_valid ? "DATA VALID ✓" : "DATA TIDAK VALID ✗"}
             </h3>
-            <p className="text-slate-400 text-[13px] font-medium">{result.is_valid ? "Tanda tangan digital cocok — dokumen asli dan tidak dimodifikasi" : "Tanda tangan tidak cocok — dokumen mungkin telah diubah"}</p>
+            <p className="text-slate-400 text-[13px] font-medium">{result.is_valid ? "Isi sertifikat data cocok dengan tanda tangan — data asli dan tidak dimodifikasi" : "Tanda tangan tidak cocok — data mungkin telah diubah"}</p>
           </div>
         )}
       </div>
@@ -99,8 +111,8 @@ function VerifyContent() {
         <h3 className="text-white font-bold text-[14px] mb-3">Tentang Verifikasi ECDSA</h3>
         <div className="space-y-2.5 text-[13px] text-slate-500 font-medium">
           <p>• <span className="text-slate-300">ECDSA</span> (Elliptic Curve Digital Signature Algorithm) menggunakan kurva <span className="text-emerald-400">SECP256K1</span></p>
-          <p>• Tanda tangan digital menjamin <span className="text-slate-300">authenticity</span> (keaslian), <span className="text-slate-300">integrity</span> (integritas), dan <span className="text-slate-300">non-repudiation</span></p>
-          <p>• Proses verifikasi menggunakan <span className="text-slate-300">public key</span> untuk memastikan dokumen tidak dimodifikasi</p>
+          <p>• Verifikasi ini menjamin <span className="text-slate-300">Integrity</span> (Data tidak berubah) dan <span className="text-slate-300">Authenticity</span> (Berasal dari Direksi)</p>
+          <p>• Proses verifikasi membandingkan <span className="text-slate-300">Hash SHA-256</span> sertifikat data dengan <span className="text-slate-300">Signature</span> menggunakan <span className="text-slate-300">Public Key</span></p>
         </div>
       </div>
     </div>

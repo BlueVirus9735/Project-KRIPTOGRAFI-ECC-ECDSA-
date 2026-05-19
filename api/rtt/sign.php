@@ -8,6 +8,7 @@ header('Content-Type: application/json');
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(200); exit; }
 
 include __DIR__ . '/../db.php';
+include __DIR__ . '/../crypto_utils.php';
 
 $data = json_decode(file_get_contents('php://input'), true);
 if (!isset($data['rtt_id'])) {
@@ -15,51 +16,53 @@ if (!isset($data['rtt_id'])) {
     exit;
 }
 
+if (!isset($data['private_key'])) {
+    echo json_encode(['status'=>'error','message'=>'Private Key wajib disertakan untuk enkripsi ECDSA']);
+    exit;
+}
+
 $rtt_id = $data['rtt_id'];
 $user_id = $data['user_id'] ?? 2; // Default to Kepala KPH if undefined
+$private_key_content = $data['private_key'];
 
 // Get all RTT data to form a hash
 $stmt = $pdo->prepare("SELECT * FROM rtt WHERE id = ?"); $stmt->execute([$rtt_id]); 
 $rtt = $stmt->fetch(PDO::FETCH_ASSOC);
 if (!$rtt) { echo json_encode(['status'=>'error','message'=>'RTT tidak ditemukan']); exit; }
 
-// Build payload to hash based on new schema
-$payload = ["rtt" => $rtt];
-$stmt = $pdo->prepare("SELECT * FROM rtt_summary WHERE rtt_id = ?"); $stmt->execute([$rtt_id]); $payload["summary"] = $stmt->fetch(PDO::FETCH_ASSOC);
-$stmt = $pdo->prepare("SELECT * FROM rtt_nett WHERE rtt_id = ?"); $stmt->execute([$rtt_id]); $payload["nett"] = $stmt->fetch(PDO::FETCH_ASSOC);
-$stmt = $pdo->prepare("SELECT * FROM rtt_rekap_klem WHERE rtt_id = ?"); $stmt->execute([$rtt_id]); $payload["rekap"] = $stmt->fetchAll(PDO::FETCH_ASSOC);
-$json_data = json_encode($payload);
+$payload = getCanonicalPayload($pdo, $rtt_id);
+if (!$payload) { echo json_encode(['status'=>'error','message'=>'Gagal membuat payload']); exit; }
 
-// Generate SHA256 Hash
+$json_data = encodeCanonicalJSON($payload);
 $hash = hash('sha256', $json_data);
-
-// Cryptography settings
-$private_key = realpath(__DIR__ . '/../keys/private_key.pem');
-// Make sure keys directory exists
-if (!$private_key) {
-    if (!is_dir(__DIR__ . '/../keys')) mkdir(__DIR__ . '/../keys', 0777, true);
-    // If we dont have a key, we mock it or fail. Since this is for a Skripsi, let's assume Python keygen was run.
-    // If not, we fail gracefully.
-}
-
-$python_exe = 'python';
 
 $temp_dir = __DIR__ . '/../uploads/temp/';
 if (!is_dir($temp_dir)) mkdir($temp_dir, 0777, true);
 
-$temp_hash_file = $temp_dir . 'rtt_' . $rtt_id . '_hash.bin';
-$temp_sig_file = $temp_dir . 'rtt_' . $rtt_id . '_hash.sig';
-file_put_contents($temp_hash_file, $hash);
+$temp_hash_file = $temp_dir . 'rtt_' . $rtt_id . '_data.json';
+$temp_sig_file = $temp_dir . 'rtt_' . $rtt_id . '_data.sig';
+$temp_key_file = $temp_dir . 'temp_key_' . uniqid() . '.pem';
+
+file_put_contents($temp_hash_file, $json_data);
+file_put_contents(__DIR__ . '/sign_trace.json', $json_data); // DEBUG TRACE
+file_put_contents($temp_key_file, $private_key_content);
 
 $sign_script = realpath(__DIR__ . '/../../crypto/sign.py');
 $signature = null;
 
-if (file_exists($sign_script) && file_exists(__DIR__ . '/../keys/private_key.pem')) {
-    $cmd = escapeshellcmd("$python_exe $sign_script " . __DIR__ . "/../keys/private_key.pem $temp_hash_file $temp_sig_file");
-    shell_exec($cmd);
+$python_exe = 'py';
+if (file_exists($sign_script) && file_exists($temp_key_file)) {
+    $cmd = escapeshellarg($python_exe) . " " . escapeshellarg($sign_script) . " " . escapeshellarg($temp_key_file) . " " . escapeshellarg($temp_hash_file) . " " . escapeshellarg($temp_sig_file) . " 2>&1";
+    $python_output = shell_exec($cmd);
+    
+    // DEBUG LOG: Write python output to public error log
+    file_put_contents(__DIR__ . '/error.log', $python_output);
     
     if (file_exists($temp_sig_file)) {
         $signature = base64_encode(file_get_contents($temp_sig_file));
+    } else {
+        $signature = null;
+        $python_err = $python_output;
     }
 } else {
     // For demo purposes, if python script or key fails, generate a pseudo ECDSA signature
@@ -69,23 +72,55 @@ if (file_exists($sign_script) && file_exists(__DIR__ . '/../keys/private_key.pem
 // Cleanup temp
 @unlink($temp_hash_file);
 @unlink($temp_sig_file);
+@unlink($temp_key_file);
 
 if (!$signature) {
-    echo json_encode(['status'=>'error','message'=>'Gagal proses penandatanganan ECDSA']); exit;
+    $err_msg = 'Gagal proses penandatanganan ECDSA.';
+    if (isset($python_err)) $err_msg .= " Detail: " . substr($python_err, 0, 500);
+    echo json_encode(['status'=>'error','message'=>$err_msg]); exit;
 }
 
-// Update DB: status SAH and save signature + hash
-$pdo->prepare("UPDATE rtt SET status='SAH', hash=?, signature=? WHERE id=?")
-    ->execute([$hash, $signature, $rtt_id]);
+// 0. Extract Public Key from Private Key for future validation
+$public_key_content = "";
+$res_key = openssl_pkey_get_private($private_key_content);
+if ($res_key) {
+    $details = openssl_pkey_get_details($res_key);
+    if (isset($details['key'])) {
+        $public_key_content = $details['key'];
+    }
+}
 
-// Log
-$pdo->prepare("INSERT INTO validasi (rtt_id, catatan, validated_by) VALUES (?,?,?)")
-    ->execute([$rtt_id, 'Dokumen Telah Disahkan menggunakan ECDSA', $user_id]);
+try {
+    $pdo->beginTransaction();
 
-echo json_encode([
-    'status'=>'success',
-    'message'=>'RTT berhasil disahkan! Tanda tangan digital telah dibubuhkan.',
-    'hash' => $hash,
-    'signature'=> substr($signature, 0, 50).'...'
-]);
+    // 1. Update RTT status to 'disahkan' (match DB enum)
+    $pdo->prepare("UPDATE rtt SET status='disahkan', hash=?, signature=?, public_key=?, updated_at=NOW() WHERE id=?")
+        ->execute([$hash, $signature, $public_key_content, $rtt_id]);
+
+    // 2. Insert into validasi with integer status (tinyint)
+    $stmt = $pdo->prepare("INSERT INTO validasi (rtt_id, status_kph, status_phw, status_divisi, catatan, validated_by, validated_at) VALUES (?,?,?,?,?,?,NOW())");
+    $stmt->execute([
+        $rtt_id, 
+        1, // status_kph (Approved)
+        1, // status_phw (Verified)
+        1, // status_divisi (Legalized)
+        'Dokumen Telah Disahkan menggunakan ECDSA oleh Direksi', 
+        $user_id
+    ]);
+
+    $pdo->commit();
+
+    echo json_encode([
+        'status'=>'success',
+        'message'=>'RTT berhasil disahkan! Tanda tangan digital telah dibubuhkan.',
+        'hash' => $hash,
+        'signature'=> substr($signature, 0, 50).'...'
+    ]);
+} catch (Exception $dbEx) {
+    if ($pdo->inTransaction()) $pdo->rollBack();
+    echo json_encode([
+        'status' => 'error', 
+        'message' => 'Database error: ' . $dbEx->getMessage()
+    ]);
+}
 ?>

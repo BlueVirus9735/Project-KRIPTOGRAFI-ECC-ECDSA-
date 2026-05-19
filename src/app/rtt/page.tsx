@@ -8,12 +8,10 @@ import { FileText, Plus, ChevronRight, Activity, ShieldCheck, MapPin, Search, Fi
 const API = "http://localhost:8000/api";
 
 const statusConfig: Record<string, { label: string; color: string; dotColor: string; bg: string }> = {
-  DRAFT: { label: "Draft", color: "text-slate-400", dotColor: "bg-slate-400", bg: "bg-slate-500/10 border-slate-500/20" },
-  DIAJUKAN: { label: "Diajukan", color: "text-blue-400", dotColor: "bg-blue-400", bg: "bg-blue-500/10 border-blue-500/20" },
-  REVISI: { label: "Revisi", color: "text-amber-400", dotColor: "bg-amber-400", bg: "bg-amber-500/10 border-amber-500/20" },
-  DISETUJUI_KPH: { label: "ACC KPH", color: "text-purple-400", dotColor: "bg-purple-400", bg: "bg-purple-500/10 border-purple-500/20" },
-  DISETUJUI_PHW: { label: "ACC PHW", color: "text-indigo-400", dotColor: "bg-indigo-400", bg: "bg-indigo-500/10 border-indigo-500/20" },
-  SAH: { label: "SAH • SIGNED", color: "text-emerald-400", dotColor: "bg-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/20" },
+  draft: { label: "Draft", color: "text-slate-400", dotColor: "bg-slate-400", bg: "bg-slate-500/10 border-slate-500/20" },
+  menunggu_pengesahan: { label: "Menunggu Pengesahan", color: "text-blue-400", dotColor: "bg-blue-400", bg: "bg-blue-500/10 border-blue-500/20" },
+  revisi_phw: { label: "Revisi PHW", color: "text-amber-400", dotColor: "bg-amber-400", bg: "bg-amber-500/10 border-amber-500/20" },
+  disahkan: { label: "SAH • SIGNED", color: "text-emerald-400", dotColor: "bg-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/20" },
 };
 
 function RttListContent() {

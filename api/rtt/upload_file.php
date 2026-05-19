@@ -42,11 +42,14 @@ if (!move_uploaded_file($file['tmp_name'], $filepath)) {
 $relative_path = $type . '/' . $filename;
 
 if ($type === 'peta') {
-    $stmt = $pdo->prepare("INSERT INTO rtt_peta (rtt_id, file_path, keterangan) VALUES (?,?,?)");
-    $stmt->execute([$rtt_id, $relative_path, $keterangan]);
+    $stmt = $pdo->prepare("INSERT INTO rtt_peta (rtt_id, file_path) VALUES (?,?)");
+    $stmt->execute([$rtt_id, $relative_path]);
 } elseif ($type === 'lampiran') {
     $stmt = $pdo->prepare("INSERT INTO rtt_lampiran (rtt_id, judul, keterangan, file_path) VALUES (?,?,?,?)");
     $stmt->execute([$rtt_id, $judul, $keterangan, $relative_path]);
+} elseif ($type === 'peta_bap') {
+    $stmt = $pdo->prepare("INSERT INTO rtt_peta_bap (rtt_id, file_path, keterangan) VALUES (?,?,?)");
+    $stmt->execute([$rtt_id, $relative_path, $keterangan]);
 }
 
 echo json_encode(['status'=>'success','message'=>'File berhasil diupload','file_path'=>$relative_path,'id'=>$pdo->lastInsertId()]);

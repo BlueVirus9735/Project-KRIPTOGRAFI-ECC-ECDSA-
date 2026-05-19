@@ -8,7 +8,7 @@ import {
     ArrowLeft, CheckCircle2, ShieldCheck, Map, FileText, 
     ClipboardList, PenTool, PlaySquare, FilePlus, X,
     Layers, Zap, Terminal, Share2, Printer, ChevronDown,
-    Cpu, Globe, Lock
+    Cpu, Globe, Lock, Download, Key
 } from "lucide-react";
 
 // Wrapper component that uses useAuth inside DashboardLayout context
@@ -21,6 +21,8 @@ function RttDetailContent({ id }: { id: string }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploadKeterangan, setUploadKeterangan] = useState('');
+  const [finalizeKeyModal, setFinalizeKeyModal] = useState(false);
+  const [privateKeyInput, setPrivateKeyInput] = useState("");
 
   const fetchWorkspace = () => {
     setLoading(true);
@@ -45,7 +47,7 @@ function RttDetailContent({ id }: { id: string }) {
         const formDataFile = new FormData();
         formDataFile.append('file', uploadFile);
         formDataFile.append('rtt_id', id);
-        formDataFile.append('type', activeModal === 'peta' ? 'peta' : 'lampiran');
+        formDataFile.append('type', activeModal);
         formDataFile.append('keterangan', uploadKeterangan);
         formDataFile.append('token', localStorage.getItem('token') || '');
         
@@ -80,16 +82,27 @@ function RttDetailContent({ id }: { id: string }) {
     finally { setIsSubmitting(false); }
   };
 
-  const handleSign = async () => {
+  const handleSign = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!privateKeyInput) {
+      alert("Private Key wajib diisi untuk penandatanganan ECDSA!");
+      return;
+    }
     if (!confirm("Otorisasi Tanda Tangan ECDSA? Berkas akan dipatenkan (Immutable).")) return;
     setIsSubmitting(true);
     try {
       const res = await fetch(`http://localhost:8000/api/rtt/sign.php`, {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ rtt_id: id, user_id: user?.id })
+        body: JSON.stringify({ rtt_id: id, user_id: user?.id, private_key: privateKeyInput })
       });
       const d = await res.json();
-      if (d.status === "success") fetchWorkspace();
+      if (d.status === "success") {
+        setFinalizeKeyModal(false);
+        setPrivateKeyInput("");
+        fetchWorkspace();
+      } else {
+        alert(d.message || "Gagal melakukan otorisasi.");
+      }
     } catch (e) { alert("Error server."); }
     finally { setIsSubmitting(false); }
   };
@@ -117,7 +130,7 @@ function RttDetailContent({ id }: { id: string }) {
   ];
 
   const doneCount = docModules.filter(c=>c.done).length;
-  const isSah = rtt.status === "SAH";
+  const isSah = rtt.status === "disahkan";
 
   return (
     <div className="space-y-8 animate-fade-in pb-20">
@@ -137,7 +150,7 @@ function RttDetailContent({ id }: { id: string }) {
           <div className="flex items-center gap-3">
             <div className={`status-badge border ${isSah ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-slate-500/10 border-slate-500/20 text-slate-400'}`}>
               <div className={`w-2 h-2 rounded-full ${isSah ? 'bg-emerald-400 pulse-dot' : 'bg-slate-500'}`} />
-              {rtt.status}
+              {isSah ? 'SAH • SIGNED' : rtt.status}
             </div>
             <button className="w-9 h-9 rounded-xl glass-card flex items-center justify-center text-slate-500 hover:text-white transition-all"><Share2 size={16} /></button>
           </div>
@@ -180,15 +193,39 @@ function RttDetailContent({ id }: { id: string }) {
               </div>
               
               <div className="h-12">
-                {doneCount === 7 && rtt.status !== 'SAH' ? (
-                  <button onClick={handleSign} disabled={isSubmitting} className="btn-primary w-full h-full text-[12px] font-bold">
-                    {isSubmitting ? 'Processing Signature...' : '🔐 Sign & Patenkan'}
+                {doneCount === 7 && rtt.status !== 'disahkan' ? (
+                  <button onClick={() => setFinalizeKeyModal(true)} disabled={isSubmitting} className="btn-primary w-full h-full text-[12px] font-bold">
+                    {isSubmitting ? 'Processing...' : '🔐 Sign & Patenkan'}
                   </button>
                 ) : isSah ? (
+                  <>
                   <button onClick={() => window.open(`http://localhost:8000/api/rtt/generate_pdf.php?id=${id}`)} className="btn-secondary w-full h-full text-[12px] font-bold flex items-center justify-center gap-2">
                     <Printer size={16} /> Cetak RTT Final
                   </button>
-                ) : (
+                  <div className="mt-3 grid grid-cols-1 gap-2">
+                    <button 
+                      onClick={() => window.open(`http://localhost:8000/api/rtt/download_bundle.php?id=${id}&type=json`)}
+                      className="w-full py-2.5 px-3 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-lg text-[11px] font-bold text-emerald-400 flex items-center justify-center gap-2 transition-all active:scale-95"
+                    >
+                      <FileText size={14} /> Unduh Sertifikat Data (.json)
+                    </button>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button 
+                        onClick={() => window.open(`http://localhost:8000/api/rtt/download_bundle.php?id=${id}&type=sig`)}
+                        className="py-2 px-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-[10px] font-bold text-slate-300 flex items-center justify-center gap-2 transition-all active:scale-95"
+                      >
+                        <Download size={12} /> Unduh .SIG
+                      </button>
+                      <button 
+                        onClick={() => window.open(`http://localhost:8000/api/rtt/download_bundle.php?id=${id}&type=pub`)}
+                        className="py-2 px-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-[10px] font-bold text-slate-300 flex items-center justify-center gap-2 transition-all active:scale-95"
+                      >
+                        <Key size={12} /> Unduh .PEM
+                      </button>
+                    </div>
+                  </div>
+                </>
+              ) : (
                   <div className="w-full h-full bg-slate-800/30 border border-dashed border-slate-700/50 rounded-xl flex items-center justify-center text-slate-600 font-semibold text-[11px] text-center px-4">
                     Submit 7 Module untuk Otorisasi
                   </div>
@@ -201,7 +238,7 @@ function RttDetailContent({ id }: { id: string }) {
         {/* Modules Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 stagger-children">
           {docModules.map((doc, idx) => {
-            const isMyRole = user?.role === doc.role || user?.role === 'ADMIN' || user?.role === 'KPH'; 
+            const isMyRole = user?.role === 'sysadmin' || user?.role === 'kph'; 
             return (
               <div key={idx} className={`relative flex flex-col p-5 rounded-2xl border transition-all duration-300 overflow-hidden h-[220px] ${
                 doc.done 
@@ -230,8 +267,10 @@ function RttDetailContent({ id }: { id: string }) {
 
                 <div className="mt-4 flex justify-between items-center pt-3 border-t border-white/[0.04]">
                   <span className="text-[10px] font-semibold text-slate-600 uppercase tracking-wider">{doc.role} Unit</span>
-                  {!doc.done && isMyRole && (
-                    <button onClick={() => setActiveModal(doc.key)} className="btn-primary px-4 py-1.5 text-[10px] font-bold">Input</button>
+                  {isMyRole && (rtt.status === 'draft' || rtt.status === 'revisi') && (
+                    <button onClick={() => setActiveModal(doc.key)} className={`px-4 py-1.5 text-[10px] font-bold transition-all ${doc.done ? 'btn-secondary' : 'btn-primary'}`}>
+                      {doc.done ? 'Edit Data' : 'Input Data'}
+                    </button>
                   )}
                 </div>
               </div>
@@ -298,12 +337,45 @@ function RttDetailContent({ id }: { id: string }) {
                 {activeModal !== 'summary' && activeModal !== 'peta' && activeModal !== 'peta_bap' && (
                   <div className="bg-slate-900/50 border border-white/[0.06] p-10 rounded-xl space-y-3 text-center">
                     <Lock className="mx-auto text-slate-600 w-8 h-8" />
-                    <p className="text-slate-500 text-[12px] font-medium">Input data {activeModal} akan tersedia segera</p>
+                    <p className="text-slate-500 text-[12px] font-medium">Sistem akan melakukan <span className="text-emerald-400">Auto-Generate & Sinkronisasi</span> data <b>{activeModal}</b> dari database kehutanan pusat secara otomatis.</p>
+                    <p className="text-slate-600 text-[10px] mt-2 italic">*Hanya simulasi untuk keperluan Demo Skripsi. Klik Submit untuk menyelesaikan modul ini.</p>
                     <input type="hidden" name="dummy" value="yes" />
                   </div>
                 )}
                 <button type="submit" disabled={isSubmitting} className="btn-primary w-full py-3.5 text-[13px] font-bold disabled:opacity-50">
                   {isSubmitting ? 'Transmitting Data...' : 'Submit Transaksi Data'}
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Finalize Key Modal */}
+        {finalizeKeyModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/80 backdrop-blur-xl animate-fade-in">
+            <div className="glass-card p-8 max-w-lg w-full shadow-2xl relative animate-scale-in">
+              <button onClick={() => setFinalizeKeyModal(false)} className="absolute top-5 right-5 text-slate-500 hover:text-white transition-colors"><X size={20} /></button>
+              <div className="mb-6 space-y-2">
+                <h3 className="text-xl font-bold text-white">Masukkan <span className="text-emerald-400">Private Key</span></h3>
+                <p className="text-slate-400 text-[12px] font-medium leading-relaxed">
+                  Untuk mengesahkan secara hukum Rencana Teknik Tahunan ini, sistem membutuhkan parameter *Private Key* Anda untuk algoritma ECDSA. Key ini tidak akan disimpan di server.
+                </p>
+              </div>
+              <form onSubmit={handleSign} className="space-y-5">
+                <div className="space-y-2">
+                  <label className="text-[11px] text-slate-400 font-semibold block">Konten Private Key (.pem)</label>
+                  <textarea 
+                    autoFocus 
+                    required 
+                    rows={6}
+                    value={privateKeyInput}
+                    onChange={(e) => setPrivateKeyInput(e.target.value)} 
+                    className="glass-input w-full px-4 py-3 text-[11px] font-mono leading-relaxed" 
+                    placeholder={"-----BEGIN ENCRYPTED PRIVATE KEY-----\n...\n-----END ENCRYPTED PRIVATE KEY-----"} 
+                  />
+                </div>
+                <button type="submit" disabled={isSubmitting} className="btn-primary w-full py-3.5 text-[13px] font-bold disabled:opacity-50">
+                  {isSubmitting ? 'Generating ECDSA Signature...' : 'Validasi Kunci & Finalize RTT'}
                 </button>
               </form>
             </div>

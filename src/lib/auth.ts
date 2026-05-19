@@ -1,7 +1,7 @@
 // Role-Based Access Control Utilities
 // PERUM_PERHUTANI - Sistem Pengelolaan RTT
 
-export type UserRole = 'sysadmin' | 'admin' | 'kph' | 'phw' | 'divisi' | 'gis' | 'lapangan';
+export type UserRole = 'sysadmin' | 'kph' | 'phw' | 'direksi';
 
 export interface User {
   id: number;
@@ -13,12 +13,9 @@ export interface User {
 // Role hierarchy (higher number = more access)
 const ROLE_HIERARCHY: Record<UserRole, number> = {
   sysadmin: 100,
-  admin: 80,
-  kph: 60,
+  direksi: 80,
   phw: 60,
-  divisi: 60,
-  gis: 40,
-  lapangan: 40,
+  kph: 40,
 };
 
 // Permission definitions
@@ -87,17 +84,16 @@ const ROLE_PERMISSIONS: Record<UserRole, string[]> = {
     PERMISSIONS.VALIDATION_VIEW,
   ],
   
-  admin: [
+  kph: [
     PERMISSIONS.DOCUMENT_CREATE,
     PERMISSIONS.DOCUMENT_EDIT,
     PERMISSIONS.RTT_SUMMARY_EDIT,
     PERMISSIONS.RTT_NETT_EDIT,
-    PERMISSIONS.DOCUMENT_VIEW,
-    PERMISSIONS.RPKH_VIEW,
-    PERMISSIONS.DASHBOARD_VIEW,
-  ],
-  
-  kph: [
+    PERMISSIONS.PETA_LOKASI_EDIT,
+    PERMISSIONS.PETA_BAP_EDIT,
+    PERMISSIONS.KLEM_DAFTAR_EDIT,
+    PERMISSIONS.KLEM_REKAP_EDIT,
+    PERMISSIONS.BERITA_ACARA_EDIT,
     PERMISSIONS.DASHBOARD_VIEW,
     PERMISSIONS.DOCUMENT_REVIEW,
     PERMISSIONS.DOCUMENT_APPROVE_KPH,
@@ -110,25 +106,14 @@ const ROLE_PERMISSIONS: Record<UserRole, string[]> = {
     PERMISSIONS.DOCUMENT_VERIFY_PHW,
     PERMISSIONS.DOCUMENT_VIEW,
     PERMISSIONS.RPKH_VIEW,
+    PERMISSIONS.DASHBOARD_VIEW,
   ],
   
-  divisi: [
+  direksi: [
     PERMISSIONS.DOCUMENT_FINALIZE,
     PERMISSIONS.DOCUMENT_VIEW,
     PERMISSIONS.PDF_GENERATE,
-  ],
-  
-  gis: [
-    PERMISSIONS.PETA_LOKASI_EDIT,
-    PERMISSIONS.PETA_BAP_EDIT,
-    PERMISSIONS.DOCUMENT_VIEW,
-  ],
-  
-  lapangan: [
-    PERMISSIONS.KLEM_DAFTAR_EDIT,
-    PERMISSIONS.KLEM_REKAP_EDIT,
-    PERMISSIONS.BERITA_ACARA_EDIT,
-    PERMISSIONS.DOCUMENT_VIEW,
+    PERMISSIONS.DASHBOARD_VIEW,
   ],
 };
 
@@ -151,12 +136,9 @@ export function hasAllPermissions(user: User | null, permissions: string[]): boo
 export function getRoleDisplayName(role: UserRole): string {
   const displayNames: Record<UserRole, string> = {
     sysadmin: 'Admin Sistem',
-    admin: 'Staf Tata Usaha',
-    kph: 'Kepala KPH',
+    kph: 'Kepala KPH (Pembuat)',
     phw: 'Verifikator PHW',
-    divisi: 'Divisi/Departemen',
-    gis: 'Staf GIS/Perencanaan',
-    lapangan: 'Staf Lapangan',
+    direksi: 'Direksi (Pengesah)',
   };
   return displayNames[role] || role;
 }
@@ -164,12 +146,9 @@ export function getRoleDisplayName(role: UserRole): string {
 export function getRoleDescription(role: UserRole): string {
   const descriptions: Record<UserRole, string> = {
     sysadmin: 'Mengelola user dan konfigurasi sistem',
-    admin: 'Menginput RTT Summary dan NETT RTT',
-    kph: 'Monitoring, review, dan approval dokumen',
-    phw: 'Verifikasi teknis RTT terhadap RPKH',
-    divisi: 'Pengesahan akhir dan generate PDF',
-    gis: 'Menginput Peta Lokasi dan Peta BAP',
-    lapangan: 'Menginput Daftar Klem, Rekap Klem, dan Berita Acara',
+    kph: 'Membuat dokumen RTT, menginput data teknis, dan mengajukan persetujuan RTT tingkat lokal.',
+    phw: 'Meninjau teknis lapangan dan memverifikasi kesesuaian RTT terhadap RPKH',
+    direksi: 'Pengesahan final tingkat akhir dan menyematkan Tanda Tangan ECDSA.',
   };
   return descriptions[role] || '';
 }
@@ -193,13 +172,13 @@ export function canEditSection(user: User | null, section: 'summary' | 'nett' | 
   return hasPermission(user, permissionMap[section]);
 }
 
-export function canApprove(user: User | null, level: 'kph' | 'phw' | 'divisi'): boolean {
+export function canApprove(user: User | null, level: 'kph' | 'phw' | 'direksi'): boolean {
   if (!user) return false;
   
   const permissionMap = {
     kph: PERMISSIONS.DOCUMENT_APPROVE_KPH,
     phw: PERMISSIONS.DOCUMENT_VERIFY_PHW,
-    divisi: PERMISSIONS.DOCUMENT_FINALIZE,
+    direksi: PERMISSIONS.DOCUMENT_FINALIZE,
   };
   
   return hasPermission(user, permissionMap[level]);

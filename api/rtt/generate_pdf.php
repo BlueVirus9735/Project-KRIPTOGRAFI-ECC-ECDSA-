@@ -140,6 +140,11 @@ $html .= '</div>';
 
 $html .= '</body></html>';
 
+// Trigger print dialog if download requested
+if (isset($_GET['download'])) {
+    $html = str_replace('</body>', '<script>window.onload = function() { window.print(); }</script></body>', $html);
+}
+
 // Output as HTML (can be printed to PDF from browser or use a PDF library)
 header('Content-Type: text/html; charset=utf-8');
 echo $html;

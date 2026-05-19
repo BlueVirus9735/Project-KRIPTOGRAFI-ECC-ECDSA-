@@ -95,7 +95,7 @@ switch ($method) {
             exit;
         }
         
-        $allowedRoles = ['sysadmin', 'admin', 'kph', 'phw', 'divisi', 'gis', 'lapangan'];
+        $allowedRoles = ['sysadmin', 'kph', 'phw', 'direksi'];
         if (!in_array($data['role'], $allowedRoles)) {
             http_response_code(400);
             echo json_encode(['status' => 'error', 'message' => 'Invalid role']);
@@ -168,7 +168,7 @@ switch ($method) {
             $params[] = $data['email'];
         }
         if (isset($data['role'])) {
-            $allowedRoles = ['sysadmin', 'admin', 'kph', 'phw', 'divisi', 'gis', 'lapangan'];
+            $allowedRoles = ['sysadmin', 'kph', 'phw', 'direksi'];
             if (!in_array($data['role'], $allowedRoles)) {
                 http_response_code(400);
                 echo json_encode(['status' => 'error', 'message' => 'Invalid role']);
