@@ -193,10 +193,31 @@ function RttDetailContent({ id }: { id: string }) {
               </div>
               
               <div className="h-12">
-                {doneCount === 7 && rtt.status !== 'disahkan' ? (
-                  <button onClick={() => setFinalizeKeyModal(true)} disabled={isSubmitting} className="btn-primary w-full h-full text-[12px] font-bold">
-                    {isSubmitting ? 'Processing...' : '🔐 Sign & Patenkan'}
+                {doneCount === 7 && (rtt.status === 'draft' || rtt.status === 'revisi_phw' || rtt.status === 'revisi_kph') && (user?.role === 'sysadmin' || user?.role === 'kph') ? (
+                  <button onClick={async () => {
+                    if (!confirm("Kirim dokumen ini ke PHW untuk diverifikasi?")) return;
+                    try {
+                      const res = await fetch(`http://localhost:8000/api/rtt/submit.php`, {
+                        method: "POST", headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ rtt_id: id, token: localStorage.getItem('token') })
+                      });
+                      const d = await res.json();
+                      if (d.status === "success") {
+                        alert("Berhasil dikirim ke PHW!");
+                        fetchWorkspace();
+                      } else alert(d.message);
+                    } catch(e) { alert("Error server"); }
+                  }} className="btn-primary w-full h-full text-[12px] font-bold bg-blue-500 hover:bg-blue-600 border-blue-400">
+                    Kirim ke PHW (Verifikasi)
                   </button>
+                ) : rtt.status === 'menunggu_verifikasi_phw' ? (
+                  <div className="w-full h-full bg-indigo-500/10 border border-indigo-500/30 rounded-xl flex items-center justify-center text-indigo-400 font-semibold text-[11px] text-center px-4">
+                    {user?.role === 'phw' || user?.role === 'sysadmin' ? 'Buka menu Validasi PHW untuk memverifikasi' : 'Menunggu Verifikasi dari pihak PHW'}
+                  </div>
+                ) : rtt.status === 'menunggu_pengesahan' ? (
+                  <div className="w-full h-full bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-center justify-center text-amber-400 font-semibold text-[11px] text-center px-4">
+                    Menunggu Pengesahan (Finalize) dari Divisi
+                  </div>
                 ) : isSah ? (
                   <>
                   <button onClick={() => window.open(`http://localhost:8000/api/rtt/generate_pdf.php?id=${id}`)} className="btn-secondary w-full h-full text-[12px] font-bold flex items-center justify-center gap-2">
@@ -227,7 +248,7 @@ function RttDetailContent({ id }: { id: string }) {
                 </>
               ) : (
                   <div className="w-full h-full bg-slate-800/30 border border-dashed border-slate-700/50 rounded-xl flex items-center justify-center text-slate-600 font-semibold text-[11px] text-center px-4">
-                    Submit 7 Module untuk Otorisasi
+                    {doneCount < 7 ? `Lengkapi ${7 - doneCount} Module Tersisa` : 'Menunggu Status'}
                   </div>
                 )}
               </div>
@@ -267,7 +288,7 @@ function RttDetailContent({ id }: { id: string }) {
 
                 <div className="mt-4 flex justify-between items-center pt-3 border-t border-white/[0.04]">
                   <span className="text-[10px] font-semibold text-slate-600 uppercase tracking-wider">{doc.role} Unit</span>
-                  {isMyRole && (rtt.status === 'draft' || rtt.status === 'revisi') && (
+                  {isMyRole && (rtt.status === 'draft' || rtt.status === 'revisi_phw' || rtt.status === 'revisi_kph') && (
                     <button onClick={() => setActiveModal(doc.key)} className={`px-4 py-1.5 text-[10px] font-bold transition-all ${doc.done ? 'btn-secondary' : 'btn-primary'}`}>
                       {doc.done ? 'Edit Data' : 'Input Data'}
                     </button>

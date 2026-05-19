@@ -84,8 +84,39 @@ function RttCreateContent() {
     finally { setLoading(false); }
   };
 
+  const validateForm = () => {
+    if (!identitas.rpkh_id || !identitas.nomor_dokumen || !identitas.tanggal || !identitas.kph || !identitas.bkph || !identitas.rph) {
+      return "Harap lengkapi semua data pada tab Identitas.";
+    }
+    if (!sk.nomor_sk || !sk.tanggal_sk || !sk.tentang) {
+      return "Harap lengkapi semua data pada tab SK.";
+    }
+    if (!keputusan.menimbang || !keputusan.mengingat || !keputusan.memutuskan) {
+      return "Harap lengkapi semua data pada tab Keputusan.";
+    }
+    if (tebangan.length === 0 || !tebangan[0].petak || !tebangan[0].luas || !tebangan[0].volume) {
+      return "Harap isi minimal 1 baris data Tebangan yang valid (Petak, Luas, Volume wajib diisi).";
+    }
+    if (beritaAcara.length === 0 || !beritaAcara[0].tanggal || !beritaAcara[0].nama_petugas || !beritaAcara[0].jabatan || !beritaAcara[0].hasil_pemeriksaan) {
+      return "Harap isi minimal 1 baris Berita Acara yang valid.";
+    }
+    if (pengesahan.length === 0 || !pengesahan[0].nama_pejabat || !pengesahan[0].jabatan || !pengesahan[0].npk || !pengesahan[0].tanggal) {
+      return "Harap isi minimal 1 baris Pengesahan yang valid.";
+    }
+    return null;
+  };
+
   const handleSaveAll = async (submit = false) => {
     if (!rttId) return;
+
+    if (submit) {
+      const errorMsg = validateForm();
+      if (errorMsg) {
+        alert("Gagal submit: " + errorMsg);
+        return;
+      }
+    }
+
     setLoading(true);
     try {
       // 1. Upload files first if any
@@ -123,12 +154,19 @@ function RttCreateContent() {
             localStorage.removeItem('rtt_draft'); // Clear draft
             alert(`RTT berhasil disimpan & dikirim untuk review!`);
             router.push("/rtt");
-          } else alert("Gagal submit: " + subData.message);
+          } else {
+            alert("Gagal submit: " + subData.message);
+            if (subData.message.includes("sudah disubmit sebelumnya")) {
+              localStorage.removeItem('rtt_draft');
+              alert("Draft yang tersimpan di browser Anda mengarah ke RTT yang sudah terkirim. Draft telah dibersihkan. Silakan buat RTT baru.");
+              window.location.reload();
+            }
+          }
         } else {
           alert(`Data RTT berhasil disimpan!`);
         }
       } else alert("Gagal update data: " + data.message);
-    } catch (e) { alert("Terjadi kesalahan jaringan saat menyimpan"); }
+    } catch (e: any) { alert("Terjadi kesalahan jaringan saat menyimpan: " + e.message); }
     finally { setLoading(false); }
   };
 

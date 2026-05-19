@@ -120,6 +120,58 @@ function ValidationContent() {
               </div>
             </div>
           )}
+          {/* Action Buttons for PHW */}
+          <div className="flex items-center gap-4 mt-8 pt-6 border-t border-white/[0.04]">
+            <button 
+              onClick={async () => {
+                if (!confirm("Setujui dokumen ini dan teruskan ke Divisi untuk Pengesahan Final?")) return;
+                try {
+                  const res = await fetch(`${API}/rtt/review.php`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ rtt_id: selectedRtt, token, action: 'approve' })
+                  });
+                  const d = await res.json();
+                  if (d.status === 'success') {
+                    alert(d.message);
+                    setResult(null);
+                    setSelectedRtt("");
+                    // refresh list
+                    const listRes = await fetch(`${API}/rtt/list.php`);
+                    const listData = await listRes.json();
+                    setRttList(listData.data || []);
+                  } else alert(d.message);
+                } catch(e) { alert("Error"); }
+              }}
+              className="btn-primary flex-1 py-3 text-[13px] font-bold"
+            >
+              Setujui Dokumen (Teruskan ke Finalisasi)
+            </button>
+            <button 
+              onClick={async () => {
+                const catatan = prompt("Masukkan catatan revisi untuk KPH:");
+                if (!catatan) return;
+                try {
+                  const res = await fetch(`${API}/rtt/review.php`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ rtt_id: selectedRtt, token, action: 'reject', catatan })
+                  });
+                  const d = await res.json();
+                  if (d.status === 'success') {
+                    alert(d.message);
+                    setResult(null);
+                    setSelectedRtt("");
+                    // refresh list
+                    const listRes = await fetch(`${API}/rtt/list.php`);
+                    const listData = await listRes.json();
+                    setRttList(listData.data || []);
+                  } else alert(d.message);
+                } catch(e) { alert("Error"); }
+              }}
+              className="btn-secondary flex-1 py-3 text-[13px] font-bold border-red-500/20 text-red-400 hover:bg-red-500/10"
+            >
+              Tolak & Kembalikan (Revisi)
+            </button>
+          </div>
         </div>
       )}
     </div>

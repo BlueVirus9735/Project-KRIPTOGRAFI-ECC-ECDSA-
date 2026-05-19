@@ -34,11 +34,15 @@ $hash_detail = 'Hash SHA-256 konsisten';
         $temp_dir = __DIR__ . '/../uploads/temp/';
         if (!is_dir($temp_dir)) mkdir($temp_dir, 0777, true);
         
-        include __DIR__ . '/../../crypto_utils.php';
+        include __DIR__ . '/../crypto_utils.php';
         $payload = getCanonicalPayload($pdo, $rtt_id);
         if (!$payload) { echo json_encode(['status'=>'error','message'=>'Gagal membuat payload']); exit; }
         
         $json_data = encodeCanonicalJSON($payload);
+        
+        $temp_hash = $temp_dir . 'hash_' . $rtt_id . '.json';
+        $temp_sig  = $temp_dir . 'sig_' . $rtt_id . '.bin';
+        $temp_pub  = $temp_dir . 'pub_' . $rtt_id . '.pem';
         
         file_put_contents($temp_hash, $json_data);
         file_put_contents($temp_sig, base64_decode($rtt['signature']));
