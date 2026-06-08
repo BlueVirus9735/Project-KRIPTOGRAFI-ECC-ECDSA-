@@ -354,13 +354,116 @@ function RttDetailContent({ id }: { id: string }) {
                     </div>
                   </div>
                 )}
-                {/* Modul lain (non-peta, non-summary) */}
-                {activeModal !== 'summary' && activeModal !== 'peta' && activeModal !== 'peta_bap' && (
-                  <div className="bg-slate-900/50 border border-white/[0.06] p-10 rounded-xl space-y-3 text-center">
-                    <Lock className="mx-auto text-slate-600 w-8 h-8" />
-                    <p className="text-slate-500 text-[12px] font-medium">Sistem akan melakukan <span className="text-emerald-400">Auto-Generate & Sinkronisasi</span> data <b>{activeModal}</b> dari database kehutanan pusat secara otomatis.</p>
-                    <p className="text-slate-600 text-[10px] mt-2 italic">*Hanya simulasi untuk keperluan Demo Skripsi. Klik Submit untuk menyelesaikan modul ini.</p>
-                    <input type="hidden" name="dummy" value="yes" />
+
+                {activeModal === 'nett' && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-[11px] text-slate-400 font-semibold block">Bagian Hutan</label>
+                        <input required type="text" name="bagian_hutan" onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" placeholder="e.g. Hutan Lembang" />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[11px] text-slate-400 font-semibold block">Petak</label>
+                        <input required type="text" name="petak" onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" placeholder="e.g. 23A" />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-[11px] text-slate-400 font-semibold block">BKPH</label>
+                        <input required type="text" name="bkph" onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" placeholder="e.g. Lembang" />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[11px] text-slate-400 font-semibold block">RPH</label>
+                        <input required type="text" name="rph" onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" placeholder="e.g. Cikole" />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[11px] text-slate-400 font-semibold block">Anak Petak Baru</label>
+                      <input required type="text" name="anak_petak_baru" onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" placeholder="e.g. a" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-[11px] text-slate-400 font-semibold block">Jml Pohon</label>
+                        <input required type="number" name="jumlah_pohon" onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[11px] text-slate-400 font-semibold block">Volume Kayu (m³)</label>
+                        <input required type="number" step="0.01" name="volume_kayu" onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {activeModal === 'rekap_klem' && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-[11px] text-slate-400 font-semibold block">Nomor Blok</label>
+                        <input required type="text" name="no_blok" onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" placeholder="e.g. Blok 1" />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[11px] text-slate-400 font-semibold block">Luas Blok (Ha)</label>
+                        <input required type="number" step="0.01" name="luas_blok" onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-[11px] text-slate-400 font-semibold block">Jumlah Pohon</label>
+                        <input required type="number" name="jumlah_pohon" onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[11px] text-slate-400 font-semibold block">Volume (m³)</label>
+                        <input required type="number" step="0.01" name="volume" onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {activeModal === 'klem_detail' && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-[11px] text-slate-400 font-semibold block">Nomor Pohon</label>
+                        <input required type="text" name="no_pohon" onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" placeholder="e.g. 001" />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[11px] text-slate-400 font-semibold block">Jenis Pohon</label>
+                        <input required type="text" name="jenis_pohon" onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" placeholder="e.g. Jati" />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-[11px] text-slate-400 font-semibold block">Keliling Batang (cm)</label>
+                        <input required type="number" step="0.1" name="keliling" onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[11px] text-slate-400 font-semibold block">Volume (m³)</label>
+                        <input required type="number" step="0.01" name="volume" onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {activeModal === 'berita_acara' && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-[11px] text-slate-400 font-semibold block">Nama Petugas Pemeriksa</label>
+                        <input required type="text" name="nama_petugas" onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" placeholder="e.g. Ahmad Subarjo" />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[11px] text-slate-400 font-semibold block">Jabatan</label>
+                        <input required type="text" name="jabatan" onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" placeholder="e.g. Kepala KRPH" />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[11px] text-slate-400 font-semibold block">Tanggal Pemeriksaan</label>
+                      <input required type="date" name="tanggal" onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[11px] text-slate-400 font-semibold block">Hasil Pemeriksaan Ringkas</label>
+                      <textarea required rows={4} name="hasil_pemeriksaan" onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px] leading-relaxed" placeholder="Tuliskan laporan ringkas hasil pemeriksaan petak di sini..." />
+                    </div>
                   </div>
                 )}
                 <button type="submit" disabled={isSubmitting} className="btn-primary w-full py-3.5 text-[13px] font-bold disabled:opacity-50">

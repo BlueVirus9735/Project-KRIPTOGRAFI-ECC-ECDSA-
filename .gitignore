@@ -50,3 +50,14 @@ api/uploads/temp/
 # Python cache
 __pycache__/
 *.py[cod]
+
+# Additional uploads and logs
+api/uploads/lampiran/*
+!api/uploads/lampiran/.gitkeep
+api/uploads/peta/*
+!api/uploads/peta/.gitkeep
+api/uploads/peta_bap/*
+!api/uploads/peta_bap/.gitkeep
+api/rtt/*.log
+api/rtt/*.json
+crypto_venv/

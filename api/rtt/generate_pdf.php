@@ -28,6 +28,19 @@ $rekap = $pdo->prepare("SELECT * FROM rtt_rekap WHERE rtt_id=?"); $rekap->execut
 $ba_stmt = $pdo->prepare("SELECT * FROM rtt_berita_acara WHERE rtt_id=?"); $ba_stmt->execute([$rtt_id]); $berita_acara = $ba_stmt->fetchAll();
 $peng_stmt = $pdo->prepare("SELECT * FROM rtt_pengesahan WHERE rtt_id=?"); $peng_stmt->execute([$rtt_id]); $pengesahan = $peng_stmt->fetchAll();
 
+$is_corrupt = false;
+try {
+    include_once __DIR__ . '/../crypto_utils.php';
+    $payload = getCanonicalPayload($pdo, $rtt_id);
+    if ($payload) {
+        $json_data = encodeCanonicalJSON($payload);
+        $calculated_hash = hash('sha256', $json_data);
+        if ($calculated_hash !== $rtt['hash']) {
+            $is_corrupt = true;
+        }
+    }
+} catch (Exception $e) {}
+
 // Generate HTML for PDF
 $html = '<!DOCTYPE html><html><head><meta charset="utf-8">
 <style>
@@ -52,7 +65,13 @@ table.data th { background-color: #f0f0f0; font-weight: bold; text-align: center
 
 // COVER PAGE
 $html .= '<div class="watermark">PERHUTANI</div>';
-$html .= '<div style="text-align:center; padding-top:100px;">';
+if ($is_corrupt) {
+    $html .= '<div style="background-color:#fee2e2; border: 4px solid #ef4444; color:#b91c1c; padding: 15px; text-align:center; font-weight:bold; margin-bottom: 20px; font-size:12pt; font-family: sans-serif;">';
+    $html .= '⚠️ PERINGATAN KRIPTOGRAFI: DATA DOKUMEN INI TELAH DIMANIPULASI secara ilegal!<br>';
+    $html .= '<span style="font-size:9pt; font-weight:normal;">Hash SHA-256 saat ini tidak cocok dengan Hash sertifikat digital atau database asli.</span>';
+    $html .= '</div>';
+}
+$html .= '<div style="text-align:center; padding-top:50px;">';
 $html .= '<h1>RENCANA TEKNIK TAHUNAN</h1>';
 $html .= '<h2>(RTT)</h2>';
 $html .= '<p style="font-size:14pt; margin:30px 0;"><strong>'.$rtt['kph'].'</strong></p>';
@@ -134,7 +153,11 @@ if (!empty($pengesahan)) {
 $html .= '<div class="footer-hash">';
 $html .= '<strong>Integritas Dokumen</strong><br>';
 $html .= 'SHA-256: '.$rtt['hash'].'<br>';
-$html .= 'Status: '.$rtt['status'].'<br>';
+if ($is_corrupt) {
+    $html .= 'Status: <strong style="color:#b91c1c;">INVALID / DATA DIMANIPULASI</strong><br>';
+} else {
+    $html .= 'Status: <strong style="color:#047857;">VALID (ECC Signed)</strong><br>';
+}
 $html .= 'Generated: '.date('Y-m-d H:i:s');
 $html .= '</div>';
 

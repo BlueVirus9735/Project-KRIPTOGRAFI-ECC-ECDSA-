@@ -1,5 +1,5 @@
 <?php
-// api/rtt/download_bundle.php — Download .sig or .pem for RTT
+
 header('Access-Control-Allow-Origin: *');
 
 include __DIR__ . '/../db.php';

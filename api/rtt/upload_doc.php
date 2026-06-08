@@ -51,8 +51,8 @@ try {
     }
     else if ($type === 'berita_acara') {
         $pdo->prepare("DELETE FROM rtt_berita_acara WHERE rtt_id = ?")->execute([$rtt_id]);
-        $stmt = $pdo->prepare("INSERT INTO rtt_berita_acara (rtt_id, nama, jabatan) VALUES (?,?,?)");
-        $stmt->execute([$rtt_id, $payload['nama']??'', $payload['jabatan']??'']);
+        $stmt = $pdo->prepare("INSERT INTO rtt_berita_acara (rtt_id, nama_petugas, jabatan, tanggal, hasil_pemeriksaan) VALUES (?,?,?,?,?)");
+        $stmt->execute([$rtt_id, $payload['nama_petugas']??'', $payload['jabatan']??'', $payload['tanggal']??date('Y-m-d'), $payload['hasil_pemeriksaan']??'']);
     }
     else if ($type === 'peta_bap') {
         $pdo->prepare("DELETE FROM rtt_peta_bap WHERE rtt_id = ?")->execute([$rtt_id]);

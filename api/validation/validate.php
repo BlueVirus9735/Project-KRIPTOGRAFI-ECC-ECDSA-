@@ -1,5 +1,4 @@
 <?php
-// api/validation/validate.php — Validate RTT against RPKH
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
@@ -21,9 +20,20 @@ $stmt = $pdo->prepare("SELECT * FROM rtt WHERE id = ?");
 $stmt->execute([$rtt_id]); $rtt = $stmt->fetch();
 if (!$rtt) { echo json_encode(['status'=>'error','message'=>'RTT tidak ditemukan']); exit; }
 
-// ===== 1. VALIDASI HASH =====
-$status_hash = 'valid';
-$hash_detail = 'Hash SHA-256 konsisten';
+    include_once __DIR__ . '/../crypto_utils.php';
+    $payload = getCanonicalPayload($pdo, $rtt_id);
+    if (!$payload) { echo json_encode(['status'=>'error','message'=>'Gagal membuat payload']); exit; }
+    $json_data = encodeCanonicalJSON($payload);
+    $calculated_hash = hash('sha256', $json_data);
+
+    // ===== 1. VALIDASI HASH =====
+    if ($calculated_hash === $rtt['hash']) {
+        $status_hash = 'valid';
+        $hash_detail = 'Hash SHA-256 cocok (' . substr($calculated_hash, 0, 16) . '...)';
+    } else {
+        $status_hash = 'invalid';
+        $hash_detail = 'Hash TIDAK COCOK. Data di database telah diubah secara ilegal!';
+    }
 
     // ===== 2. VALIDASI SIGNATURE =====
     $status_sig = 'pending';
@@ -33,12 +43,6 @@ $hash_detail = 'Hash SHA-256 konsisten';
         $verify_script = realpath(__DIR__ . '/../../crypto/verify.py');
         $temp_dir = __DIR__ . '/../uploads/temp/';
         if (!is_dir($temp_dir)) mkdir($temp_dir, 0777, true);
-        
-        include __DIR__ . '/../crypto_utils.php';
-        $payload = getCanonicalPayload($pdo, $rtt_id);
-        if (!$payload) { echo json_encode(['status'=>'error','message'=>'Gagal membuat payload']); exit; }
-        
-        $json_data = encodeCanonicalJSON($payload);
         
         $temp_hash = $temp_dir . 'hash_' . $rtt_id . '.json';
         $temp_sig  = $temp_dir . 'sig_' . $rtt_id . '.bin';
@@ -51,7 +55,13 @@ $hash_detail = 'Hash SHA-256 konsisten';
         if (file_exists($verify_script)) {
             $cmd = "\"$python_exe\" \"$verify_script\" \"$temp_pub\" \"$temp_hash\" \"$temp_sig\" 2>&1";
             $output = shell_exec($cmd);
-            $status_sig = (strpos($output, 'VALID') !== false) ? 'valid' : 'invalid';
+            if (strpos($output, 'INVALID') !== false) {
+                $status_sig = 'invalid';
+            } elseif (strpos($output, 'VALID') !== false) {
+                $status_sig = 'valid';
+            } else {
+                $status_sig = 'invalid';
+            }
             $sig_detail = trim($output);
         }
         @unlink($temp_hash); @unlink($temp_sig); @unlink($temp_pub);

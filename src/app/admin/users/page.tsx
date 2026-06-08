@@ -2,11 +2,22 @@
 
 import { useEffect, useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
-import { 
-  Plus, Edit2, Trash2, UserCog, RefreshCw, 
-  CheckCircle, XCircle, Search, Shield
+import {
+  Plus,
+  Edit2,
+  Trash2,
+  UserCog,
+  RefreshCw,
+  CheckCircle,
+  XCircle,
+  Search,
+  Shield,
 } from "lucide-react";
-import { getRoleDisplayName, getRoleDescription, type UserRole } from "@/lib/auth";
+import {
+  getRoleDisplayName,
+  getRoleDescription,
+  type UserRole,
+} from "@/lib/auth";
 
 const API = "http://localhost:8000/api";
 
@@ -21,7 +32,15 @@ interface User {
   last_login: string | null;
 }
 
-const ROLE_OPTIONS: UserRole[] = ['sysadmin', 'admin', 'kph', 'phw', 'divisi', 'gis', 'lapangan'];
+const ROLE_OPTIONS: UserRole[] = [
+  "sysadmin",
+  "admin",
+  "kph",
+  "phw",
+  "divisi",
+  "gis",
+  "lapangan",
+];
 
 export default function UserManagement() {
   const [users, setUsers] = useState<User[]>([]);
@@ -39,7 +58,8 @@ export default function UserManagement() {
     is_active: true,
   });
 
-  const token = typeof window !== "undefined" ? (localStorage.getItem("token") || "") : "";
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("token") || "" : "";
 
   useEffect(() => {
     fetchUsers();
@@ -47,8 +67,9 @@ export default function UserManagement() {
 
   const fetchUsers = async () => {
     try {
-      // Send token via query string for GET request
-      const res = await fetch(`${API}/auth/users.php?token=${encodeURIComponent(token)}`);
+      const res = await fetch(
+        `${API}/auth/users.php?token=${encodeURIComponent(token)}`,
+      );
       const data = await res.json();
       if (data.status === "success") {
         setUsers(data.data);
@@ -67,9 +88,9 @@ export default function UserManagement() {
     try {
       const res = await fetch(`${API}/auth/users.php`, {
         method: "POST",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(formData),
       });
@@ -93,16 +114,18 @@ export default function UserManagement() {
     try {
       const updateData: any = { id: editingUser.id };
       if (formData.nama !== editingUser.nama) updateData.nama = formData.nama;
-      if (formData.email !== editingUser.email) updateData.email = formData.email;
+      if (formData.email !== editingUser.email)
+        updateData.email = formData.email;
       if (formData.role !== editingUser.role) updateData.role = formData.role;
-      if (formData.is_active !== !!editingUser.is_active) updateData.is_active = formData.is_active;
+      if (formData.is_active !== !!editingUser.is_active)
+        updateData.is_active = formData.is_active;
       if (formData.password) updateData.password = formData.password;
 
       const res = await fetch(`${API}/auth/users.php`, {
         method: "PUT",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(updateData),
       });
@@ -126,9 +149,9 @@ export default function UserManagement() {
     try {
       const res = await fetch(`${API}/auth/users.php`, {
         method: "DELETE",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ id: user.id }),
       });
@@ -173,10 +196,11 @@ export default function UserManagement() {
     setShowModal(true);
   };
 
-  const filteredUsers = users.filter(u => 
-    u.nama?.toLowerCase().includes(search.toLowerCase()) ||
-    u.username?.toLowerCase().includes(search.toLowerCase()) ||
-    u.email?.toLowerCase().includes(search.toLowerCase())
+  const filteredUsers = users.filter(
+    (u) =>
+      u.nama?.toLowerCase().includes(search.toLowerCase()) ||
+      u.username?.toLowerCase().includes(search.toLowerCase()) ||
+      u.email?.toLowerCase().includes(search.toLowerCase()),
   );
 
   const getRoleBadgeColor = (role: UserRole) => {
@@ -224,7 +248,10 @@ export default function UserManagement() {
         {/* Search & Filter */}
         <div className="glass-card p-4 flex items-center gap-4">
           <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+            <Search
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"
+              size={18}
+            />
             <input
               type="text"
               placeholder="Cari user..."
@@ -257,33 +284,56 @@ export default function UserManagement() {
             <table className="w-full">
               <thead className="bg-white/[0.02] border-b border-white/[0.06]">
                 <tr>
-                  <th className="text-left text-xs font-semibold text-slate-400 uppercase tracking-wider px-4 py-3">User</th>
-                  <th className="text-left text-xs font-semibold text-slate-400 uppercase tracking-wider px-4 py-3">Role</th>
-                  <th className="text-left text-xs font-semibold text-slate-400 uppercase tracking-wider px-4 py-3">Status</th>
-                  <th className="text-left text-xs font-semibold text-slate-400 uppercase tracking-wider px-4 py-3">Terdaftar</th>
-                  <th className="text-left text-xs font-semibold text-slate-400 uppercase tracking-wider px-4 py-3">Login Terakhir</th>
-                  <th className="text-right text-xs font-semibold text-slate-400 uppercase tracking-wider px-4 py-3">Aksi</th>
+                  <th className="text-left text-xs font-semibold text-slate-400 uppercase tracking-wider px-4 py-3">
+                    User
+                  </th>
+                  <th className="text-left text-xs font-semibold text-slate-400 uppercase tracking-wider px-4 py-3">
+                    Role
+                  </th>
+                  <th className="text-left text-xs font-semibold text-slate-400 uppercase tracking-wider px-4 py-3">
+                    Status
+                  </th>
+                  <th className="text-left text-xs font-semibold text-slate-400 uppercase tracking-wider px-4 py-3">
+                    Terdaftar
+                  </th>
+                  <th className="text-left text-xs font-semibold text-slate-400 uppercase tracking-wider px-4 py-3">
+                    Login Terakhir
+                  </th>
+                  <th className="text-right text-xs font-semibold text-slate-400 uppercase tracking-wider px-4 py-3">
+                    Aksi
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/[0.04]">
                 {filteredUsers.map((user) => (
-                  <tr key={user.id} className="hover:bg-white/[0.02] transition-colors">
+                  <tr
+                    key={user.id}
+                    className="hover:bg-white/[0.02] transition-colors"
+                  >
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center text-sm font-bold text-slate-300">
                           {user.nama?.substring(0, 2).toUpperCase()}
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-white">{user.nama}</p>
-                          <p className="text-xs text-slate-500">@{user.username}</p>
+                          <p className="text-sm font-medium text-white">
+                            {user.nama}
+                          </p>
+                          <p className="text-xs text-slate-500">
+                            @{user.username}
+                          </p>
                           {user.email && (
-                            <p className="text-xs text-slate-600">{user.email}</p>
+                            <p className="text-xs text-slate-600">
+                              {user.email}
+                            </p>
                           )}
                         </div>
                       </div>
                     </td>
                     <td className="px-4 py-4">
-                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium border ${getRoleBadgeColor(user.role)}`}>
+                      <span
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium border ${getRoleBadgeColor(user.role)}`}
+                      >
                         <Shield size={12} />
                         {getRoleDisplayName(user.role)}
                       </span>
@@ -302,13 +352,12 @@ export default function UserManagement() {
                       )}
                     </td>
                     <td className="px-4 py-4 text-sm text-slate-400">
-                      {new Date(user.created_at).toLocaleDateString('id-ID')}
+                      {new Date(user.created_at).toLocaleDateString("id-ID")}
                     </td>
                     <td className="px-4 py-4 text-sm text-slate-400">
-                      {user.last_login 
-                        ? new Date(user.last_login).toLocaleString('id-ID')
-                        : "-"
-                      }
+                      {user.last_login
+                        ? new Date(user.last_login).toLocaleString("id-ID")
+                        : "-"}
                     </td>
                     <td className="px-4 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
@@ -335,13 +384,16 @@ export default function UserManagement() {
           )}
         </div>
 
-        {/* Role Legend */}
         <div className="glass-card p-4">
-          <h3 className="text-sm font-semibold text-slate-300 mb-3">Keterangan Role</h3>
+          <h3 className="text-sm font-semibold text-slate-300 mb-3">
+            Keterangan Role
+          </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {ROLE_OPTIONS.map((role) => (
               <div key={role} className="flex items-start gap-2">
-                <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${getRoleBadgeColor(role)}`}>
+                <span
+                  className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${getRoleBadgeColor(role)}`}
+                >
                   {getRoleDisplayName(role)}
                 </span>
               </div>
@@ -350,15 +402,15 @@ export default function UserManagement() {
           <div className="mt-4 space-y-1 text-xs text-slate-500">
             {ROLE_OPTIONS.map((role) => (
               <p key={role}>
-                <span className="font-medium text-slate-400">{getRoleDisplayName(role)}:</span>{" "}
+                <span className="font-medium text-slate-400">
+                  {getRoleDisplayName(role)}:
+                </span>{" "}
                 {getRoleDescription(role)}
               </p>
             ))}
           </div>
         </div>
       </div>
-
-      {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="glass-card w-full max-w-md max-h-[90vh] overflow-y-auto">
@@ -366,7 +418,10 @@ export default function UserManagement() {
               <h2 className="text-lg font-bold text-white mb-4">
                 {editingUser ? "Edit User" : "Tambah User Baru"}
               </h2>
-              <form onSubmit={editingUser ? handleUpdate : handleCreate} className="space-y-4">
+              <form
+                onSubmit={editingUser ? handleUpdate : handleCreate}
+                className="space-y-4"
+              >
                 <div>
                   <label className="block text-xs font-medium text-slate-400 mb-1.5">
                     Nama Lengkap *
@@ -376,7 +431,9 @@ export default function UserManagement() {
                     required
                     className="glass-input w-full px-3 py-2 text-sm"
                     value={formData.nama}
-                    onChange={(e) => setFormData({ ...formData, nama: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, nama: e.target.value })
+                    }
                   />
                 </div>
                 <div>
@@ -389,10 +446,14 @@ export default function UserManagement() {
                     disabled={!!editingUser}
                     className="glass-input w-full px-3 py-2 text-sm disabled:opacity-50"
                     value={formData.username}
-                    onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, username: e.target.value })
+                    }
                   />
                   {editingUser && (
-                    <p className="text-xs text-slate-500 mt-1">Username tidak dapat diubah</p>
+                    <p className="text-xs text-slate-500 mt-1">
+                      Username tidak dapat diubah
+                    </p>
                   )}
                 </div>
                 <div>
@@ -403,7 +464,9 @@ export default function UserManagement() {
                     type="email"
                     className="glass-input w-full px-3 py-2 text-sm"
                     value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, email: e.target.value })
+                    }
                   />
                 </div>
                 <div>
@@ -414,7 +477,12 @@ export default function UserManagement() {
                     required
                     className="glass-input w-full px-3 py-2 text-sm"
                     value={formData.role}
-                    onChange={(e) => setFormData({ ...formData, role: e.target.value as UserRole })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        role: e.target.value as UserRole,
+                      })
+                    }
                   >
                     {ROLE_OPTIONS.map((role) => (
                       <option key={role} value={role}>
@@ -428,14 +496,17 @@ export default function UserManagement() {
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-slate-400 mb-1.5">
-                    Password {editingUser && "(kosongkan jika tidak ingin mengubah)"}
+                    Password{" "}
+                    {editingUser && "(kosongkan jika tidak ingin mengubah)"}
                   </label>
                   <input
                     type="password"
                     required={!editingUser}
                     className="glass-input w-full px-3 py-2 text-sm"
                     value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, password: e.target.value })
+                    }
                     placeholder={editingUser ? "••••••••" : ""}
                   />
                 </div>
@@ -445,7 +516,9 @@ export default function UserManagement() {
                     id="is_active"
                     className="w-4 h-4 rounded border-slate-600 bg-slate-800 text-emerald-500"
                     checked={formData.is_active}
-                    onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, is_active: e.target.checked })
+                    }
                   />
                   <label htmlFor="is_active" className="text-sm text-slate-300">
                     User Aktif

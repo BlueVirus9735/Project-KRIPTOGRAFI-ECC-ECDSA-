@@ -24,6 +24,46 @@ try {
         exit;
     }
 
+    include_once __DIR__ . '/../crypto_utils.php';
+    $payload = getCanonicalPayload($pdo, $id);
+    $status_hash = 'invalid';
+    $status_sig = 'invalid';
+    if ($payload) {
+        $json_data = encodeCanonicalJSON($payload);
+        $calculated_hash = hash('sha256', $json_data);
+        
+        $status_hash = ($calculated_hash === $rtt['hash']) ? 'valid' : 'invalid';
+        $status_sig = 'valid'; // default if signed and matches
+        
+        if ($status_hash === 'valid' && $rtt['signature'] && $rtt['public_key']) {
+            $python_exe = 'py';
+            $verify_script = realpath(__DIR__ . '/../../crypto/verify.py');
+            $temp_dir = __DIR__ . '/../uploads/temp/';
+            if (!is_dir($temp_dir)) mkdir($temp_dir, 0777, true);
+            
+            $temp_hash = $temp_dir . 'hash_' . $id . '.json';
+            $temp_sig  = $temp_dir . 'sig_' . $id . '.bin';
+            $temp_pub  = $temp_dir . 'pub_' . $id . '.pem';
+            
+            file_put_contents($temp_hash, $json_data);
+            file_put_contents($temp_sig, base64_decode($rtt['signature']));
+            file_put_contents($temp_pub, $rtt['public_key']);
+            
+            if (file_exists($verify_script)) {
+                $cmd = "\"$python_exe\" \"$verify_script\" \"$temp_pub\" \"$temp_hash\" \"$temp_sig\" 2>&1";
+                $output = shell_exec($cmd);
+                if (strpos($output, 'INVALID') !== false) {
+                    $status_sig = 'invalid';
+                }
+            }
+            @unlink($temp_hash); @unlink($temp_sig); @unlink($temp_pub);
+        } else if ($status_hash === 'invalid') {
+            $status_sig = 'invalid';
+        }
+    }
+    
+    $rtt['crypto_status'] = ($status_hash === 'valid' && $status_sig === 'valid') ? 'valid' : 'corrupt';
+
     $data = ['status' => 'success', 'rtt' => $rtt];
 
     // 1. Summary
@@ -35,6 +75,11 @@ try {
     $stmt = $pdo->prepare("SELECT * FROM rtt_nett WHERE rtt_id = ? LIMIT 1"); 
     $stmt->execute([$id]); 
     $data['nett'] = $stmt->fetch() ?: null;
+    
+    // Tebangan (Missing)
+    $stmt = $pdo->prepare("SELECT * FROM rtt_tebangan WHERE rtt_id = ? ORDER BY nomor ASC"); 
+    $stmt->execute([$id]); 
+    $data['tebangan'] = $stmt->fetchAll() ?: [];
     
     // 3. Peta
     $stmt = $pdo->prepare("SELECT * FROM rtt_peta WHERE rtt_id = ?"); 

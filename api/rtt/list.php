@@ -1,5 +1,4 @@
 <?php
-// api/rtt/list.php — Get all RTT documents (New Schema)
 header('Access-Control-Allow-Origin: *');
 header('Content-Type: application/json');
 

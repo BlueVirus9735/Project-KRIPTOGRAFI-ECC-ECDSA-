@@ -1,5 +1,4 @@
 <?php
-// api/rtt/review.php — PHW reviews and approves/rejects RTT
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
@@ -11,7 +10,7 @@ include __DIR__ . '/../db.php';
 $data = json_decode(file_get_contents('php://input'), true);
 $token = $data['token'] ?? '';
 $rtt_id = $data['rtt_id'] ?? 0;
-$action = $data['action'] ?? ''; // 'approve' or 'reject'
+$action = $data['action'] ?? '';
 $catatan = $data['catatan'] ?? '';
 
 $stmt = $pdo->prepare("SELECT id, role FROM users WHERE session_token = ?");

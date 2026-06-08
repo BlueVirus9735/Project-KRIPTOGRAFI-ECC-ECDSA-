@@ -1,5 +1,4 @@
 <?php
-// api/rtt/create.php — Create new RTT (initial step: identitas)
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
@@ -14,7 +13,7 @@ $token = $data['token'] ?? '';
 $stmt = $pdo->prepare("SELECT id, role FROM users WHERE session_token = ?");
 $stmt->execute([$token]); $user = $stmt->fetch();
 if (!$user) { http_response_code(401); echo json_encode(['status'=>'error','message'=>'Sesi tidak valid']); exit; }
-// RBAC: Admin (Tata Usaha) dan KPH boleh membuat RTT
+// RBAC: Admin dan KPH boleh membuat RTT
 if ($user['role'] !== 'kph' && $user['role'] !== 'admin' && $user['role'] !== 'sysadmin') { 
     http_response_code(403); 
     echo json_encode(['status'=>'error','message'=>'Hanya Admin Tata Usaha atau KPH yang bisa membuat RTT']); 
