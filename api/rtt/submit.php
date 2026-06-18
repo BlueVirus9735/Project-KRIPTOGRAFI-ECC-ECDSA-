@@ -32,29 +32,52 @@ try {
         http_response_code(400); echo json_encode(['status'=>'error','message'=>'Gagal submit: Data Identitas belum lengkap.']); exit;
     }
 
-    $stmt_sk = $pdo->prepare("SELECT * FROM rtt_sk WHERE rtt_id = ?"); $stmt_sk->execute([$rtt_id]); $sk = $stmt_sk->fetch();
-    if (!$sk || empty($sk['nomor_sk']) || empty($sk['tanggal_sk']) || empty($sk['tentang'])) {
-        http_response_code(400); echo json_encode(['status'=>'error','message'=>'Gagal submit: Data SK belum lengkap.']); exit;
-    }
+    $stmt = $pdo->prepare("SELECT id FROM rtt_summary WHERE rtt_id = ?"); $stmt->execute([$rtt_id]);
+    if (!$stmt->fetch()) { http_response_code(400); echo json_encode(['status'=>'error','message'=>'Gagal submit: Summary belum diisi.']); exit; }
 
-    $stmt_keputusan = $pdo->prepare("SELECT * FROM rtt_keputusan WHERE rtt_id = ?"); $stmt_keputusan->execute([$rtt_id]); $keputusan = $stmt_keputusan->fetch();
-    if (!$keputusan || empty($keputusan['menimbang']) || empty($keputusan['mengingat']) || empty($keputusan['memutuskan'])) {
-        http_response_code(400); echo json_encode(['status'=>'error','message'=>'Gagal submit: Data Keputusan belum lengkap.']); exit;
-    }
+    $stmt = $pdo->prepare("SELECT id FROM rtt_nett WHERE rtt_id = ?"); $stmt->execute([$rtt_id]);
+    if (!$stmt->fetch()) { http_response_code(400); echo json_encode(['status'=>'error','message'=>'Gagal submit: NETT belum diisi.']); exit; }
 
-    $stmt_tebangan = $pdo->prepare("SELECT COUNT(*) as cnt FROM rtt_tebangan WHERE rtt_id = ? AND petak != '' AND luas > 0"); $stmt_tebangan->execute([$rtt_id]); $tebangan = $stmt_tebangan->fetch();
-    if ($tebangan['cnt'] == 0) {
-        http_response_code(400); echo json_encode(['status'=>'error','message'=>'Gagal submit: Data Tebangan belum lengkap (minimal 1 baris yang valid).']); exit;
-    }
+    $stmt = $pdo->prepare("SELECT id FROM rtt_peta WHERE rtt_id = ?"); $stmt->execute([$rtt_id]);
+    if (!$stmt->fetch()) { http_response_code(400); echo json_encode(['status'=>'error','message'=>'Gagal submit: Peta belum diupload.']); exit; }
 
-    $stmt_ba = $pdo->prepare("SELECT COUNT(*) as cnt FROM rtt_berita_acara WHERE rtt_id = ? AND tanggal IS NOT NULL AND nama_petugas != ''"); $stmt_ba->execute([$rtt_id]); $ba = $stmt_ba->fetch();
-    if ($ba['cnt'] == 0) {
-        http_response_code(400); echo json_encode(['status'=>'error','message'=>'Gagal submit: Data Berita Acara belum lengkap (minimal 1 baris yang valid).']); exit;
-    }
+    $stmt = $pdo->prepare("SELECT id FROM rtt_rekap_klem WHERE rtt_id = ?"); $stmt->execute([$rtt_id]);
+    if (!$stmt->fetch()) { http_response_code(400); echo json_encode(['status'=>'error','message'=>'Gagal submit: Rekap Klem belum diisi.']); exit; }
 
-    $stmt_pengesahan = $pdo->prepare("SELECT COUNT(*) as cnt FROM rtt_pengesahan WHERE rtt_id = ? AND nama_pejabat != '' AND jabatan != ''"); $stmt_pengesahan->execute([$rtt_id]); $pengesahan = $stmt_pengesahan->fetch();
-    if ($pengesahan['cnt'] == 0) {
-        http_response_code(400); echo json_encode(['status'=>'error','message'=>'Gagal submit: Data Pengesahan belum lengkap (minimal 1 pejabat yang valid).']); exit;
+    $stmt = $pdo->prepare("SELECT id FROM rtt_klem_detail WHERE rtt_id = ?"); $stmt->execute([$rtt_id]);
+    if (!$stmt->fetch()) { http_response_code(400); echo json_encode(['status'=>'error','message'=>'Gagal submit: Klem Detail belum diisi.']); exit; }
+
+    $stmt = $pdo->prepare("SELECT id FROM rtt_berita_acara WHERE rtt_id = ?"); $stmt->execute([$rtt_id]);
+    $ba = $stmt->fetch();
+    if (!$ba) { http_response_code(400); echo json_encode(['status'=>'error','message'=>'Gagal submit: Berita Acara belum diisi.']); exit; }
+
+    $stmt = $pdo->prepare("SELECT id FROM rtt_ba_detail WHERE berita_acara_id = ?"); $stmt->execute([$ba['id']]);
+    if (!$stmt->fetch()) { http_response_code(400); echo json_encode(['status'=>'error','message'=>'Gagal submit: Detail Berita Acara belum diisi.']); exit; }
+
+    $stmt = $pdo->prepare("SELECT id FROM rtt_peta_bap WHERE rtt_id = ?"); $stmt->execute([$rtt_id]);
+    if (!$stmt->fetch()) { http_response_code(400); echo json_encode(['status'=>'error','message'=>'Gagal submit: Peta BAP belum diupload.']); exit; }
+
+    // Validasi Kuota RPKH vs RTT NETT
+    $stmt = $pdo->prepare("SELECT n.petak, n.luas_baku FROM rtt_nett n WHERE n.rtt_id = ?");
+    $stmt->execute([$rtt_id]);
+    $nett_rows = $stmt->fetchAll();
+    
+    foreach ($nett_rows as $nett) {
+        $stmt = $pdo->prepare("SELECT luas FROM rpkh_detail WHERE rpkh_id = ? AND petak = ? LIMIT 1");
+        $stmt->execute([$rtt['rpkh_id'], $nett['petak']]);
+        $rpkh_target = $stmt->fetch();
+        
+        if ($rpkh_target) {
+            if ($nett['luas_baku'] > $rpkh_target['luas']) {
+                http_response_code(400); 
+                echo json_encode(['status'=>'error','message'=>"Gagal submit: Luas Petak {$nett['petak']} ({$nett['luas_baku']} Ha) melebihi kuota RPKH ({$rpkh_target['luas']} Ha)."]); 
+                exit;
+            }
+        } else {
+            http_response_code(400); 
+            echo json_encode(['status'=>'error','message'=>"Gagal submit: Petak {$nett['petak']} tidak ditemukan dalam dokumen RPKH."]); 
+            exit;
+        }
     }
 
     $pdo->prepare("UPDATE rtt SET status = 'menunggu_verifikasi_phw' WHERE id = ?")->execute([$rtt_id]);

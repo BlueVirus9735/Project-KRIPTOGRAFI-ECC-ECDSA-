@@ -1,5 +1,4 @@
 <?php
-// api/migrations/v2_add_public_key.php
 include __DIR__ . '/../db.php';
 
 try {

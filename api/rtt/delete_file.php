@@ -10,7 +10,7 @@ include __DIR__ . '/../db.php';
 
 $data = json_decode(file_get_contents('php://input'), true);
 $token = $data['token'] ?? '';
-$type = $data['type'] ?? ''; // 'peta' or 'lampiran'
+$type = $data['type'] ?? ''; 
 $file_id = $data['file_id'] ?? 0;
 
 $stmt = $pdo->prepare("SELECT id FROM users WHERE session_token = ?");

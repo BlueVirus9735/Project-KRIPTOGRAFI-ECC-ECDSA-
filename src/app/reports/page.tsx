@@ -259,7 +259,7 @@ export default function ReportsPage() {
                         </span>
                       )}
                       <a
-                        href={`/rtt/print/${doc.id}`}
+                        href={`http://localhost:8000/api/rtt/generate_pdf.php?id=${doc.id}`}
                         target="_blank"
                         className="btn-secondary px-3 py-1.5 text-[10px] font-bold flex items-center gap-1.5 hover:bg-slate-800"
                       >

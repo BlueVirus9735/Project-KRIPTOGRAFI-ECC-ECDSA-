@@ -8,24 +8,20 @@ def generate_keys(key_path):
         os.makedirs(key_path)
         
     private_key = ec.generate_private_key(ec.SECP256K1())
-    
-    # Serialize private key
+
     pem_private = private_key.private_bytes(
         encoding=serialization.Encoding.PEM,
         format=serialization.PrivateFormat.PKCS8,
         encryption_algorithm=serialization.NoEncryption()
     )
-    
-    # Generate public key
+
     public_key = private_key.public_key()
-    
-    # Serialize public key
+
     pem_public = public_key.public_bytes(
         encoding=serialization.Encoding.PEM,
         format=serialization.PublicFormat.SubjectPublicKeyInfo
     )
-    
-    # Save keys
+
     private_key_file = os.path.join(key_path, "private_key.pem")
     public_key_file = os.path.join(key_path, "public_key.pem")
     

@@ -48,7 +48,7 @@ try {
         $calculated_hash = hash('sha256', $json_data);
         
         if ($calculated_hash !== $doc['hash']) {
-            $doc['crypto_status'] = 'corrupt'; // HACKED!
+            $doc['crypto_status'] = 'corrupt'; 
         } else {
             $doc['crypto_status'] = 'valid';
         }

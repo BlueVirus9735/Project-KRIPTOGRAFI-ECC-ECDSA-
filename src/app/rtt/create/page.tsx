@@ -28,6 +28,8 @@ function RttCreateContent() {
   const [pengesahan, setPengesahan] = useState<any[]>([{ nama_pejabat: "", jabatan: "", npk: "", tanggal: "" }]);
   const [petaFile, setPetaFile] = useState<File | null>(null);
   const [lampiranFile, setLampiranFile] = useState<File | null>(null);
+  const [lampiranJudul, setLampiranJudul] = useState('');
+  const [lampiranKeterangan, setLampiranKeterangan] = useState('');
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -134,6 +136,8 @@ function RttCreateContent() {
         lForm.append('rtt_id', rttId.toString());
         lForm.append('type', 'lampiran');
         lForm.append('token', token || '');
+        lForm.append('judul', lampiranJudul);
+        lForm.append('keterangan', lampiranKeterangan);
         await fetch(`${API}/rtt/upload_file.php`, { method: 'POST', body: lForm });
       }
 
@@ -145,23 +149,9 @@ function RttCreateContent() {
       const data = await res.json();
       if (data.status === "success") {
         if (submit) {
-          const subRes = await fetch(`${API}/rtt/submit.php`, {
-            method: "POST", headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ rtt_id: rttId, token }),
-          });
-          const subData = await subRes.json();
-          if (subData.status === "success") {
-            localStorage.removeItem('rtt_draft'); // Clear draft
-            alert(`RTT berhasil disimpan & dikirim untuk review!`);
-            router.push("/rtt");
-          } else {
-            alert("Gagal submit: " + subData.message);
-            if (subData.message.includes("sudah disubmit sebelumnya")) {
-              localStorage.removeItem('rtt_draft');
-              alert("Draft yang tersimpan di browser Anda mengarah ke RTT yang sudah terkirim. Draft telah dibersihkan. Silakan buat RTT baru.");
-              window.location.reload();
-            }
-          }
+          localStorage.removeItem('rtt_draft'); // Clear draft
+          alert(`Draft awal RTT berhasil dibuat. Silakan lengkapi 8 Modul Data di halaman Workspace RTT.`);
+          router.push(`/rtt/${rttId}`);
         } else {
           alert(`Data RTT berhasil disimpan!`);
         }
@@ -198,6 +188,8 @@ function RttCreateContent() {
       setTebangan([{ petak: "", anak_petak: "", luas: "", jenis_tanaman: "", volume: "", jumlah_pohon: "", keterangan: "" }]);
       setBeritaAcara([{ tanggal: "", nama_petugas: "", jabatan: "", hasil_pemeriksaan: "" }]);
       setPengesahan([{ nama_pejabat: "", jabatan: "", npk: "", tanggal: "" }]);
+      setLampiranJudul('');
+      setLampiranKeterangan('');
     }
   };
 
@@ -398,7 +390,15 @@ function RttCreateContent() {
           <div className="space-y-5">
             <h3 className="text-white font-bold text-lg">📎 Lampiran Dokumen</h3>
             <div className="bg-slate-900/30 p-6 rounded-xl border border-slate-700/50 space-y-4">
-              <div className="space-y-2">
+              <div>
+                <label className={labelClass}>Judul Lampiran</label>
+                <input className={inputClass} value={lampiranJudul} onChange={e => setLampiranJudul(e.target.value)} placeholder="e.g. Surat Keterangan Hak Guna" />
+              </div>
+              <div>
+                <label className={labelClass}>Keterangan</label>
+                <textarea className={textareaClass} value={lampiranKeterangan} onChange={e => setLampiranKeterangan(e.target.value)} placeholder="Keterangan tentang lampiran..." />
+              </div>
+              <div className="space-y-2 pt-2 border-t border-white/[0.04]">
                 <label className={labelClass}>Upload Dokumen Lampiran Lainnya (Opsional)</label>
                 <input 
                   type="file" 
@@ -459,7 +459,7 @@ function RttCreateContent() {
           ) : (
             <button onClick={() => handleSaveAll(true)} disabled={loading}
               className="btn-primary flex items-center gap-2 px-5 py-2.5 text-[13px] disabled:opacity-50">
-              {loading ? "Mengirim..." : <><Send size={16} /> Simpan & Kirim Review</>}
+              {loading ? "Memproses..." : <><Send size={16} /> Lanjutkan ke Workspace</>}
             </button>
           )}
         </div>

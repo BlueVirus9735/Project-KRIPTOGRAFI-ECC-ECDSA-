@@ -11,12 +11,10 @@ if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
 
 include __DIR__ . '/../db.php';
 
-// Helper: Verify token and get user
 function getCurrentUser($pdo) {
-    // Try multiple ways to get token
+
     $token = '';
-    
-    // Method 1: Authorization header
+
     $authHeader = '';
     if (function_exists('getallheaders')) {
         $headers = getallheaders();
@@ -28,15 +26,13 @@ function getCurrentUser($pdo) {
     if (preg_match('/Bearer\s+(\S+)/', $authHeader, $matches)) {
         $token = $matches[1];
     }
-    
-    // Method 2: Token from body JSON (for POST/PUT/DELETE)
+
     if (empty($token)) {
         $input = file_get_contents('php://input');
         $data = json_decode($input, true);
         $token = $data['token'] ?? '';
     }
-    
-    // Method 3: Token from query string (for GET requests)
+
     if (empty($token)) {
         $token = $_GET['token'] ?? '';
     }
@@ -49,15 +45,12 @@ function getCurrentUser($pdo) {
     return $stmt->fetch();
 }
 
-// Helper: Check if user is SYSADMIN
 function isSysadmin($user) {
     return $user && $user['role'] === 'sysadmin';
 }
 
-// Helper: Log audit (disabled sementara)
 function logAudit($pdo, $userId, $action, $entityType, $entityId, $oldValues = null, $newValues = null) {
     // TODO: Fix audit_log table structure
-    // Disabled temporarily due to column mismatch
     return;
 }
 
@@ -79,14 +72,13 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 switch ($method) {
     case 'GET':
-        // List all users
         $stmt = $pdo->query("SELECT id, nama, username, email, role, is_active, created_at, last_login FROM users ORDER BY created_at DESC");
         $users = $stmt->fetchAll();
         echo json_encode(['status' => 'success', 'data' => $users]);
         break;
 
     case 'POST':
-        // Create new user
+
         $data = json_decode(file_get_contents("php://input"), true);
         
         if (empty($data['username']) || empty($data['password']) || empty($data['role']) || empty($data['nama'])) {
@@ -129,7 +121,6 @@ switch ($method) {
         break;
 
     case 'PUT':
-        // Update user
         $data = json_decode(file_get_contents("php://input"), true);
         
         if (empty($data['id'])) {
@@ -137,15 +128,12 @@ switch ($method) {
             echo json_encode(['status' => 'error', 'message' => 'User ID is required']);
             exit;
         }
-        
-        // Cannot modify own role (prevent locking yourself out)
         if ($data['id'] == $currentUser['id'] && isset($data['role']) && $data['role'] !== 'sysadmin') {
             http_response_code(400);
             echo json_encode(['status' => 'error', 'message' => 'Cannot change your own SYSADMIN role']);
             exit;
         }
-        
-        // Get old data for audit
+
         $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
         $stmt->execute([$data['id']]);
         $oldData = $stmt->fetch();
@@ -206,7 +194,6 @@ switch ($method) {
         break;
 
     case 'DELETE':
-        // Delete user
         $data = json_decode(file_get_contents("php://input"), true);
         $id = $data['id'] ?? null;
         
@@ -216,14 +203,13 @@ switch ($method) {
             exit;
         }
         
-        // Cannot delete yourself
+
         if ($id == $currentUser['id']) {
             http_response_code(400);
             echo json_encode(['status' => 'error', 'message' => 'Cannot delete your own account']);
             exit;
         }
-        
-        // Get old data for audit
+
         $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
         $stmt->execute([$id]);
         $oldData = $stmt->fetch();

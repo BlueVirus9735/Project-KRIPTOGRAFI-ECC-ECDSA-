@@ -13,7 +13,7 @@ $token = $data['token'] ?? '';
 $stmt = $pdo->prepare("SELECT id, role FROM users WHERE session_token = ?");
 $stmt->execute([$token]); $user = $stmt->fetch();
 if (!$user) { http_response_code(401); echo json_encode(['status'=>'error','message'=>'Sesi tidak valid']); exit; }
-// RBAC: Admin dan KPH boleh membuat RTT
+
 if ($user['role'] !== 'kph' && $user['role'] !== 'admin' && $user['role'] !== 'sysadmin') { 
     http_response_code(403); 
     echo json_encode(['status'=>'error','message'=>'Hanya Admin Tata Usaha atau KPH yang bisa membuat RTT']); 
@@ -31,7 +31,6 @@ if (!$rpkh_id || !$nomor) {
     echo json_encode(['status'=>'error','message'=>'RPKH dan nomor dokumen harus diisi']); exit;
 }
 
-// Verify RPKH exists
 $stmt = $pdo->prepare("SELECT id FROM rpkh WHERE id = ?");
 $stmt->execute([$rpkh_id]);
 if (!$stmt->fetch()) { echo json_encode(['status'=>'error','message'=>'RPKH tidak ditemukan']); exit; }

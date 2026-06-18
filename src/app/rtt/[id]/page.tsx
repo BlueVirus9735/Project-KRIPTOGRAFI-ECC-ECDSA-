@@ -18,6 +18,7 @@ function RttDetailContent({ id }: { id: string }) {
   const [loading, setLoading] = useState(true);
   const [activeModal, setActiveModal] = useState<string | null>(null);
   const [formData, setFormData] = useState<any>({});
+  const [rpkhDetails, setRpkhDetails] = useState<any[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploadKeterangan, setUploadKeterangan] = useState('');
@@ -38,6 +39,49 @@ function RttDetailContent({ id }: { id: string }) {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // --- SMART INPUTS ---
+  // 1. Fetch RPKH Details
+  useEffect(() => {
+    if (data?.rtt?.rpkh_id) {
+      fetch(`http://localhost:8000/api/rpkh/detail.php?id=${data.rtt.rpkh_id}`)
+        .then(res => res.json())
+        .then(d => { if (d.status === 'success') setRpkhDetails(d.details || []); });
+    }
+  }, [data?.rtt?.rpkh_id]);
+
+  // 2. Auto-Fetch from RPKH
+  useEffect(() => {
+    if (activeModal === 'nett' && formData.petak && rpkhDetails.length > 0) {
+      const detail = rpkhDetails.find((x: any) => x.petak === formData.petak);
+      if (detail) {
+        setFormData((prev: any) => ({
+          ...prev,
+          luas_baku: prev.luas_baku || detail.luas,
+          jenis_tanaman: prev.jenis_tanaman || detail.jenis_tanaman,
+          kelas_hutan: prev.kelas_hutan || detail.kelas_hutan,
+          bon: prev.bon || detail.bon,
+          kbd: prev.kbd || detail.kbd,
+          dkn: prev.dkn || detail.dkn,
+          n_per_ha: prev.n_per_ha || detail.n_per_ha
+        }));
+      }
+    }
+  }, [formData.petak, activeModal, rpkhDetails]);
+
+  // 2. Auto-Calculate Volume
+  useEffect(() => {
+    if (activeModal === 'nett') {
+      const ai = parseFloat(formData.ai) || 0;
+      const aii = parseFloat(formData.aii) || 0;
+      const aiii = parseFloat(formData.aiii) || 0;
+      if (ai > 0 || aii > 0 || aiii > 0) {
+        setFormData((prev: any) => ({ ...prev, jumlah_volume: ai + aii + aiii }));
+      }
+    }
+  }, [formData.ai, formData.aii, formData.aiii, activeModal]);
+  // --------------------
+
+
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -51,6 +95,11 @@ function RttDetailContent({ id }: { id: string }) {
         formDataFile.append('keterangan', uploadKeterangan);
         formDataFile.append('token', localStorage.getItem('token') || '');
         
+        if (activeModal === 'peta') {
+          const petaFields = ['bagian_hutan','kelompok_hutan','rph','bkph','jenis_tanaman','jarak_tanam','skala','petak','luas_baku','panjang','kelas_hutan','tahun_tanam'];
+          petaFields.forEach(f => formDataFile.append(f, formData[f] || ''));
+        }
+
         const res = await fetch(`http://localhost:8000/api/rtt/upload_file.php`, {
           method: "POST",
           body: formDataFile
@@ -67,9 +116,13 @@ function RttDetailContent({ id }: { id: string }) {
         }
       } else {
         // Data biasa (non-file)
+        const payloadToSubmit = { ...formData };
+        if (activeModal === 'ba_detail') {
+          payloadToSubmit.berita_acara_id = data.berita_acara?.[0]?.id || data.berita_acara?.id || 0;
+        }
         const res = await fetch(`http://localhost:8000/api/rtt/upload_doc.php`, {
           method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ rtt_id: id, doc_type: activeModal, payload: formData })
+          body: JSON.stringify({ rtt_id: id, doc_type: activeModal, payload: payloadToSubmit })
         });
         const responseData = await res.json();
         if (responseData.status === "success") {
@@ -126,6 +179,7 @@ function RttDetailContent({ id }: { id: string }) {
     { key: "rekap_klem", name: "Rekap Klem", role: "FIELD", desc: "Identifikasi jumlah pohon", done: rekap_klem.length > 0, icon: <ClipboardList size={20} /> },
     { key: "klem_detail", name: "Detail Klem", role: "FIELD", desc: "Data individu pohon", done: klem_detail.length > 0, icon: <Cpu size={20} /> },
     { key: "berita_acara", name: "Berita Acara", role: "FIELD", desc: "Laporan verifikasi lapangan", done: !!berita_acara, icon: <PenTool size={20} /> },
+    { key: "ba_detail", name: "Detail Berita Acara", role: "FIELD", desc: "Detail pemeriksaan petak", done: (data.berita_acara?.details && data.berita_acara.details.length > 0), icon: <ClipboardList size={20} /> },
     { key: "peta_bap", name: "Peta BAP", role: "GIS", desc: "Visualisasi lampiran BAP", done: !!peta_bap, icon: <Map size={20} /> },
   ];
 
@@ -181,19 +235,19 @@ function RttDetailContent({ id }: { id: string }) {
           <div className="glass-card p-7 flex flex-col justify-between">
             <div className="space-y-1">
               <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Kelengkapan Berkas</p>
-              <h4 className="text-4xl font-extrabold text-white tracking-tight">{Math.round((doneCount/7)*100)}%</h4>
+              <h4 className="text-4xl font-extrabold text-white tracking-tight">{Math.round((doneCount/8)*100)}%</h4>
             </div>
             
             <div className="space-y-5 pb-1">
               <div className="h-2.5 w-full bg-slate-800/80 rounded-full overflow-hidden border border-white/[0.04]">
                 <div 
                   className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-1000 rounded-full" 
-                  style={{ width: `${(doneCount/7)*100}%` }}
+                  style={{ width: `${(doneCount/8)*100}%` }}
                 />
               </div>
               
-              <div className="h-12">
-                {doneCount === 7 && (rtt.status === 'draft' || rtt.status === 'revisi_phw' || rtt.status === 'revisi_kph') && (user?.role === 'sysadmin' || user?.role === 'kph') ? (
+              <div className="min-h-12">
+                {doneCount === 8 && (rtt.status === 'draft' || rtt.status === 'revisi_phw' || rtt.status === 'revisi_kph') && (user?.role === 'sysadmin' || user?.role === 'kph') ? (
                   <button onClick={async () => {
                     if (!confirm("Kirim dokumen ini ke PHW untuk diverifikasi?")) return;
                     try {
@@ -225,10 +279,10 @@ function RttDetailContent({ id }: { id: string }) {
                   </button>
                   <div className="mt-3 grid grid-cols-1 gap-2">
                     <button 
-                      onClick={() => window.open(`http://localhost:8000/api/rtt/download_bundle.php?id=${id}&type=json`)}
-                      className="w-full py-2.5 px-3 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-lg text-[11px] font-bold text-emerald-400 flex items-center justify-center gap-2 transition-all active:scale-95"
+                      onClick={() => window.open(`http://localhost:8000/api/rtt/download_encrypted.php?id=${id}`)}
+                      className="w-full py-2.5 px-3 bg-teal-500/10 hover:bg-teal-500/20 border border-teal-500/20 rounded-lg text-[11px] font-bold text-teal-400 flex items-center justify-center gap-2 transition-all active:scale-95"
                     >
-                      <FileText size={14} /> Unduh Sertifikat Data (.json)
+                      <Lock size={14} /> Unduh Dokumen (Encrypted ECC)
                     </button>
                     <div className="grid grid-cols-2 gap-2">
                       <button 
@@ -248,7 +302,7 @@ function RttDetailContent({ id }: { id: string }) {
                 </>
               ) : (
                   <div className="w-full h-full bg-slate-800/30 border border-dashed border-slate-700/50 rounded-xl flex items-center justify-center text-slate-600 font-semibold text-[11px] text-center px-4">
-                    {doneCount < 7 ? `Lengkapi ${7 - doneCount} Module Tersisa` : 'Menunggu Status'}
+                    {doneCount < 8 ? `Lengkapi ${8 - doneCount} Module Tersisa` : 'Menunggu Status'}
                   </div>
                 )}
               </div>
@@ -302,11 +356,11 @@ function RttDetailContent({ id }: { id: string }) {
         {/* Modal */}
         {activeModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/80 backdrop-blur-xl animate-fade-in">
-            <div className="glass-card p-8 max-w-lg w-full shadow-2xl relative animate-scale-in">
+            <div className="glass-card p-8 max-w-lg w-full shadow-2xl relative animate-scale-in max-h-[90vh] overflow-y-auto">
               <button onClick={() => setActiveModal(null)} className="absolute top-5 right-5 text-slate-500 hover:text-white transition-colors"><X size={20} /></button>
               <div className="mb-6 space-y-1">
-                <h3 className="text-xl font-bold text-white">Otorisasi <span className="text-emerald-400">{activeModal}</span></h3>
-                <p className="text-slate-500 text-[12px] font-medium">Digital Supply Chain Management Data</p>
+                <h3 className="text-xl font-bold text-white">Input Data <span className="text-emerald-400">{docModules.find(m => m.key === activeModal)?.name || activeModal}</span></h3>
+                <p className="text-slate-400 text-[13px]">Lengkapi data spesifik untuk modul ini sebelum pengesahan.</p>
               </div>
               <form onSubmit={handleFormSubmit} className="space-y-5">
                 {activeModal === 'summary' && (
@@ -325,9 +379,66 @@ function RttDetailContent({ id }: { id: string }) {
                         <input required type="number" name="jumlah_pohon" onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" />
                       </div>
                     </div>
+                    <div className="space-y-2">
+                      <label className="text-[11px] text-slate-400 font-semibold block">Jenis Kayu</label>
+                      <input required type="text" name="jenis_kayu" onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-[11px] text-slate-400 font-semibold block">Kayu Perkakas (m³)</label>
+                        <input required type="number" step="0.01" name="kayu_perkakas" onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[11px] text-slate-400 font-semibold block">Kayu Bakar (m³)</label>
+                        <input required type="number" step="0.01" name="kayu_bakar" onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-[11px] text-slate-400 font-semibold block">Bambu (btg)</label>
+                        <input required type="number" step="0.01" name="bambu" onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[11px] text-slate-400 font-semibold block">Arang (m³)</label>
+                        <input required type="number" step="0.01" name="arang" onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[11px] text-slate-400 font-semibold block">Keterangan</label>
+                      <textarea name="keterangan" onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px] min-h-[100px]" />
+                    </div>
                   </div>
                 )}
                 {/* Upload File untuk Peta dan Peta BAP */}
+                {activeModal === 'peta' && (
+                  <div className="space-y-4 border-b border-white/[0.06] pb-4 mb-4">
+                    <p className="text-[11px] font-bold text-emerald-400 uppercase tracking-wider">Metadata Peta</p>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2"><label className="text-[11px] text-slate-400 font-semibold block">Bagian Hutan</label><input type="text" name="bagian_hutan" onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" /></div>
+                      <div className="space-y-2"><label className="text-[11px] text-slate-400 font-semibold block">Kelompok Hutan</label><input type="text" name="kelompok_hutan" onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" /></div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2"><label className="text-[11px] text-slate-400 font-semibold block">RPH</label><input type="text" name="rph" onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" /></div>
+                      <div className="space-y-2"><label className="text-[11px] text-slate-400 font-semibold block">BKPH</label><input type="text" name="bkph" onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" /></div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2"><label className="text-[11px] text-slate-400 font-semibold block">Jenis Tanaman</label><input type="text" name="jenis_tanaman" onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" /></div>
+                      <div className="space-y-2"><label className="text-[11px] text-slate-400 font-semibold block">Jarak Tanam</label><input type="text" name="jarak_tanam" onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" /></div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2"><label className="text-[11px] text-slate-400 font-semibold block">Skala</label><input type="text" name="skala" onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" /></div>
+                      <div className="space-y-2"><label className="text-[11px] text-slate-400 font-semibold block">Petak</label><input type="text" name="petak" onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" /></div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2"><label className="text-[11px] text-slate-400 font-semibold block">Luas Baku (Ha)</label><input type="number" step="0.01" name="luas_baku" onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" /></div>
+                      <div className="space-y-2"><label className="text-[11px] text-slate-400 font-semibold block">Panjang (m)</label><input type="number" step="0.01" name="panjang" onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" /></div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2"><label className="text-[11px] text-slate-400 font-semibold block">Kelas Hutan</label><input type="text" name="kelas_hutan" onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" /></div>
+                      <div className="space-y-2"><label className="text-[11px] text-slate-400 font-semibold block">Tahun Tanam</label><input type="number" name="tahun_tanam" onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" /></div>
+                    </div>
+                  </div>
+                )}
                 {(activeModal === 'peta' || activeModal === 'peta_bap') && (
                   <div className="space-y-4">
                     <div className="space-y-2">
@@ -343,53 +454,154 @@ function RttDetailContent({ id }: { id: string }) {
                       )}
                     </div>
                     <div className="space-y-2">
-                      <label className="text-[11px] text-slate-400 font-semibold block">Keterangan</label>
+                      <label className="text-[11px] text-slate-400 font-semibold block">Keterangan Tambahan</label>
                       <input 
                         type="text" 
                         value={uploadKeterangan}
                         onChange={(e) => setUploadKeterangan(e.target.value)}
                         className="glass-input w-full px-4 py-3 text-[13px]" 
-                        placeholder="e.g. Peta Lokasi Petak 1A-5B"
+                        placeholder="e.g. Lampiran File"
                       />
                     </div>
                   </div>
                 )}
 
                 {activeModal === 'nett' && (
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <label className="text-[11px] text-slate-400 font-semibold block">Bagian Hutan</label>
-                        <input required type="text" name="bagian_hutan" onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" placeholder="e.g. Hutan Lembang" />
+                  <div className="space-y-6">
+                    <div className="flex gap-2">
+                      <button type="button" className="btn-secondary flex-1 py-2 text-[11px] flex items-center justify-center gap-2" onClick={() => {
+                        const input = document.createElement('input');
+                        input.type = 'file'; input.accept = '.csv';
+                        input.onchange = (e: any) => {
+                          const file = e.target.files[0];
+                          if (!file) return;
+                          const reader = new FileReader();
+                          reader.onload = (ev) => {
+                            const text = ev.target?.result as string;
+                            const lines = text.split('\n');
+                            if(lines.length > 1) {
+                              const headers = lines[0].split(',').map(h => h.trim());
+                              const values = lines[1].split(',').map(v => v.trim());
+                              const newFormData = {...formData};
+                              headers.forEach((h, i) => { if(h) newFormData[h] = values[i]; });
+                              setFormData(newFormData);
+                              alert('Data berhasil di-import dari CSV!');
+                            }
+                          };
+                          reader.readAsText(file);
+                        };
+                        input.click();
+                      }}>
+                        <FilePlus size={14} /> Import CSV
+                      </button>
+                    </div>
+
+                    <div className="space-y-4">
+                      <p className="text-[11px] font-bold text-emerald-400 uppercase tracking-wider border-b border-white/[0.06] pb-2">Identitas Petak</p>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2"><label className="text-[11px] text-slate-400 font-semibold block">Bagian Hutan</label><input type="text" name="bagian_hutan" value={formData.bagian_hutan||''} onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" /></div>
+                        <div className="space-y-2">
+                          <label className="text-[11px] text-slate-400 font-semibold block">Petak (Sesuai RPKH)</label>
+                          {rpkhDetails.length > 0 ? (
+                            <select name="petak" value={formData.petak||''} onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]">
+                              <option value="">-- Pilih Petak --</option>
+                              {rpkhDetails.map(d => <option key={d.id} value={d.petak}>{d.petak} (Kuota: {d.luas} Ha)</option>)}
+                            </select>
+                          ) : (
+                            <input type="text" name="petak" value={formData.petak||''} onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" placeholder="e.g. 23A" />
+                          )}
+                          {formData.petak && rpkhDetails.find((x: any) => x.petak === formData.petak) && (
+                            <p className={`text-[10px] mt-1 ${parseFloat(formData.luas_baku || 0) > parseFloat(rpkhDetails.find((x: any) => x.petak === formData.petak).luas) ? 'text-rose-400 font-bold' : 'text-emerald-400'}`}>
+                              ℹ️ Maksimal Luas RPKH: {rpkhDetails.find((x: any) => x.petak === formData.petak).luas} Ha
+                            </p>
+                          )}
+                        </div>
                       </div>
-                      <div className="space-y-2">
-                        <label className="text-[11px] text-slate-400 font-semibold block">Petak</label>
-                        <input required type="text" name="petak" onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" placeholder="e.g. 23A" />
+                      <div className="grid grid-cols-3 gap-4">
+                        <div className="space-y-2"><label className="text-[11px] text-slate-400 font-semibold block">BKPH</label><input type="text" name="bkph" value={formData.bkph||''} onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" /></div>
+                        <div className="space-y-2"><label className="text-[11px] text-slate-400 font-semibold block">RPH</label><input type="text" name="rph" value={formData.rph||''} onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" /></div>
+                        <div className="space-y-2"><label className="text-[11px] text-slate-400 font-semibold block">Anak Petak Baru</label><input type="text" name="anak_petak_baru" value={formData.anak_petak_baru||''} onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" /></div>
                       </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <label className="text-[11px] text-slate-400 font-semibold block">BKPH</label>
-                        <input required type="text" name="bkph" onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" placeholder="e.g. Lembang" />
+
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center border-b border-white/[0.06] pb-2">
+                        <p className="text-[11px] font-bold text-emerald-400 uppercase tracking-wider">Lokasi & Tanaman</p>
+                        <button type="button" onClick={() => {
+                          if (navigator.geolocation) {
+                            navigator.geolocation.getCurrentPosition((pos) => {
+                              setFormData((p: any) => ({...p, latitude: pos.coords.latitude, longitude: pos.coords.longitude}));
+                            });
+                          } else alert("Geolocation not supported");
+                        }} className="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded hover:bg-emerald-500/30">📍 Ambil Koordinat</button>
                       </div>
-                      <div className="space-y-2">
-                        <label className="text-[11px] text-slate-400 font-semibold block">RPH</label>
-                        <input required type="text" name="rph" onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" placeholder="e.g. Cikole" />
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2"><label className="text-[11px] text-slate-400 font-semibold block">Latitude</label><input type="number" step="0.000001" name="latitude" value={formData.latitude||''} onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" /></div>
+                        <div className="space-y-2"><label className="text-[11px] text-slate-400 font-semibold block">Longitude</label><input type="number" step="0.000001" name="longitude" value={formData.longitude||''} onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" /></div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2"><label className="text-[11px] text-slate-400 font-semibold block">Luas Baku (Ha)</label><input type="number" step="0.01" name="luas_baku" value={formData.luas_baku||''} onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" /></div>
+                        <div className="space-y-2"><label className="text-[11px] text-slate-400 font-semibold block">Jenis Tanaman</label><input type="text" name="jenis_tanaman" value={formData.jenis_tanaman||''} onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" /></div>
                       </div>
                     </div>
-                    <div className="space-y-2">
-                      <label className="text-[11px] text-slate-400 font-semibold block">Anak Petak Baru</label>
-                      <input required type="text" name="anak_petak_baru" onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" placeholder="e.g. a" />
+
+                    <div className="space-y-4">
+                      <p className="text-[11px] font-bold text-emerald-400 uppercase tracking-wider border-b border-white/[0.06] pb-2">Data Bonita & Hutan (Auto-fetch)</p>
+                      <div className="grid grid-cols-3 gap-4">
+                        <div className="space-y-2"><label className="text-[11px] text-slate-400 font-semibold block">Kelas Hutan</label><input type="text" name="kelas_hutan" value={formData.kelas_hutan||''} onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" /></div>
+                        <div className="space-y-2"><label className="text-[11px] text-slate-400 font-semibold block">BON</label><input type="text" name="bon" value={formData.bon||''} onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" /></div>
+                        <div className="space-y-2"><label className="text-[11px] text-slate-400 font-semibold block">KBD</label><input type="text" name="kbd" value={formData.kbd||''} onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" /></div>
+                      </div>
+                      <div className="grid grid-cols-3 gap-4">
+                        <div className="space-y-2"><label className="text-[11px] text-slate-400 font-semibold block">DKN</label><input type="text" name="dkn" value={formData.dkn||''} onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" /></div>
+                        <div className="space-y-2"><label className="text-[11px] text-slate-400 font-semibold block">N/Ha</label><input type="number" step="0.01" name="n_per_ha" value={formData.n_per_ha||''} onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" /></div>
+                        <div className="space-y-2"><label className="text-[11px] text-slate-400 font-semibold block">Thn Tanam</label><input type="number" name="tahun_tanam" value={formData.tahun_tanam||''} onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" /></div>
+                      </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <label className="text-[11px] text-slate-400 font-semibold block">Jml Pohon</label>
-                        <input required type="number" name="jumlah_pohon" onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" />
+
+                    <div className="space-y-4">
+                      <p className="text-[11px] font-bold text-emerald-400 uppercase tracking-wider border-b border-white/[0.06] pb-2">Data Tebangan & Volume (m³)</p>
+                      <div className="grid grid-cols-3 gap-4">
+                        <div className="space-y-2"><label className="text-[11px] text-slate-400 font-semibold block">AI (m³)</label><input type="number" step="0.01" name="ai" value={formData.ai||''} onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" /></div>
+                        <div className="space-y-2"><label className="text-[11px] text-slate-400 font-semibold block">AII (m³)</label><input type="number" step="0.01" name="aii" value={formData.aii||''} onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" /></div>
+                        <div className="space-y-2"><label className="text-[11px] text-slate-400 font-semibold block">AIII (m³)</label><input type="number" step="0.01" name="aiii" value={formData.aiii||''} onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" /></div>
                       </div>
-                      <div className="space-y-2">
-                        <label className="text-[11px] text-slate-400 font-semibold block">Volume Kayu (m³)</label>
-                        <input required type="number" step="0.01" name="volume_kayu" onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" />
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2"><label className="text-[11px] text-slate-400 font-semibold block text-emerald-400">Jml Volume (Auto)</label><input readOnly type="number" step="0.01" name="jumlah_volume" value={formData.jumlah_volume||''} className="glass-input w-full px-4 py-3 text-[13px] bg-emerald-500/10 text-emerald-300 border-emerald-500/30 font-bold" /></div>
+                        <div className="space-y-2"><label className="text-[11px] text-slate-400 font-semibold block">Jml Pohon</label><input type="number" name="jumlah_pohon" value={formData.jumlah_pohon||''} onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" /></div>
                       </div>
+                      <div className="grid grid-cols-3 gap-4">
+                        <div className="space-y-2"><label className="text-[11px] text-slate-400 font-semibold block">Kayu Bakar</label><input type="number" step="0.01" name="kayu_bakar" value={formData.kayu_bakar||''} onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" /></div>
+                        <div className="space-y-2"><label className="text-[11px] text-slate-400 font-semibold block">Tunggak</label><input type="number" step="0.01" name="tunggak" value={formData.tunggak||''} onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" /></div>
+                        <div className="space-y-2"><label className="text-[11px] text-slate-400 font-semibold block">Kulit</label><input type="number" step="0.01" name="kulit" value={formData.kulit||''} onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" /></div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <p className="text-[11px] font-bold text-emerald-400 uppercase tracking-wider border-b border-white/[0.06] pb-2">Data Lanjutan & Keterangan</p>
+                      <div className="grid grid-cols-3 gap-4">
+                        <div className="space-y-2"><label className="text-[11px] text-slate-400 font-semibold block">Anak Petak Lama</label><input type="text" name="anak_petak_lama" value={formData.anak_petak_lama||''} onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" /></div>
+                        <div className="space-y-2"><label className="text-[11px] text-slate-400 font-semibold block">Telah Ditebang (m³)</label><input type="number" step="0.01" name="telah_ditebang" value={formData.telah_ditebang||''} onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" /></div>
+                        <div className="space-y-2"><label className="text-[11px] text-slate-400 font-semibold block">Tahun YAD</label><input type="number" step="0.01" name="tahun_yad" value={formData.tahun_yad||''} onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" /></div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2"><label className="text-[11px] text-slate-400 font-semibold block">Akan Ditebang Teres</label><input type="number" step="0.01" name="akan_ditebang_teres" value={formData.akan_ditebang_teres||''} onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" /></div>
+                        <div className="space-y-2"><label className="text-[11px] text-slate-400 font-semibold block">Akan Ditebang Non-Teres</label><input type="number" step="0.01" name="akan_ditebang_non_teres" value={formData.akan_ditebang_non_teres||''} onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" /></div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2"><label className="text-[11px] text-slate-400 font-semibold block">Faktor Koreksi KPH</label><input type="number" step="0.01" name="faktor_koreksi_kph" value={formData.faktor_koreksi_kph||''} onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" /></div>
+                        <div className="space-y-2"><label className="text-[11px] text-slate-400 font-semibold block">X Faktor Klem</label><input type="number" step="0.01" name="xfaktor_klem" value={formData.xfaktor_klem||''} onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" /></div>
+                      </div>
+                      <div className="grid grid-cols-3 gap-4">
+                        <div className="space-y-2"><label className="text-[11px] text-slate-400 font-semibold block">Hasil Lain (Jenis)</label><input type="text" name="hasil_lain_jenis" value={formData.hasil_lain_jenis||''} onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" /></div>
+                        <div className="space-y-2"><label className="text-[11px] text-slate-400 font-semibold block">Satuan</label><input type="text" name="hasil_lain_satuan" value={formData.hasil_lain_satuan||''} onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" /></div>
+                        <div className="space-y-2"><label className="text-[11px] text-slate-400 font-semibold block">Volume</label><input type="number" step="0.01" name="hasil_lain_volume" value={formData.hasil_lain_volume||''} onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" /></div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2"><label className="text-[11px] text-slate-400 font-semibold block">Alat Mekanis (Jenis)</label><input type="text" name="alat_mekanis_jenis" value={formData.alat_mekanis_jenis||''} onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" /></div>
+                        <div className="space-y-2"><label className="text-[11px] text-slate-400 font-semibold block">Volume Alat Mekanis</label><input type="number" step="0.01" name="alat_mekanis_volume" value={formData.alat_mekanis_volume||''} onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" /></div>
+                      </div>
+                      <div className="space-y-2"><label className="text-[11px] text-slate-400 font-semibold block">Keterangan</label><textarea name="keterangan" value={formData.keterangan||''} onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" rows={3} /></div>
                     </div>
                   </div>
                 )}
@@ -463,6 +675,49 @@ function RttDetailContent({ id }: { id: string }) {
                     <div className="space-y-2">
                       <label className="text-[11px] text-slate-400 font-semibold block">Hasil Pemeriksaan Ringkas</label>
                       <textarea required rows={4} name="hasil_pemeriksaan" onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px] leading-relaxed" placeholder="Tuliskan laporan ringkas hasil pemeriksaan petak di sini..." />
+                    </div>
+                  </div>
+                )}
+
+                {activeModal === 'ba_detail' && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-[11px] text-slate-400 font-semibold block">Petak</label>
+                        <input required type="text" name="petak" onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" placeholder="e.g. 12A" />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[11px] text-slate-400 font-semibold block">Anak Petak</label>
+                        <input required type="text" name="anak_petak" onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" placeholder="e.g. a" />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-[11px] text-slate-400 font-semibold block">Luas Baku (Ha)</label>
+                        <input required type="number" step="0.01" name="luas_baku" onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[11px] text-slate-400 font-semibold block">Luas Rencana (Ha)</label>
+                        <input required type="number" step="0.01" name="luas_rencana" onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-[11px] text-slate-400 font-semibold block">Jenis Tebangan</label>
+                        <input required type="text" name="jenis_tebangan" onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[11px] text-slate-400 font-semibold block">Jenis Tanaman</label>
+                        <input required type="text" name="jenis_tanaman" onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[11px] text-slate-400 font-semibold block">Rencana Volume (m³)</label>
+                      <input required type="number" step="0.01" name="rencana_volume" onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px]" />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[11px] text-slate-400 font-semibold block">Keterangan</label>
+                      <textarea name="keterangan" onChange={handleInputChange} className="glass-input w-full px-4 py-3 text-[13px] min-h-[80px]" />
                     </div>
                   </div>
                 )}

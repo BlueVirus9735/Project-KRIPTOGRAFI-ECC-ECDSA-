@@ -31,8 +31,8 @@ try {
     } 
     else if ($type === 'nett') {
         $pdo->prepare("DELETE FROM rtt_nett WHERE rtt_id = ?")->execute([$rtt_id]);
-        $stmt = $pdo->prepare("INSERT INTO rtt_nett (rtt_id, bagian_hutan, bkph, rph, petak, anak_petak_baru, volume_kayu, jumlah_pohon) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$rtt_id, $payload['bagian_hutan']??'', $payload['bkph']??'', $payload['rph']??'', $payload['petak']??'', $payload['anak_petak_baru']??'', $payload['volume_kayu']??0, $payload['jumlah_pohon']??0]);
+        $stmt = $pdo->prepare("INSERT INTO rtt_nett (rtt_id, bagian_hutan, bkph, rph, petak, anak_petak_lama, anak_petak_baru, longitude, latitude, luas_baku, jenis_tanaman, kelas_hutan, bon, kbd, dkn, n_per_ha, tahun_tanam, volume_kayu, telah_ditebang, akan_ditebang_teres, akan_ditebang_non_teres, tahun_yad, ai, aii, aiii, jumlah_volume, faktor_koreksi_kph, kayu_bakar, jumlah_pohon, xfaktor_klem, tunggak, kulit, hasil_lain_jenis, hasil_lain_satuan, hasil_lain_volume, alat_mekanis_jenis, alat_mekanis_volume, keterangan) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+        $stmt->execute([$rtt_id, $payload['bagian_hutan']??'', $payload['bkph']??'', $payload['rph']??'', $payload['petak']??'', $payload['anak_petak_lama']??'', $payload['anak_petak_baru']??'', $payload['longitude']??null, $payload['latitude']??null, $payload['luas_baku']??null, $payload['jenis_tanaman']??'', $payload['kelas_hutan']??'', $payload['bon']??'', $payload['kbd']??'', $payload['dkn']??'', $payload['n_per_ha']??null, $payload['tahun_tanam']??null, $payload['volume_kayu']??0, $payload['telah_ditebang']??null, $payload['akan_ditebang_teres']??null, $payload['akan_ditebang_non_teres']??null, $payload['tahun_yad']??null, $payload['ai']??null, $payload['aii']??null, $payload['aiii']??null, $payload['jumlah_volume']??null, $payload['faktor_koreksi_kph']??null, $payload['kayu_bakar']??null, $payload['jumlah_pohon']??0, $payload['xfaktor_klem']??null, $payload['tunggak']??null, $payload['kulit']??null, $payload['hasil_lain_jenis']??'', $payload['hasil_lain_satuan']??'', $payload['hasil_lain_volume']??null, $payload['alat_mekanis_jenis']??'', $payload['alat_mekanis_volume']??null, $payload['keterangan']??'']);
     }
     else if ($type === 'peta') {
         $pdo->prepare("DELETE FROM rtt_peta WHERE rtt_id = ?")->execute([$rtt_id]);
@@ -41,18 +41,22 @@ try {
     }
     else if ($type === 'rekap_klem') {
         $pdo->prepare("DELETE FROM rtt_rekap_klem WHERE rtt_id = ?")->execute([$rtt_id]);
-        $stmt = $pdo->prepare("INSERT INTO rtt_rekap_klem (rtt_id, no_blok, luas_blok, jumlah_pohon, volume) VALUES (?,?,?,?,?)");
-        $stmt->execute([$rtt_id, $payload['no_blok']??'Blok 1', $payload['luas_blok']??0, $payload['jumlah_pohon']??0, $payload['volume']??0]);
+        $stmt = $pdo->prepare("INSERT INTO rtt_rekap_klem (rtt_id, kph, bkph, rph, kelas_hutan, petak, anak_petak, luas_baku, luas_rencana, tahun_tanam, jenis_tanaman, no_blok, luas_blok, jumlah_pohon, volume, keterangan) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+        $stmt->execute([$rtt_id, $payload['kph']??'', $payload['bkph']??'', $payload['rph']??'', $payload['kelas_hutan']??'', $payload['petak']??'', $payload['anak_petak']??'', $payload['luas_baku']??null, $payload['luas_rencana']??null, $payload['tahun_tanam']??null, $payload['jenis_tanaman']??'', $payload['no_blok']??'Blok 1', $payload['luas_blok']??0, $payload['jumlah_pohon']??0, $payload['volume']??0, $payload['keterangan']??'']);
     }
     else if ($type === 'klem_detail') {
         $pdo->prepare("DELETE FROM rtt_klem_detail WHERE rtt_id = ?")->execute([$rtt_id]);
-        $stmt = $pdo->prepare("INSERT INTO rtt_klem_detail (rtt_id, no_pohon, keliling, volume, jenis_pohon) VALUES (?,?,?,?,?)");
-        $stmt->execute([$rtt_id, $payload['no_pohon']??'001', $payload['keliling']??0, $payload['volume']??0, $payload['jenis_pohon']??'Jati']);
+        $stmt = $pdo->prepare("INSERT INTO rtt_klem_detail (rtt_id, no_blok, no_pohon, keliling, volume, jenis_pohon, keterangan) VALUES (?,?,?,?,?,?,?)");
+        $stmt->execute([$rtt_id, $payload['no_blok']??'', $payload['no_pohon']??'001', $payload['keliling']??0, $payload['volume']??0, $payload['jenis_pohon']??'Jati', $payload['keterangan']??'']);
     }
     else if ($type === 'berita_acara') {
         $pdo->prepare("DELETE FROM rtt_berita_acara WHERE rtt_id = ?")->execute([$rtt_id]);
         $stmt = $pdo->prepare("INSERT INTO rtt_berita_acara (rtt_id, nama_petugas, jabatan, tanggal, hasil_pemeriksaan) VALUES (?,?,?,?,?)");
         $stmt->execute([$rtt_id, $payload['nama_petugas']??'', $payload['jabatan']??'', $payload['tanggal']??date('Y-m-d'), $payload['hasil_pemeriksaan']??'']);
+    }
+    else if ($type === 'ba_detail') {
+        $stmt = $pdo->prepare("INSERT INTO rtt_ba_detail (berita_acara_id, petak, anak_petak, luas_baku, luas_rencana, jenis_tebangan, jenis_tanaman, rencana_volume, keterangan) VALUES (?,?,?,?,?,?,?,?,?)");
+        $stmt->execute([$payload['berita_acara_id']??0, $payload['petak']??'', $payload['anak_petak']??'', $payload['luas_baku']??null, $payload['luas_rencana']??null, $payload['jenis_tebangan']??'', $payload['jenis_tanaman']??'', $payload['rencana_volume']??null, $payload['keterangan']??'']);
     }
     else if ($type === 'peta_bap') {
         $pdo->prepare("DELETE FROM rtt_peta_bap WHERE rtt_id = ?")->execute([$rtt_id]);

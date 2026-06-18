@@ -42,8 +42,22 @@ if (!move_uploaded_file($file['tmp_name'], $filepath)) {
 $relative_path = $type . '/' . $filename;
 
 if ($type === 'peta') {
-    $stmt = $pdo->prepare("INSERT INTO rtt_peta (rtt_id, file_path) VALUES (?,?)");
-    $stmt->execute([$rtt_id, $relative_path]);
+    $bagian_hutan = $_POST['bagian_hutan'] ?? '';
+    $kelompok_hutan = $_POST['kelompok_hutan'] ?? '';
+    $rph = $_POST['rph'] ?? '';
+    $bkph = $_POST['bkph'] ?? '';
+    $jenis_tanaman = $_POST['jenis_tanaman'] ?? '';
+    $jarak_tanam = $_POST['jarak_tanam'] ?? '';
+    $skala = $_POST['skala'] ?? '';
+    $petak = $_POST['petak'] ?? '';
+    $luas_baku = $_POST['luas_baku'] ?: null;
+    $panjang = $_POST['panjang'] ?: null;
+    $kelas_hutan = $_POST['kelas_hutan'] ?? '';
+    $tahun_tanam = $_POST['tahun_tanam'] ?: null;
+    $tahun_tanam = !empty($_POST['tahun_tanam']) ? $_POST['tahun_tanam'] : null;
+    
+    $stmt = $pdo->prepare("INSERT INTO rtt_peta (rtt_id, file_path, bagian_hutan, kelompok_hutan, rph, bkph, jenis_tanaman, jarak_tanam, skala, petak, luas_baku, panjang, kelas_hutan, tahun_tanam) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+    $stmt->execute([$rtt_id, $relative_path, $bagian_hutan, $kelompok_hutan, $rph, $bkph, $jenis_tanaman, $jarak_tanam, $skala, $petak, $luas_baku, $panjang, $kelas_hutan, $tahun_tanam]);
 } elseif ($type === 'lampiran') {
     $stmt = $pdo->prepare("INSERT INTO rtt_lampiran (rtt_id, judul, keterangan, file_path) VALUES (?,?,?,?)");
     $stmt->execute([$rtt_id, $judul, $keterangan, $relative_path]);

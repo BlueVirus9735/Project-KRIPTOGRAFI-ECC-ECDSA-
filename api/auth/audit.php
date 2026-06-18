@@ -12,17 +12,14 @@ if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
 
 include __DIR__ . '/../db.php';
 
-// Helper: Verify token and get user
 function getCurrentUser($pdo) {
     $token = '';
-    
-    // Method 1: Authorization header
+
     $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '';
     if (preg_match('/Bearer\s+(\S+)/', $authHeader, $matches)) {
         $token = $matches[1];
     }
-    
-    // Method 2: Query string
+
     if (empty($token)) {
         $token = $_GET['token'] ?? '';
     }
@@ -54,7 +51,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 switch ($method) {
     case 'GET':
-        // Get audit logs with user info
+
         $stmt = $pdo->query("
             SELECT a.*, u.username, u.nama 
             FROM audit_log a 

@@ -76,10 +76,6 @@ function FinalizeContent() {
         <h1 className="text-xl font-bold text-white flex items-center gap-2">
           <ShieldCheck className="text-emerald-400" /> Pengesahan Final RTT
         </h1>
-        <p className="text-slate-500 text-[13px] mt-1 font-medium">
-          Langkah terakhir membubuhkan tanda tangan digital ECDSA untuk
-          melegalkan dokumen.
-        </p>
       </div>
 
       {!successData ? (

@@ -1,7 +1,12 @@
 "use client";
 
 import { ReactNode } from "react";
-import { hasPermission, hasAnyPermission, type UserRole, PERMISSIONS } from "@/lib/auth";
+import {
+  hasPermission,
+  hasAnyPermission,
+  type UserRole,
+  PERMISSIONS,
+} from "@/lib/auth";
 import { useAuth } from "./DashboardLayout";
 
 interface RoleGuardProps {
@@ -9,52 +14,49 @@ interface RoleGuardProps {
   permission?: string;
   permissions?: string[];
   allowedRoles?: UserRole[];
-  requireAll?: boolean; // If true, require all permissions. If false, require any.
-  fallback?: ReactNode; // Component to show if not authorized
+  requireAll?: boolean;
+  fallback?: ReactNode;
 }
 
 /**
  * RoleGuard - Component for conditional rendering based on user role/permissions
- * 
+ *
  * Usage:
  * <RoleGuard permission={PERMISSIONS.RTT_SUMMARY_EDIT}>
  *   <RTTSummaryForm />
  * </RoleGuard>
- * 
+ *
  * <RoleGuard permissions={[PERMISSIONS.DOCUMENT_REVIEW, PERMISSIONS.DOCUMENT_APPROVE_KPH]}>
  *   <ReviewPanel />
  * </RoleGuard>
- * 
+ *
  * <RoleGuard allowedRoles={['sysadmin', 'kph']}>
  *   <AdminPanel />
  * </RoleGuard>
  */
-export default function RoleGuard({ 
-  children, 
+export default function RoleGuard({
+  children,
   permission,
   permissions,
   allowedRoles,
   requireAll = false,
-  fallback = null
+  fallback = null,
 }: RoleGuardProps) {
   const { user } = useAuth();
 
-  // Check role-based access
   if (allowedRoles && !allowedRoles.includes(user?.role as UserRole)) {
     return <>{fallback}</>;
   }
 
-  // Check single permission
   if (permission && !hasPermission(user, permission)) {
     return <>{fallback}</>;
   }
 
-  // Check multiple permissions
   if (permissions && permissions.length > 0) {
-    const hasAccess = requireAll 
-      ? hasAnyPermission(user, permissions) // At least one
-      : hasAnyPermission(user, permissions); // Any of them
-    
+    const hasAccess = requireAll
+      ? hasAnyPermission(user, permissions)
+      : hasAnyPermission(user, permissions);
+
     if (!hasAccess) {
       return <>{fallback}</>;
     }
@@ -63,17 +65,24 @@ export default function RoleGuard({
   return <>{children}</>;
 }
 
-// Section-specific guards for RTT form
 interface RTTSectionGuardProps {
   children: ReactNode;
-  section: 'summary' | 'nett' | 'peta' | 'peta_bap' | 'klem_daftar' | 'klem_rekap' | 'berita_acara';
+  section:
+    | "summary"
+    | "nett"
+    | "peta"
+    | "peta_bap"
+    | "klem_daftar"
+    | "klem_rekap"
+    | "berita_acara";
   fallback?: ReactNode;
 }
 
-/**
- * RTTSectionGuard - Guard for specific RTT document sections
- */
-export function RTTSectionGuard({ children, section, fallback = null }: RTTSectionGuardProps) {
+export function RTTSectionGuard({
+  children,
+  section,
+  fallback = null,
+}: RTTSectionGuardProps) {
   const permissionMap = {
     summary: PERMISSIONS.RTT_SUMMARY_EDIT,
     nett: PERMISSIONS.RTT_NETT_EDIT,
@@ -91,17 +100,17 @@ export function RTTSectionGuard({ children, section, fallback = null }: RTTSecti
   );
 }
 
-// Workflow action guards
 interface WorkflowGuardProps {
   children: ReactNode;
-  action: 'review' | 'approve_kph' | 'verify_phw' | 'finalize';
+  action: "review" | "approve_kph" | "verify_phw" | "finalize";
   fallback?: ReactNode;
 }
 
-/**
- * WorkflowGuard - Guard for workflow actions
- */
-export function WorkflowGuard({ children, action, fallback = null }: WorkflowGuardProps) {
+export function WorkflowGuard({
+  children,
+  action,
+  fallback = null,
+}: WorkflowGuardProps) {
   const permissionMap = {
     review: PERMISSIONS.DOCUMENT_REVIEW,
     approve_kph: PERMISSIONS.DOCUMENT_APPROVE_KPH,
@@ -116,7 +125,6 @@ export function WorkflowGuard({ children, action, fallback = null }: WorkflowGua
   );
 }
 
-// Read-only view for other sections
 interface ReadOnlyGuardProps {
   children: ReactNode;
   editPermission: string;
@@ -125,15 +133,12 @@ interface ReadOnlyGuardProps {
   readOnlyView?: ReactNode;
 }
 
-/**
- * ReadOnlyGuard - Shows edit view if user has edit permission, otherwise shows read-only view
- */
-export function ReadOnlyGuard({ 
-  children, 
+export function ReadOnlyGuard({
+  children,
   editPermission,
   readPermission,
   isEditing = true,
-  readOnlyView
+  readOnlyView,
 }: ReadOnlyGuardProps) {
   const { user } = useAuth();
   const canEdit = hasPermission(user, editPermission);
@@ -150,7 +155,6 @@ export function ReadOnlyGuard({
   return null;
 }
 
-// Admin-only guard
 interface AdminGuardProps {
   children: ReactNode;
   fallback?: ReactNode;
@@ -158,20 +162,23 @@ interface AdminGuardProps {
 
 export function SysAdminGuard({ children, fallback = null }: AdminGuardProps) {
   return (
-    <RoleGuard allowedRoles={['sysadmin']} fallback={fallback}>
+    <RoleGuard allowedRoles={["sysadmin"]} fallback={fallback}>
       {children}
     </RoleGuard>
   );
 }
 
-// Multi-role guard with OR logic
 interface MultiRoleGuardProps {
   children: ReactNode;
   roles: UserRole[];
   fallback?: ReactNode;
 }
 
-export function MultiRoleGuard({ children, roles, fallback = null }: MultiRoleGuardProps) {
+export function MultiRoleGuard({
+  children,
+  roles,
+  fallback = null,
+}: MultiRoleGuardProps) {
   return (
     <RoleGuard allowedRoles={roles} fallback={fallback}>
       {children}

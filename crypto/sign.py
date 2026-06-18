@@ -5,24 +5,21 @@ from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives import serialization
 
 def sign_document(private_key_path, document_path, signature_path):
-    # Load private key
+
     with open(private_key_path, "rb") as key_file:
         private_key = serialization.load_pem_private_key(
             key_file.read(),
             password=None
         )
-    
-    # Load document
+
     with open(document_path, "rb") as f:
         data = f.read()
-    
-    # Sign document using ECDSA with SHA256
+
     signature = private_key.sign(
         data,
         ec.ECDSA(hashes.SHA256())
     )
-    
-    # Save signature
+
     with open(signature_path, "wb") as f:
         f.write(signature)
     

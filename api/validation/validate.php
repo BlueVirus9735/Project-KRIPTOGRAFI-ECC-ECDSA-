@@ -33,6 +33,7 @@ if (!$rtt) { echo json_encode(['status'=>'error','message'=>'RTT tidak ditemukan
     } else {
         $status_hash = 'invalid';
         $hash_detail = 'Hash TIDAK COCOK. Data di database telah diubah secara ilegal!';
+        file_put_contents(__DIR__ . '/hash_mismatch.log', "ID: $rtt_id\nCalc: $calculated_hash\nDB: {$rtt['hash']}\nJSON: $json_data\n\n", FILE_APPEND);
     }
 
     // ===== 2. VALIDASI SIGNATURE =====

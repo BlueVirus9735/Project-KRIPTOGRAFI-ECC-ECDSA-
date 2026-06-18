@@ -1,5 +1,4 @@
 <?php
-// api/rpkh/detail.php — Get RPKH detail with petak data
 header('Access-Control-Allow-Origin: *');
 header('Content-Type: application/json');
 

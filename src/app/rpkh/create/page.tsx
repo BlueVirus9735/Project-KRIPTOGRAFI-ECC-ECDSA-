@@ -8,16 +8,16 @@ import Link from "next/link";
 
 const API = "http://localhost:8000/api";
 
-interface DetailRow { petak: string; anak_petak: string; luas: string; jenis_tanaman: string; keterangan: string; }
+interface DetailRow { petak: string; anak_petak: string; luas: string; jenis_tanaman: string; kelas_hutan: string; bon: string; kbd: string; dkn: string; n_per_ha: string; keterangan: string; }
 
 function RpkhCreateContent() {
   const router = useRouter();
   const { token } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({ tahun_mulai: "2024", tahun_selesai: "2034", wilayah: "", kph: "", bkph: "", rph: "" });
-  const [details, setDetails] = useState<DetailRow[]>([{ petak: "", anak_petak: "", luas: "", jenis_tanaman: "", keterangan: "" }]);
+  const [form, setForm] = useState({ tahun_mulai: "2024", tahun_selesai: "2034", wilayah: "", kph: "", bkph: "", rph: "", keterangan: "" });
+  const [details, setDetails] = useState<DetailRow[]>([{ petak: "", anak_petak: "", luas: "", jenis_tanaman: "", kelas_hutan: "", bon: "", kbd: "", dkn: "", n_per_ha: "", keterangan: "" }]);
 
-  const addRow = () => setDetails([...details, { petak: "", anak_petak: "", luas: "", jenis_tanaman: "", keterangan: "" }]);
+  const addRow = () => setDetails([...details, { petak: "", anak_petak: "", luas: "", jenis_tanaman: "", kelas_hutan: "", bon: "", kbd: "", dkn: "", n_per_ha: "", keterangan: "" }]);
   const removeRow = (i: number) => setDetails(details.filter((_, idx) => idx !== i));
   const updateRow = (i: number, field: keyof DetailRow, value: string) => {
     const nd = [...details]; nd[i] = { ...nd[i], [field]: value }; setDetails(nd);
@@ -87,6 +87,10 @@ function RpkhCreateContent() {
               <label className={labelClass}>RPH</label>
               <input type="text" className={inputClass} value={form.rph} onChange={e => setForm({ ...form, rph: e.target.value })} placeholder="RPH Ciater" required />
             </div>
+            <div className="col-span-2 md:col-span-3">
+              <label className={labelClass}>Keterangan</label>
+              <textarea className={inputClass + " min-h-[80px] resize-y"} value={form.keterangan} onChange={e => setForm({ ...form, keterangan: e.target.value })} placeholder="Keterangan RPKH..." />
+            </div>
           </div>
         </div>
 
@@ -111,6 +115,11 @@ function RpkhCreateContent() {
                   <th className="p-3 text-[10px] font-semibold text-slate-500 uppercase">Anak Petak</th>
                   <th className="p-3 text-[10px] font-semibold text-slate-500 uppercase">Luas (Ha)</th>
                   <th className="p-3 text-[10px] font-semibold text-slate-500 uppercase">Jenis Tanaman</th>
+                  <th className="p-3 text-[10px] font-semibold text-slate-500 uppercase">Kelas Hutan</th>
+                  <th className="p-3 text-[10px] font-semibold text-slate-500 uppercase">BON</th>
+                  <th className="p-3 text-[10px] font-semibold text-slate-500 uppercase">KBD</th>
+                  <th className="p-3 text-[10px] font-semibold text-slate-500 uppercase">DKN</th>
+                  <th className="p-3 text-[10px] font-semibold text-slate-500 uppercase">N/Ha</th>
                   <th className="p-3 text-[10px] font-semibold text-slate-500 uppercase">Keterangan</th>
                   <th className="p-3 w-10"></th>
                 </tr>
@@ -121,9 +130,14 @@ function RpkhCreateContent() {
                     <td className="p-2 text-slate-500 font-mono text-xs text-center">{i + 1}</td>
                     <td className="p-2"><input className="glass-input w-full px-2.5 py-2 text-xs" value={row.petak} onChange={e => updateRow(i, 'petak', e.target.value)} placeholder="1A" /></td>
                     <td className="p-2"><input className="glass-input w-full px-2.5 py-2 text-xs" value={row.anak_petak} onChange={e => updateRow(i, 'anak_petak', e.target.value)} placeholder="a" /></td>
-                    <td className="p-2"><input type="number" step="0.01" className="glass-input w-full px-2.5 py-2 text-xs" value={row.luas} onChange={e => updateRow(i, 'luas', e.target.value)} placeholder="0.00" /></td>
-                    <td className="p-2"><input className="glass-input w-full px-2.5 py-2 text-xs" value={row.jenis_tanaman} onChange={e => updateRow(i, 'jenis_tanaman', e.target.value)} placeholder="Jati" /></td>
-                    <td className="p-2"><input className="glass-input w-full px-2.5 py-2 text-xs" value={row.keterangan} onChange={e => updateRow(i, 'keterangan', e.target.value)} placeholder="-" /></td>
+                    <td className="p-2"><input type="number" step="0.01" className="glass-input w-full px-2.5 py-2 text-xs min-w-[60px]" value={row.luas} onChange={e => updateRow(i, 'luas', e.target.value)} placeholder="0.00" /></td>
+                    <td className="p-2"><input className="glass-input w-full px-2.5 py-2 text-xs min-w-[80px]" value={row.jenis_tanaman} onChange={e => updateRow(i, 'jenis_tanaman', e.target.value)} placeholder="Jati" /></td>
+                    <td className="p-2"><input className="glass-input w-full px-2.5 py-2 text-xs min-w-[80px]" value={row.kelas_hutan} onChange={e => updateRow(i, 'kelas_hutan', e.target.value)} /></td>
+                    <td className="p-2"><input className="glass-input w-full px-2.5 py-2 text-xs min-w-[50px]" value={row.bon} onChange={e => updateRow(i, 'bon', e.target.value)} /></td>
+                    <td className="p-2"><input className="glass-input w-full px-2.5 py-2 text-xs min-w-[50px]" value={row.kbd} onChange={e => updateRow(i, 'kbd', e.target.value)} /></td>
+                    <td className="p-2"><input className="glass-input w-full px-2.5 py-2 text-xs min-w-[50px]" value={row.dkn} onChange={e => updateRow(i, 'dkn', e.target.value)} /></td>
+                    <td className="p-2"><input type="number" step="0.01" className="glass-input w-full px-2.5 py-2 text-xs min-w-[60px]" value={row.n_per_ha} onChange={e => updateRow(i, 'n_per_ha', e.target.value)} /></td>
+                    <td className="p-2"><input className="glass-input w-full px-2.5 py-2 text-xs min-w-[100px]" value={row.keterangan} onChange={e => updateRow(i, 'keterangan', e.target.value)} placeholder="-" /></td>
                     <td className="p-2">
                       {details.length > 1 && (
                         <button type="button" onClick={() => removeRow(i)} className="text-slate-600 hover:text-red-400 transition-colors"><Trash2 size={14} /></button>
