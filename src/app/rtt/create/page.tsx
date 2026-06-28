@@ -10,12 +10,11 @@ const API = "http://localhost:8000/api";
 
 const STEPS = ["Identitas", "SK", "Keputusan", "Tebangan", "Rekap", "Peta", "Berita Acara", "Lampiran", "Pengesahan"];
 
-const generateNomor = (prefix: string) => {
+const generateNomor = (prefix: string, suffix: string = "---") => {
   const date = new Date();
   const year = date.getFullYear();
   const monthRomawi = ["I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII"][date.getMonth()];
-  const randomStr = Math.random().toString(36).substring(2, 6).toUpperCase();
-  return `${prefix}/${year}/${monthRomawi}/${randomStr}`;
+  return `${prefix}/${year}/${monthRomawi}/${suffix}`;
 };
 
 function RttCreateContent() {
@@ -97,7 +96,11 @@ function RttCreateContent() {
       });
       const data = await res.json();
       if (data.status === "success") {
-        setRttId(data.rtt_id);
+        const id = data.rtt_id;
+        setRttId(id);
+        const formattedId = id.toString().padStart(3, '0');
+        setIdentitas(prev => ({ ...prev, nomor_dokumen: prev.nomor_dokumen.replace('---', formattedId) }));
+        setSk(prev => ({ ...prev, nomor_sk: prev.nomor_sk.replace('---', formattedId) }));
         setStep(1);
       } else alert(data.message);
     } catch (e) { alert("Gagal terhubung ke server"); }
