@@ -10,6 +10,14 @@ const API = "http://localhost:8000/api";
 
 const STEPS = ["Identitas", "SK", "Keputusan", "Tebangan", "Rekap", "Peta", "Berita Acara", "Lampiran", "Pengesahan"];
 
+const generateNomor = (prefix: string) => {
+  const date = new Date();
+  const year = date.getFullYear();
+  const monthRomawi = ["I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII"][date.getMonth()];
+  const randomStr = Math.random().toString(36).substring(2, 6).toUpperCase();
+  return `${prefix}/${year}/${monthRomawi}/${randomStr}`;
+};
+
 function RttCreateContent() {
   const router = useRouter();
   const { token } = useAuth();
@@ -20,8 +28,8 @@ function RttCreateContent() {
   const [selectedRpkh, setSelectedRpkh] = useState<any>(null);
 
   // Form states
-  const [identitas, setIdentitas] = useState({ rpkh_id: "", nomor_dokumen: "", tanggal: new Date().toISOString().split('T')[0], kph: "", bkph: "", rph: "" });
-  const [sk, setSk] = useState({ nomor_sk: "", tanggal_sk: "", tentang: "" });
+  const [identitas, setIdentitas] = useState({ rpkh_id: "", nomor_dokumen: generateNomor("RTT/PHT"), tanggal: new Date().toISOString().split('T')[0], kph: "", bkph: "", rph: "" });
+  const [sk, setSk] = useState({ nomor_sk: generateNomor("SK/RTT"), tanggal_sk: new Date().toISOString().split('T')[0], tentang: "" });
   const [keputusan, setKeputusan] = useState({ menimbang: "", mengingat: "", memutuskan: "" });
   const [tebangan, setTebangan] = useState<any[]>([{ petak: "", anak_petak: "", luas: "", jenis_tanaman: "", volume: "", jumlah_pohon: "", keterangan: "" }]);
   const [beritaAcara, setBeritaAcara] = useState<any[]>([{ tanggal: "", nama_petugas: "", jabatan: "", hasil_pemeriksaan: "" }]);
@@ -160,7 +168,7 @@ function RttCreateContent() {
     finally { setLoading(false); }
   };
 
-  const inputClass = "w-full px-4 py-2.5 text-[13px] bg-[#0b1120] border border-slate-700/80 rounded-md text-slate-200 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600/50 transition-all";
+  const inputClass = "w-full px-4 py-2.5 text-[13px] bg-[#0b1120] border border-slate-700/80 rounded-md text-slate-200 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600/50 transition-all [color-scheme:dark]";
   const labelClass = "block text-[11px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider";
   const textareaClass = inputClass + " min-h-[100px] resize-y";
 
@@ -182,8 +190,8 @@ function RttCreateContent() {
       localStorage.removeItem('rtt_draft');
       setStep(0);
       setRttId(null);
-      setIdentitas({ rpkh_id: "", nomor_dokumen: "", tanggal: new Date().toISOString().split('T')[0], kph: "", bkph: "", rph: "" });
-      setSk({ nomor_sk: "", tanggal_sk: "", tentang: "" });
+      setIdentitas({ rpkh_id: "", nomor_dokumen: generateNomor("RTT/PHT"), tanggal: new Date().toISOString().split('T')[0], kph: "", bkph: "", rph: "" });
+      setSk({ nomor_sk: generateNomor("SK/RTT"), tanggal_sk: new Date().toISOString().split('T')[0], tentang: "" });
       setKeputusan({ menimbang: "", mengingat: "", memutuskan: "" });
       setTebangan([{ petak: "", anak_petak: "", luas: "", jenis_tanaman: "", volume: "", jumlah_pohon: "", keterangan: "" }]);
       setBeritaAcara([{ tanggal: "", nama_petugas: "", jabatan: "", hasil_pemeriksaan: "" }]);
