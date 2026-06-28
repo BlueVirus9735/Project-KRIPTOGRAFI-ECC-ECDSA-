@@ -41,14 +41,15 @@ export default function Login() {
   return (
     <div className="min-h-screen flex bg-[#030712] text-slate-200 overflow-hidden font-sans">
       {/* Left Panel: Branding & Identity */}
-      <div className="hidden lg:flex w-[55%] relative flex-col justify-between p-12 bg-[#020617] overflow-hidden border-r border-emerald-900/30 shadow-2xl">
+      <div className="hidden lg:flex w-[55%] relative flex-col justify-between p-12 bg-[#020617] overflow-hidden border-r border-slate-800 shadow-2xl">
         {/* Background Image & Overlay */}
-        <div className="absolute inset-0 bg-[url('/pexels-lauripoldre-36099638.jpg')] bg-cover bg-center bg-no-repeat opacity-40 mix-blend-luminosity z-0" />
-        <div className="absolute inset-0 bg-gradient-to-br from-[#022c22]/90 via-[#064e3b]/80 to-[#020617]/95 z-0" />
+        <div className="absolute inset-0 bg-[url('/pexels-lauripoldre-36099638.jpg')] bg-cover bg-center bg-no-repeat opacity-60 z-0" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#020617]/90 via-[#022c22]/70 to-[#022c22]/40 z-0" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#020617] via-transparent to-transparent opacity-80 z-0" />
         
         {/* Abstract Background Elements */}
         <div className="absolute top-[-20%] left-[-10%] w-[800px] h-[800px] bg-emerald-500/20 rounded-full blur-[120px] mix-blend-screen pointer-events-none z-0" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-teal-500/20 rounded-full blur-[100px] mix-blend-screen pointer-events-none z-0" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-teal-500/10 rounded-full blur-[100px] mix-blend-screen pointer-events-none z-0" />
 
         <div className="relative z-10 animate-slide-up">
           <div className="flex items-center gap-4 mb-8">
@@ -121,29 +122,24 @@ export default function Login() {
       </div>
 
       {/* Right Panel: Login Form */}
-      <div className="w-full lg:w-[45%] flex items-center justify-center p-8 relative">
-        <div className="absolute inset-0 bg-[#030712] z-0" />
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-600/5 rounded-full blur-[120px] pointer-events-none z-0" />
+      <div className="w-full lg:w-[45%] flex items-center justify-center p-8 relative bg-gradient-to-b from-[#0f172a] via-[#020617] to-black">
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-emerald-600/10 rounded-full blur-[150px] pointer-events-none z-0" />
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-teal-900/20 rounded-full blur-[120px] pointer-events-none z-0" />
 
         <div className="w-full max-w-[420px] z-10 animate-scale-in">
           {/* Mobile Header (Hidden on Desktop) */}
           <div className="lg:hidden text-center mb-10">
             <div className="w-20 h-20 bg-white rounded-2xl p-2.5 mx-auto mb-4 shadow-2xl border border-white/10">
-              <img
-                src="/logo_perhutani.jpg"
-                alt="Logo"
-                className="w-full h-full object-contain"
-              />
+              <img src="/logo_perhutani.jpg" alt="Logo" className="w-full h-full object-contain" />
             </div>
             <h2 className="text-2xl font-bold text-white">Sistem RTT</h2>
             <p className="text-slate-500 text-sm mt-1">Divre Jabar & Banten</p>
           </div>
 
-          <div className="bg-[#0b1121]/80 backdrop-blur-xl border border-slate-800/60 rounded-3xl p-8 shadow-2xl shadow-black">
+          <div className="bg-slate-900/40 backdrop-blur-2xl border border-slate-700/50 rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
             <div className="mb-8">
-              <h3 className="text-2xl font-bold text-white mb-2 tracking-tight text-center  ">
-                Masuk Sistem
-              </h3>
+              <h3 className="text-2xl font-bold text-white mb-2 tracking-tight">Otentikasi Akses</h3>
+              <p className="text-sm text-slate-400 font-medium">Masukkan kredensial korporat Anda untuk melanjutkan ke dashboard.</p>
             </div>
 
             {error && (
