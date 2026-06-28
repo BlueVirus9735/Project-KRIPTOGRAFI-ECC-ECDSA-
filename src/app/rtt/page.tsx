@@ -40,8 +40,8 @@ function RttListContent() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-white/[0.04]">
         <div>
-          <h2 className="text-xl font-bold text-white">Repositori Dokumen RTT</h2>
-          <p className="text-[13px] text-slate-500 mt-1 font-medium">Daftar Rencana Teknik Tahunan per Wilayah KPH</p>
+          <h2 className="text-xl font-bold text-white tracking-tight">Daftar Dokumen RTT</h2>
+          <p className="text-[13px] text-slate-500 mt-1 font-medium">Arsip Rencana Teknik Tahunan per Wilayah KPH</p>
         </div>
 
         <div className="flex items-center gap-3">
@@ -79,36 +79,26 @@ function RttListContent() {
                   </div>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-3">
                   <div className="space-y-1">
                     <h3 className="text-[16px] font-bold text-white group-hover:text-emerald-400 transition-colors">
-                      {rtt.nomor_dokumen || "Untitled Document"}
+                      {rtt.nomor_dokumen || "Dokumen Tanpa Nomor"}
                     </h3>
-                    <p className="text-[12px] text-slate-500 font-medium">{rtt.kph} • Divre Jabar Banten</p>
+                    <p className="text-[12px] text-slate-400 font-medium">{rtt.kph || 'KPH Tidak Diketahui'} • Divre Jabar & Banten</p>
                   </div>
-
-                  <div className="p-3.5 bg-slate-900/50 rounded-xl border border-white/[0.04] grid grid-cols-2 gap-3">
-                    <div className="space-y-0.5">
-                      <p className="text-[10px] font-semibold text-slate-600">RPKH Master</p>
-                      <p className="text-[12px] text-slate-300 font-semibold">{rtt.rpkh_wilayah || 'Default'} {rtt.rpkh_tahun || '2026'}</p>
-                    </div>
-                    <div className="space-y-0.5 text-right">
-                      <p className="text-[10px] font-semibold text-slate-600">Inisiasi</p>
-                      <p className="text-[12px] text-slate-300 font-semibold">Apr 2026</p>
-                    </div>
+                  
+                  <div className="flex items-center gap-4 text-[11px] font-medium text-slate-500">
+                     <span className="flex items-center gap-1.5"><MapPin size={12} /> Area Konsesi Hutan</span>
+                     <span className="flex items-center gap-1.5"><Activity size={12} /> Tahun Rencana {rtt.rpkh_tahun || '2026'}</span>
                   </div>
                 </div>
 
-                <div className="mt-6 flex items-center justify-between pt-4 border-t border-white/[0.04]">
-                  <div className="flex -space-x-1.5">
-                    {[1,2].map(i => (
-                      <div key={i} className="w-6 h-6 rounded-full border-2 border-[#131c2e] bg-slate-700 flex items-center justify-center text-[8px] font-bold text-slate-400">
-                        S
-                      </div>
-                    ))}
+                <div className="mt-5 flex items-center justify-between pt-4 border-t border-slate-700/50">
+                  <div className="text-[11px] text-slate-500 font-medium">
+                    Diunggah: <span className="text-slate-300">Admin {rtt.kph || 'KPH'}</span>
                   </div>
-                  <Link href={`/rtt/${rtt.id}`} className="btn-secondary flex items-center gap-2 px-4 py-2 text-[11px] group/btn">
-                    Open Workspace <ChevronRight size={14} className="group-hover/btn:translate-x-0.5 transition-transform" />
+                  <Link href={`/rtt/${rtt.id}`} className="bg-[#0f172a] hover:bg-[#1e293b] border border-slate-700 text-slate-300 hover:text-white flex items-center gap-1.5 px-4 py-2 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all">
+                    Buka Berkas <ChevronRight size={14} />
                   </Link>
                 </div>
 
