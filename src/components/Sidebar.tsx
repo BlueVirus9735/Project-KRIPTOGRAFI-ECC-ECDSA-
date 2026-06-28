@@ -232,7 +232,7 @@ export default function Sidebar({ user }: SidebarProps) {
   const navGroups = buildNavGroups();
 
   return (
-    <aside className="glass-sidebar w-[260px] flex flex-col h-screen shrink-0 relative z-50">
+    <aside className="bg-[#0f172a] border-r border-slate-800 w-[260px] flex flex-col h-screen shrink-0 relative z-50">
       {/* Brand Header */}
       <div className="h-[72px] flex items-center px-7 gap-3.5 shrink-0 border-b border-white/[0.04]">
         <div className="w-9 h-9 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20 overflow-hidden bg-white shrink-0">
@@ -267,13 +267,13 @@ export default function Sidebar({ user }: SidebarProps) {
                     href={item.path}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group relative ${
                       isActive
-                        ? "bg-emerald-500/10 text-white"
-                        : "text-slate-400 hover:text-slate-200 hover:bg-white/[0.03]"
+                        ? "bg-[#1e293b] text-emerald-400"
+                        : "text-slate-400 hover:text-slate-200 hover:bg-slate-800"
                     }`}
                   >
                     {/* Active indicator bar */}
                     {isActive && (
-                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-gradient-to-b from-emerald-400 to-teal-500 rounded-full" />
+                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-emerald-500 rounded-full" />
                     )}
 
                     <div
@@ -295,9 +295,9 @@ export default function Sidebar({ user }: SidebarProps) {
       </nav>
 
       {/* Profile Footer */}
-      <div className="p-4 border-t border-white/[0.04] shrink-0">
-        <div className="glass-card rounded-xl p-3.5 flex items-center gap-3">
-          <div className="shrink-0 w-9 h-9 rounded-full bg-gradient-to-br from-emerald-500/20 to-teal-500/20 flex items-center justify-center text-[11px] font-bold text-emerald-400 border border-emerald-500/20">
+      <div className="p-4 border-t border-slate-800 shrink-0">
+        <div className="bg-[#1e293b] border border-slate-700/80 rounded-xl p-3.5 flex items-center gap-3">
+          <div className="shrink-0 w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center text-[11px] font-bold text-emerald-400 border border-slate-600">
             {user?.nama?.substring(0, 2).toUpperCase() ||
               user?.username?.substring(0, 2).toUpperCase()}
           </div>

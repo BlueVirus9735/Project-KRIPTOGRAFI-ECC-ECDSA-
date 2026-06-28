@@ -100,10 +100,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <Sidebar user={user} />
         
         {/* Content Area */}
-        <div className="flex-1 flex flex-col h-full min-w-0 bg-mesh relative">
+        <div className="flex-1 flex flex-col h-full min-w-0 bg-[#0b1120] relative">
           
           {/* Top Header */}
-          <header className="glass-header h-[72px] flex items-center justify-between px-8 z-40 shrink-0">
+          <header className="bg-[#0f172a] border-b border-slate-800 h-[72px] flex items-center justify-between px-8 z-40 shrink-0">
             <div className="flex flex-col">
               <h1 className="text-[15px] font-bold text-white">{getPageTitle()}</h1>
               <p className="text-[11px] text-slate-500 font-medium">{getPageDesc()}</p>
@@ -116,7 +116,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <input 
                   type="text" 
                   placeholder="Cari..." 
-                  className="glass-input w-52 py-2 pl-9 pr-4 text-[12px]" 
+                  className="w-52 py-2 pl-9 pr-4 text-[12px] bg-[#1e293b] border border-slate-700/80 rounded-md text-slate-200 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600/50 transition-all [color-scheme:dark]" 
                 />
               </div>
 
