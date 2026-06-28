@@ -187,170 +187,145 @@ function RttDetailContent({ id }: { id: string }) {
   const isSah = rtt.status === "disahkan";
 
   return (
-    <div className="space-y-8 animate-fade-in pb-20">
+    <div className="space-y-6 animate-fade-in pb-20 max-w-5xl mx-auto">
         
         {/* Top Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-white/[0.04]">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-700/50">
           <div className="flex items-center gap-4">
-            <Link href="/rtt" className="w-10 h-10 rounded-xl glass-card flex items-center justify-center text-slate-500 hover:text-white hover:border-slate-600/30 transition-all">
+            <Link href="/rtt" className="w-9 h-9 rounded-md bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400 hover:text-white transition-all">
               <ArrowLeft size={16} />
             </Link>
             <div>
-              <h2 className="text-xl font-bold text-white">{rtt.nomor_dokumen}</h2>
-              <p className="text-[12px] text-slate-500 font-medium mt-0.5">Kesatuan Pemangkuan Hutan {rtt.kph}</p>
+              <h2 className="text-xl font-bold text-white tracking-tight">Berkas RTT: {rtt.nomor_dokumen || "Tanpa Nomor"}</h2>
+              <p className="text-[12px] text-slate-500 font-medium mt-0.5 uppercase tracking-wider">Kesatuan Pemangkuan Hutan {rtt.kph}</p>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <div className={`status-badge border ${isSah ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-slate-500/10 border-slate-500/20 text-slate-400'}`}>
-              <div className={`w-2 h-2 rounded-full ${isSah ? 'bg-emerald-400 pulse-dot' : 'bg-slate-500'}`} />
-              {isSah ? 'SAH • SIGNED' : rtt.status}
-            </div>
-            <button className="w-9 h-9 rounded-xl glass-card flex items-center justify-center text-slate-500 hover:text-white transition-all"><Share2 size={16} /></button>
-          </div>
-        </div>
-
-        {/* Hero Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-          <div className="lg:col-span-2 relative overflow-hidden glass-card p-8 flex flex-col justify-center">
-            <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-emerald-500/[0.06] to-transparent pointer-events-none" />
-            <div className="space-y-5 relative z-10">
-              <div className="flex items-center gap-3 flex-wrap">
-                <span className="status-badge bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px]">Digital Signature Workspace</span>
-                <span className="text-slate-600 text-[11px] font-medium">Protocol: SECP256K1</span>
-              </div>
-              <h1 className="text-3xl font-extrabold text-white tracking-tight leading-tight max-w-xl">
-                Integritas Data Transaksi <br/>
-                <span className="text-slate-600">Rencana Teknik Tahunan</span>
-              </h1>
-              <div className="flex flex-wrap gap-6 pt-1">
-                <div className="space-y-1">
-                  <p className="text-[10px] font-semibold text-slate-600 uppercase">Document Hash ID</p>
-                  <p className="text-[12px] font-mono text-slate-400 break-all">{rtt.hash ? rtt.hash.substring(0,32) : 'Awaiting Final Validation...'}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="glass-card p-7 flex flex-col justify-between">
-            <div className="space-y-1">
-              <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Kelengkapan Berkas</p>
-              <h4 className="text-4xl font-extrabold text-white tracking-tight">{Math.round((doneCount/8)*100)}%</h4>
-            </div>
-            
-            <div className="space-y-5 pb-1">
-              <div className="h-2.5 w-full bg-slate-800/80 rounded-full overflow-hidden border border-white/[0.04]">
-                <div 
-                  className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-1000 rounded-full" 
-                  style={{ width: `${(doneCount/8)*100}%` }}
-                />
-              </div>
-              
-              <div className="min-h-12">
-                {doneCount === 8 && (rtt.status === 'draft' || rtt.status === 'revisi_phw' || rtt.status === 'revisi_kph') && (user?.role === 'sysadmin' || user?.role === 'kph') ? (
-                  <button onClick={async () => {
-                    if (!confirm("Kirim dokumen ini ke PHW untuk diverifikasi?")) return;
-                    try {
-                      const res = await fetch(`http://localhost:8000/api/rtt/submit.php`, {
-                        method: "POST", headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ rtt_id: id, token: localStorage.getItem('token') })
-                      });
-                      const d = await res.json();
-                      if (d.status === "success") {
-                        alert("Berhasil dikirim ke PHW!");
-                        fetchWorkspace();
-                      } else alert(d.message);
-                    } catch(e) { alert("Error server"); }
-                  }} className="btn-primary w-full h-full text-[12px] font-bold bg-blue-500 hover:bg-blue-600 border-blue-400">
-                    Kirim ke PHW (Verifikasi)
-                  </button>
-                ) : rtt.status === 'menunggu_verifikasi_phw' ? (
-                  <div className="w-full h-full bg-indigo-500/10 border border-indigo-500/30 rounded-xl flex items-center justify-center text-indigo-400 font-semibold text-[11px] text-center px-4">
-                    {user?.role === 'phw' || user?.role === 'sysadmin' ? 'Buka menu Validasi PHW untuk memverifikasi' : 'Menunggu Verifikasi dari pihak PHW'}
-                  </div>
-                ) : rtt.status === 'menunggu_pengesahan' ? (
-                  <div className="w-full h-full bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-center justify-center text-amber-400 font-semibold text-[11px] text-center px-4">
-                    Menunggu Pengesahan (Finalize) dari Divisi
-                  </div>
-                ) : isSah ? (
-                  <>
-                  <button onClick={() => window.open(`http://localhost:8000/api/rtt/generate_pdf.php?id=${id}`)} className="btn-secondary w-full h-full text-[12px] font-bold flex items-center justify-center gap-2">
-                    <Printer size={16} /> Cetak RTT Final
-                  </button>
-                  <div className="mt-3 grid grid-cols-1 gap-2">
-                    <button 
-                      onClick={() => window.open(`http://localhost:8000/api/rtt/download_encrypted.php?id=${id}`)}
-                      className="w-full py-2.5 px-3 bg-teal-500/10 hover:bg-teal-500/20 border border-teal-500/20 rounded-lg text-[11px] font-bold text-teal-400 flex items-center justify-center gap-2 transition-all active:scale-95"
-                    >
-                      <Lock size={14} /> Unduh Dokumen (Encrypted ECC)
-                    </button>
-                    <div className="grid grid-cols-2 gap-2">
-                      <button 
-                        onClick={() => window.open(`http://localhost:8000/api/rtt/download_bundle.php?id=${id}&type=sig`)}
-                        className="py-2 px-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-[10px] font-bold text-slate-300 flex items-center justify-center gap-2 transition-all active:scale-95"
-                      >
-                        <Download size={12} /> Unduh .SIG
-                      </button>
-                      <button 
-                        onClick={() => window.open(`http://localhost:8000/api/rtt/download_bundle.php?id=${id}&type=pub`)}
-                        className="py-2 px-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-[10px] font-bold text-slate-300 flex items-center justify-center gap-2 transition-all active:scale-95"
-                      >
-                        <Key size={12} /> Unduh .PEM
-                      </button>
-                    </div>
-                  </div>
-                </>
-              ) : (
-                  <div className="w-full h-full bg-slate-800/30 border border-dashed border-slate-700/50 rounded-xl flex items-center justify-center text-slate-600 font-semibold text-[11px] text-center px-4">
-                    {doneCount < 8 ? `Lengkapi ${8 - doneCount} Module Tersisa` : 'Menunggu Status'}
-                  </div>
-                )}
-              </div>
+            <div className={`px-3 py-1.5 rounded-md border text-[11px] font-bold tracking-wider uppercase ${isSah ? 'bg-emerald-900/30 border-emerald-500/50 text-emerald-400' : 'bg-slate-800 border-slate-700 text-slate-400'}`}>
+              Status: {isSah ? 'SAH & TERENKRIPSI' : rtt.status.replace(/_/g, ' ')}
             </div>
           </div>
         </div>
 
-        {/* Modules Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 stagger-children">
-          {docModules.map((doc, idx) => {
-            const isMyRole = user?.role === 'sysadmin' || user?.role === 'kph'; 
-            return (
-              <div key={idx} className={`relative flex flex-col p-5 rounded-2xl border transition-all duration-300 overflow-hidden h-[220px] ${
-                doc.done 
-                  ? 'glass-card border-emerald-500/15 bg-gradient-to-br from-emerald-500/[0.05] to-transparent' 
-                  : 'glass-card glass-card-hover'
-              }`}>
-                <div className="flex justify-between items-start mb-5">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                    doc.done 
-                      ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20' 
-                      : 'bg-slate-800/80 text-slate-500 border border-white/[0.06]'
-                  }`}>
-                    {doc.icon}
-                  </div>
-                  {doc.done && (
-                    <div className="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/30">
-                      <CheckCircle2 size={14} />
-                    </div>
-                  )}
-                </div>
-                
-                <div className="flex-1 space-y-1">
-                  <h3 className="text-[14px] font-bold text-slate-100">{doc.name}</h3>
-                  <p className="text-slate-500 text-[12px] font-medium leading-relaxed">{doc.desc}</p>
-                </div>
-
-                <div className="mt-4 flex justify-between items-center pt-3 border-t border-white/[0.04]">
-                  <span className="text-[10px] font-semibold text-slate-600 uppercase tracking-wider">{doc.role} Unit</span>
-                  {isMyRole && (rtt.status === 'draft' || rtt.status === 'revisi_phw' || rtt.status === 'revisi_kph') && (
-                    <button onClick={() => setActiveModal(doc.key)} className={`px-4 py-1.5 text-[10px] font-bold transition-all ${doc.done ? 'btn-secondary' : 'btn-primary'}`}>
-                      {doc.done ? 'Edit Data' : 'Input Data'}
-                    </button>
-                  )}
-                </div>
+        {/* Security & Audit Info */}
+        <div className="bg-[#0f172a] border border-slate-700/50 rounded-lg p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="flex items-start gap-4">
+            <div className="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400 shrink-0 mt-0.5">
+              <ShieldCheck size={20} />
+            </div>
+            <div>
+              <h3 className="text-[14px] font-bold text-white">Jejak Audit Kriptografi</h3>
+              <p className="text-[11px] text-slate-400 font-mono mt-1">Hash ID: {rtt.hash || 'Menunggu finalisasi dokumen...'}</p>
+              <p className="text-[11px] text-slate-500 font-medium mt-0.5">Dilindungi algoritma asimetris ECC SECP256K1 & Hashing SHA-256</p>
+            </div>
+          </div>
+          
+          <div className="flex flex-wrap gap-2">
+            {doneCount === 8 && (rtt.status === 'draft' || rtt.status === 'revisi_phw' || rtt.status === 'revisi_kph') && (user?.role === 'sysadmin' || user?.role === 'kph') ? (
+              <button onClick={async () => {
+                if (!confirm("Kirim dokumen ini ke PHW untuk diverifikasi?")) return;
+                try {
+                  const res = await fetch(`http://localhost:8000/api/rtt/submit.php`, {
+                    method: "POST", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ rtt_id: id, token: localStorage.getItem('token') })
+                  });
+                  const d = await res.json();
+                  if (d.status === "success") {
+                    alert("Berhasil dikirim ke PHW!");
+                    fetchWorkspace();
+                  } else alert(d.message);
+                } catch(e) { alert("Error server"); }
+              }} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 border border-blue-500 text-white rounded-md text-[12px] font-bold transition-all shadow-lg">
+                Ajukan Verifikasi ke PHW
+              </button>
+            ) : rtt.status === 'menunggu_verifikasi_phw' ? (
+              <div className="px-4 py-2 bg-indigo-900/30 border border-indigo-700/50 text-indigo-400 rounded-md text-[11px] font-bold">
+                Menunggu Verifikasi PHW
               </div>
-            )
-          })}
+            ) : rtt.status === 'menunggu_pengesahan' ? (
+              <div className="px-4 py-2 bg-amber-900/30 border border-amber-700/50 text-amber-400 rounded-md text-[11px] font-bold">
+                Menunggu Pengesahan Final
+              </div>
+            ) : isSah ? (
+              <>
+                <button onClick={() => window.open(`http://localhost:8000/api/rtt/generate_pdf.php?id=${id}`)} className="px-4 py-2 bg-slate-800 border border-slate-600 hover:bg-slate-700 text-white rounded-md text-[11px] font-bold flex items-center gap-2 transition-all">
+                  <Printer size={14} /> Cetak PDF
+                </button>
+                <button onClick={() => window.open(`http://localhost:8000/api/rtt/download_encrypted.php?id=${id}`)} className="px-4 py-2 bg-emerald-900/40 border border-emerald-600/50 hover:bg-emerald-800/60 text-emerald-400 rounded-md text-[11px] font-bold flex items-center gap-2 transition-all">
+                  <Lock size={14} /> Unduh Enkripsi
+                </button>
+                <div className="flex gap-2">
+                  <button onClick={() => window.open(`http://localhost:8000/api/rtt/download_bundle.php?id=${id}&type=sig`)} className="px-3 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-md text-[10px] font-bold text-slate-300 flex items-center gap-1.5 transition-all">
+                    <Download size={12} /> .SIG
+                  </button>
+                  <button onClick={() => window.open(`http://localhost:8000/api/rtt/download_bundle.php?id=${id}&type=pub`)} className="px-3 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-md text-[10px] font-bold text-slate-300 flex items-center gap-1.5 transition-all">
+                    <Key size={12} /> .PEM
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="px-4 py-2 bg-slate-800/50 border border-slate-700/50 text-slate-500 rounded-md text-[11px] font-bold">
+                {doneCount < 8 ? `Modul Tersisa: ${8 - doneCount}` : 'Menunggu Proses'}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Progress & Modules List */}
+        <div className="bg-[#0b1120] border border-slate-700/50 rounded-lg overflow-hidden shadow-2xl">
+          <div className="p-5 border-b border-slate-700/50 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[#0f172a]">
+            <div>
+              <h3 className="text-[15px] font-bold text-white">Kelengkapan Lampiran Dokumen</h3>
+              <p className="text-[12px] text-slate-400 mt-0.5">Lengkapi seluruh formulir dan unggahan berkas di bawah ini.</p>
+            </div>
+            <div className="w-full md:w-64">
+              <div className="flex justify-between text-[11px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">
+                <span>Progres Pengisian</span>
+                <span className="text-emerald-400">{Math.round((doneCount/8)*100)}%</span>
+              </div>
+              <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+                <div className="h-full bg-emerald-500 transition-all duration-500" style={{ width: `${(doneCount/8)*100}%` }} />
+              </div>
+            </div>
+          </div>
+
+          <div className="divide-y divide-slate-700/50">
+            {docModules.map((doc, idx) => {
+              const isMyRole = user?.role === 'sysadmin' || user?.role === 'kph';
+              return (
+                <div key={idx} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-800/30 transition-colors">
+                  <div className="flex items-center gap-4">
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center border shrink-0 ${doc.done ? 'bg-emerald-900/20 border-emerald-500/30 text-emerald-400' : 'bg-slate-800/50 border-slate-700 text-slate-500'}`}>
+                      {doc.done ? <CheckCircle2 size={18} /> : doc.icon}
+                    </div>
+                    <div>
+                      <h4 className="text-[13px] font-bold text-slate-200">{doc.name}</h4>
+                      <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed hidden sm:block">{doc.desc}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto mt-2 sm:mt-0">
+                    <span className="text-[10px] font-bold px-2 py-1 bg-slate-800 text-slate-400 rounded uppercase border border-slate-700">
+                      Tugas: {doc.role}
+                    </span>
+                    {isMyRole && (rtt.status === 'draft' || rtt.status === 'revisi_phw' || rtt.status === 'revisi_kph') ? (
+                      <button 
+                        onClick={() => setActiveModal(doc.key)} 
+                        className={`w-24 py-1.5 text-[11px] font-bold rounded border transition-all ${doc.done ? 'bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700' : 'bg-blue-600/20 border-blue-500/50 text-blue-400 hover:bg-blue-600/40 hover:text-blue-300'}`}
+                      >
+                        {doc.done ? 'Ubah' : 'Lengkapi'}
+                      </button>
+                    ) : (
+                      <div className="w-24 text-right sm:text-center text-[10px] text-slate-600 font-bold uppercase">
+                        {doc.done ? 'Tersimpan' : '-'}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
         </div>
 
         {/* Modal */}
