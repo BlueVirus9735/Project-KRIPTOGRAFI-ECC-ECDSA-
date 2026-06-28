@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { TreePine, Eye, EyeOff, ArrowRight } from "lucide-react";
+import { Eye, EyeOff, ShieldCheck, LockKeyhole, Cpu } from "lucide-react";
 
 export default function Login() {
   const [username, setUsername] = useState("");
@@ -29,118 +29,172 @@ export default function Login() {
         localStorage.setItem("token", data.token);
         router.push("/");
       } else {
-        setError(data.message || "Login gagal");
+        setError(data.message || "Autentikasi gagal. Periksa kredensial Anda.");
       }
     } catch (err) {
-      setError("Kesalahan koneksi ke server");
+      setError("Kesalahan koneksi ke server pusat.");
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-mesh-login relative overflow-hidden">
-      {/* Decorative orbs */}
-      <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-emerald-500/[0.03] rounded-full blur-[100px] animate-float" />
-      <div
-        className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-blue-500/[0.03] rounded-full blur-[80px] animate-float"
-        style={{ animationDelay: "2s" }}
-      />
+    <div className="min-h-screen flex bg-[#030712] text-slate-200 overflow-hidden font-sans">
+      {/* Left Panel: Branding & Identity */}
+      <div className="hidden lg:flex w-[55%] relative flex-col justify-between p-12 bg-gradient-to-br from-[#022c22] via-[#064e3b] to-[#020617] overflow-hidden border-r border-emerald-900/30 shadow-2xl">
+        {/* Abstract Background Elements */}
+        <div className="absolute top-[-20%] left-[-10%] w-[800px] h-[800px] bg-emerald-500/10 rounded-full blur-[120px] mix-blend-screen pointer-events-none" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-teal-500/10 rounded-full blur-[100px] mix-blend-screen pointer-events-none" />
+        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay" />
 
-      <div className="w-full max-w-[420px] px-6 animate-scale-in relative z-10">
-        {/* Brand */}
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-xl shadow-emerald-500/20 animate-float">
-            <TreePine className="w-8 h-8 text-white" />
+        <div className="relative z-10 animate-slide-up">
+          <div className="flex items-center gap-4 mb-8">
+            <div className="w-16 h-16 rounded-xl bg-white p-2 shadow-2xl shadow-black/50 border border-white/10 backdrop-blur-sm">
+              <img src="/logo_perhutani.jpg" alt="Perum Perhutani Logo" className="w-full h-full object-contain rounded-md" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold tracking-tight text-white uppercase drop-shadow-md">PERUM PERHUTANI</h2>
+              <p className="text-emerald-200/80 text-sm font-medium tracking-wide">DIVISI REGIONAL JAWA BARAT DAN BANTEN</p>
+            </div>
           </div>
-          <h1 className="text-2xl font-extrabold text-white mb-1">
-            Sistem Pengelolaan Dokumen RTT
-          </h1>
-          <p className="text-slate-400 text-sm font-medium">
-            Perum Perhutani Divisi Regional Jawa Barat & Banten
-          </p>
         </div>
 
-        {/* Login Card */}
-        <div className="glass-card p-8 animate-glow">
-          {error && (
-            <div className="mb-5 p-3.5 bg-red-500/10 text-red-400 rounded-xl text-sm font-medium border border-red-500/20 flex items-center gap-2 animate-slide-down">
-              <div className="w-2 h-2 rounded-full bg-red-400 shrink-0" />
-              {error}
-            </div>
-          )}
+        <div className="relative z-10 max-w-2xl mb-12 animate-fade-in stagger-children" style={{ animationDelay: "0.2s" }}>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-xs font-bold mb-6 uppercase tracking-widest backdrop-blur-md">
+            <ShieldCheck size={14} /> Keamanan Militer
+          </div>
+          <h1 className="text-5xl font-extrabold text-white leading-tight mb-6 drop-shadow-2xl">
+            Sistem Manajemen <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-200">
+              Dokumen RTT Digital
+            </span>
+          </h1>
+          <p className="text-lg text-emerald-100/70 leading-relaxed font-light">
+            Infrastruktur digitalisasi dokumen Rencana Teknik Tahunan (RTT) yang diperkuat dengan kriptografi kurva eliptik (ECC) dan tanda tangan digital (ECDSA) untuk menjamin integritas, autentikasi, dan anti-penyangkalan data kehutanan.
+          </p>
 
-          <form onSubmit={handleLogin} className="space-y-5">
-            <div>
-              <label className="block text-[12px] font-semibold text-slate-400 mb-2">
-                Username
-              </label>
-              <input
-                type="text"
-                className="glass-input w-full px-4 py-3 text-sm"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="Masukkan username"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-[12px] font-semibold text-slate-400 mb-2">
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  className="glass-input w-full px-4 py-3 pr-11 text-sm"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Masukkan password"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
-                >
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
+          <div className="grid grid-cols-2 gap-6 mt-12">
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 rounded-lg bg-emerald-900/50 border border-emerald-500/20 flex items-center justify-center shrink-0">
+                <LockKeyhole className="w-5 h-5 text-emerald-400" />
+              </div>
+              <div>
+                <h4 className="font-bold text-white text-sm">Enkripsi Asimetris</h4>
+                <p className="text-xs text-emerald-200/60 mt-1 leading-relaxed">Perlindungan data spasial & lampiran menggunakan ECC SECP256K1.</p>
               </div>
             </div>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="btn-primary w-full py-3.5 text-sm flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
-            >
-              {isLoading ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Memproses...
-                </>
-              ) : (
-                <>
-                  Masuk ke Sistem
-                  <ArrowRight size={16} />
-                </>
-              )}
-            </button>
-          </form>
-
-          {/* <div className="mt-6 pt-5 border-t border-white/[0.06]">
-            <p className="text-[11px] text-slate-500 text-center font-medium">
-              Demo: <span className="text-slate-400">admin_kph</span> •{" "}
-              <span className="text-slate-400">admin_phw</span> •{" "}
-              <span className="text-slate-400">admin_direksi</span>
-              <span className="text-slate-600 block mt-0.5">
-                (password: password)
-              </span>
-            </p>
-          </div> */}
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 rounded-lg bg-teal-900/50 border border-teal-500/20 flex items-center justify-center shrink-0">
+                <Cpu className="w-5 h-5 text-teal-400" />
+              </div>
+              <div>
+                <h4 className="font-bold text-white text-sm">Integritas Algoritmik</h4>
+                <p className="text-xs text-teal-200/60 mt-1 leading-relaxed">Kanonikalisasi data otomatis divalidasi dengan hashing SHA-256 tingkat lanjut.</p>
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
 
-        {/* Footer */}
-        <p className="text-center text-[10px] text-slate-600 mt-6 font-medium">
-          Dilindungi enkripsi ECC & ECDSA • © 2026 Perhutani
-        </p>
+      {/* Right Panel: Login Form */}
+      <div className="w-full lg:w-[45%] flex items-center justify-center p-8 relative">
+        <div className="absolute inset-0 bg-[#030712] z-0" />
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-600/5 rounded-full blur-[120px] pointer-events-none z-0" />
+
+        <div className="w-full max-w-[420px] z-10 animate-scale-in">
+          {/* Mobile Header (Hidden on Desktop) */}
+          <div className="lg:hidden text-center mb-10">
+            <div className="w-20 h-20 bg-white rounded-2xl p-2.5 mx-auto mb-4 shadow-2xl border border-white/10">
+              <img src="/logo_perhutani.jpg" alt="Logo" className="w-full h-full object-contain" />
+            </div>
+            <h2 className="text-2xl font-bold text-white">Sistem RTT</h2>
+            <p className="text-slate-500 text-sm mt-1">Divre Jabar & Banten</p>
+          </div>
+
+          <div className="bg-[#0b1121]/80 backdrop-blur-xl border border-slate-800/60 rounded-3xl p-8 shadow-2xl shadow-black">
+            <div className="mb-8">
+              <h3 className="text-2xl font-bold text-white mb-2 tracking-tight">Otentikasi Akses</h3>
+              <p className="text-sm text-slate-400 font-medium">Masukkan kredensial korporat Anda untuk melanjutkan ke dashboard.</p>
+            </div>
+
+            {error && (
+              <div className="mb-6 p-4 bg-red-500/10 border-l-4 border-red-500 rounded-r-lg text-sm text-red-200 font-medium flex items-start gap-3 animate-slide-down">
+                <div className="w-4 h-4 rounded-full bg-red-500/20 flex items-center justify-center shrink-0 mt-0.5">
+                  <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                </div>
+                {error}
+              </div>
+            )}
+
+            <form onSubmit={handleLogin} className="space-y-6">
+              <div>
+                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2.5">
+                  Identitas Pengguna (Username)
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    className="w-full bg-[#0f172a] border border-slate-700/50 rounded-xl px-4 py-3.5 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all shadow-inner"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    placeholder="Contoh: admin_kph"
+                    required
+                    autoComplete="off"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2.5">
+                  Kata Sandi Kredensial
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    className="w-full bg-[#0f172a] border border-slate-700/50 rounded-xl px-4 py-3.5 pr-12 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all shadow-inner"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••••••"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors focus:outline-none"
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full relative group overflow-hidden rounded-xl p-[1px] mt-4"
+              >
+                <span className="absolute inset-0 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-500 opacity-70 group-hover:opacity-100 transition-opacity duration-300 animate-gradient-xy" />
+                <div className="relative bg-[#022c22] rounded-[11px] px-4 py-3.5 flex items-center justify-center gap-2 transition-all duration-300 group-hover:bg-transparent">
+                  {isLoading ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-emerald-200/30 border-t-emerald-200 rounded-full animate-spin" />
+                      <span className="font-bold text-sm text-white tracking-wide">Memverifikasi Otorisasi...</span>
+                    </>
+                  ) : (
+                    <span className="font-bold text-sm text-white tracking-wide">OTORISASI MASUK</span>
+                  )}
+                </div>
+              </button>
+            </form>
+          </div>
+
+          <div className="mt-8 text-center flex flex-col items-center gap-2">
+            <div className="flex items-center gap-1.5 text-slate-500 justify-center">
+              <ShieldCheck size={14} />
+              <span className="text-xs font-semibold tracking-wide uppercase">Dilindungi oleh Kriptografi Asimetris</span>
+            </div>
+            <p className="text-[10px] text-slate-600 font-medium">© 2026 Hak Cipta Perum Perhutani Divisi Regional Jawa Barat dan Banten.</p>
+          </div>
+        </div>
       </div>
     </div>
   );
