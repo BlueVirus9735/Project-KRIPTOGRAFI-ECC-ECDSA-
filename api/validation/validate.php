@@ -13,7 +13,9 @@ $rtt_id = $data['rtt_id'] ?? 0;
 
 $stmt = $pdo->prepare("SELECT id FROM users WHERE session_token = ?");
 $stmt->execute([$token]);
-if (!$stmt->fetch()) { http_response_code(401); echo json_encode(['status'=>'error','message'=>'Sesi tidak valid']); exit; }
+$session_user = $stmt->fetch();
+if (!$session_user) { http_response_code(401); echo json_encode(['status'=>'error','message'=>'Sesi tidak valid']); exit; }
+$validated_by = $session_user['id'];
 
 // Get RTT
 $stmt = $pdo->prepare("SELECT * FROM rtt WHERE id = ?");
@@ -115,9 +117,9 @@ if (!$rtt) { echo json_encode(['status'=>'error','message'=>'RTT tidak ditemukan
         $rtt_id, 
         1, // status_kph
         1, // status_phw
-        $total_valid, // status_divisi indicates final technical validity
+        $total_valid, // status_divisi = final technical validity
         $catatan_json,
-        1 // Admin system
+        $validated_by // user yang sedang login
     ]);
 
     echo json_encode([

@@ -178,7 +178,7 @@ export default function Sidebar({ user }: SidebarProps) {
           name: "Dekripsi Dokumen",
           path: "/validation/decrypt",
           icon: <LockOpen size={18} />,
-        }
+        },
       );
     }
 
@@ -193,14 +193,11 @@ export default function Sidebar({ user }: SidebarProps) {
     const laporanItems = [];
 
     if (hasPermission(user, PERMISSIONS.REPORT_VIEW)) {
-      laporanItems.push(
-        {
-          name: "Laporan RTT",
-          path: "/reports",
-          icon: <BarChart2 size={18} />,
-        },
-        { name: "Statistik", path: "/statistics", icon: <Layers size={18} /> },
-      );
+      laporanItems.push({
+        name: "Laporan RTT",
+        path: "/reports",
+        icon: <BarChart2 size={18} />,
+      });
     }
 
     if (laporanItems.length > 0) {
@@ -225,11 +222,6 @@ export default function Sidebar({ user }: SidebarProps) {
             path: "/admin/audit",
             icon: <ClipboardList size={18} />,
           },
-          {
-            name: "Pengaturan",
-            path: "/admin/settings",
-            icon: <Settings size={18} />,
-          },
         ],
       });
     }
@@ -244,7 +236,11 @@ export default function Sidebar({ user }: SidebarProps) {
       {/* Brand Header */}
       <div className="h-[72px] flex items-center px-7 gap-3.5 shrink-0 border-b border-white/[0.04]">
         <div className="w-9 h-9 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20 overflow-hidden bg-white shrink-0">
-          <img src="/logo_perhutani.jpg" alt="Logo Perhutani" className="w-full h-full object-contain p-0.5" />
+          <img
+            src="/logo_perhutani.jpg"
+            alt="Logo Perhutani"
+            className="w-full h-full object-contain p-0.5"
+          />
         </div>
         <div>
           <h2 className="text-[13px] font-extrabold text-white tracking-wide">

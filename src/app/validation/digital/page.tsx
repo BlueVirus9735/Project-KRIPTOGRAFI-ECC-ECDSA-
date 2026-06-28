@@ -138,10 +138,6 @@ function DigitalValidationContent() {
           <Fingerprint className="text-emerald-400" /> Validasi Digital
           Kriptografi
         </h1>
-        <p className="text-slate-500 text-[13px] mt-1 font-medium">
-          Audit integritas dan autentikasi dokumen RTT yang telah disahkan
-          secara otomatis dari database
-        </p>
       </div>
 
       {/* Select RTT */}

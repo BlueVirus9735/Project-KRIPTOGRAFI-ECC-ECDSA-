@@ -24,6 +24,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const router = useRouter();
   const pathname = usePathname();
   const [user, setUser] = useState<any>(null);
+  const [token, setToken] = useState<string>("");
   const [loading, setLoading] = useState(true);
 
   const getPageTitle = () => {
@@ -48,9 +49,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     const localToken = localStorage.getItem("token");
     if (!localToken) {
       router.push("/login");
+      setLoading(false);
     } else {
+      setToken(localToken);
       fetch(`${API}/auth/me.php`, {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token: localToken })
       })
       .then(res => res.json())
@@ -59,11 +63,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           setUser(data.user);
         } else {
           localStorage.removeItem("token");
+          setToken("");
           router.push("/login");
         }
       })
       .catch(() => {
         localStorage.removeItem("token");
+        setToken("");
         router.push("/login");
       })
       .finally(() => setLoading(false));
@@ -87,7 +93,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   if (!user) return null;
 
   return (
-    <AuthContext.Provider value={{ user, token: localStorage.getItem("token") || "" }}>
+    <AuthContext.Provider value={{ user, token }}>
       <div className="flex h-screen w-full bg-[#0b1120] text-slate-100 font-sans overflow-hidden">
         
         {/* Sidebar */}

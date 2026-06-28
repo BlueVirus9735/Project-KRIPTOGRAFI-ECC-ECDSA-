@@ -29,7 +29,10 @@ function ValidationContent() {
       const data = await res.json();
       if (data.status === "success") setResult(data.validasi);
       else alert(data.message);
-    } catch (e) { alert("Gagal melakukan validasi"); }
+    } catch (e: any) { 
+      console.error("Validation error:", e);
+      alert("Gagal melakukan validasi: " + (e?.message || "Unknown error")); 
+    }
     finally { setLoading(false); }
   };
 
