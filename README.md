@@ -1,36 +1,110 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🌲 Sistem Otentikasi Digital RTT & RPKH Perum Perhutani
 
-## Getting Started
+![Next.js](https://img.shields.io/badge/Next.js-14+-black?style=for-the-badge&logo=next.js)
+![React](https://img.shields.io/badge/React-18+-blue?style=for-the-badge&logo=react)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC?style=for-the-badge&logo=tailwind-css)
+![PHP](https://img.shields.io/badge/PHP-8.2+-777BB4?style=for-the-badge&logo=php)
+![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?style=for-the-badge&logo=mysql)
+![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python)
+![Security](https://img.shields.io/badge/Security-ECC_ECDSA-red?style=for-the-badge&logo=security)
 
-First, run the development server:
+**Proyek Prototipe Keamanan Sistem Informasi Manajemen Rencana Teknik Tahunan (RTT) dan Rencana Pengaturan Kelestarian Hutan (RPKH) menggunakan Kriptografi Kurva Eliptik (Elliptic Curve Cryptography - ECDSA) dan Hashing SHA-256.**
 
+---
+
+## 📖 Deskripsi Proyek
+
+Aplikasi ini merupakan sistem manajemen dokumen digital yang dibangun khusus untuk **Perum Perhutani Divisi Regional Jawa Barat dan Banten**. Tujuan utama dari sistem ini adalah mendigitalisasi proses pengajuan, persetujuan, dan pengesahan dokumen kelestarian hutan (RPKH & RTT) sembari memberikan lapisan keamanan militer tingkat tinggi untuk mencegah manipulasi, pemalsuan, dan perubahan data secara ilegal.
+
+Sistem ini menerapkan **Kriptografi Asimetris (Elliptic Curve Cryptography)** dengan algoritma **ECDSA (SECP256K1)** untuk Tanda Tangan Digital (Digital Signature) dan **SHA-256** untuk menjamin integritas data (Hash Integrity).
+
+## ✨ Fitur Utama
+
+- 🔐 **Tanda Tangan Digital (ECDSA):** Setiap dokumen RTT yang disahkan akan ditandatangani secara digital menggunakan *Private Key* pengguna. Verifikasi dilakukan menggunakan *Public Key* untuk memastikan dokumen benar-benar disahkan oleh pihak yang berwenang.
+- 🛡️ **Integritas Hash (SHA-256):** Data krusial seperti identitas dokumen, detail tebangan, dan parameter kelestarian hutan di-*hash* menjadi satu kesatuan payload kanonikal. Perubahan sekecil 1 karakter pada database akan membuat status dokumen menjadi **INVALID / PALSU**.
+- 📄 **Pembuatan PDF Laporan Resmi (Real-time):** Men-generate laporan RTT secara instan dalam format PDF Lanskap A4 yang sangat elegan, lengkap dengan *Watermark* Otentikasi Digital dan stempel sah/palsu dinamis.
+- 👥 **Role-Based Access Control (RBAC):** Akses multi-tier berjenjang mulai dari tingkat **KPH**, **PHW**, hingga **Divisi Regional**.
+- 📂 **Enkripsi File Berkas:** Melindungi lampiran dan dokumen spasial (peta) dengan sistem enkripsi *Asymmetric* sehingga data tidak bisa bocor meski *server* diretas.
+
+---
+
+## 🛠️ Tech Stack & Arsitektur
+
+Proyek ini dibangun menggunakan arsitektur modern terpisah (*decoupled architecture*):
+
+### Frontend (Client-Side)
+- **Framework:** Next.js (dengan fitur Turbopack untuk HMR super cepat)
+- **Library UI:** React.js
+- **Styling:** Tailwind CSS (Modern Glassmorphism UI)
+- **Icons:** Lucide React
+
+### Backend (API & Logika Bisnis)
+- **Bahasa:** PHP (Native/Vanilla) via API RESTful
+- **Database:** MySQL
+- **Autentikasi:** Custom Secure Session Token Storage
+
+### Core Cryptography Engine
+- **Engine Utama:** Python Scripting terintegrasi dengan PHP (`shell_exec`)
+- **Library Kriptografi:** `ecdsa`, `hashlib`, `cryptography`
+- **Curve Standard:** SECP256K1 (Standar Keamanan Bitcoin)
+
+---
+
+## 🚀 Panduan Instalasi (Development Mode)
+
+Ikuti langkah-langkah di bawah ini untuk menjalankan proyek secara lokal di laptop/komputer Anda:
+
+### 1. Persiapan Sistem (Prerequisites)
+Pastikan Anda sudah menginstal perangkat lunak berikut:
+- **Node.js** (Minimal versi 18.x) & **npm** atau **pnpm**
+- **Laragon / XAMPP** (Untuk menjalankan Apache/Nginx, PHP 8+, dan MySQL)
+- **Python** (Minimal versi 3.10) beserta pip
+
+### 2. Konfigurasi Database (MySQL)
+1. Buka Laragon/XAMPP dan jalankan service MySQL.
+2. Buat database baru dengan nama: `perhutani_rtt`.
+3. Import schema database yang tersedia di folder root (atau migrasi manual).
+
+### 3. Konfigurasi Library Python (Cryptography Engine)
+Sistem membutuhkan *library* Python untuk menjalankan algoritma tanda tangan digital. Buka terminal (CMD/PowerShell) dan jalankan:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pip install ecdsa cryptography
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 4. Instalasi Dependencies Frontend
+Buka terminal di dalam folder proyek, lalu jalankan:
+```bash
+npm install
+# atau
+pnpm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 5. Menjalankan Aplikasi
+Sistem ini menggunakan fitur `concurrently` untuk menyalakan Backend PHP, Tailwind Watcher, dan Next.js secara bersamaan.
+Jalankan perintah ajaib ini:
+```bash
+npm run dev
+# atau
+pnpm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Server akan aktif secara otomatis pada:
+- **Frontend (UI):** [http://localhost:3000](http://localhost:3000)
+- **Backend (API PHP):** [http://localhost:8000](http://localhost:8000)
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## 🔒 Alur Kerja Keamanan (Digital Signature Flow)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. **Pembuatan Dokumen:** User menginput data RTT. Data disimpan di database.
+2. **Kanonikalisasi JSON:** Backend PHP menarik seluruh struktur relasional RTT (Summary, Nett, Klem, Tebangan), mengurutkannya secara spesifik, dan mengubahnya menjadi JSON murni tanpa *whitespace*.
+3. **Hashing:** JSON tersebut di-*hash* menggunakan `SHA-256`.
+4. **Penandatanganan (Signing):** Hash tersebut dienkripsi oleh Python Engine menggunakan **Private Key** pejabat berwenang (ECC SECP256K1) menghasilkan *Digital Signature*.
+5. **Verifikasi:** Ketika auditor menekan tombol "Validasi", sistem akan mereka-ulang payload JSON dari tabel, menghitung ulang *hash*, dan memverifikasi *signature* tersebut menggunakan **Public Key**. Jika hash cocok dan signature terverifikasi, dokumen dinyatakan **SAH**.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 📞 Dukungan / Penulis
+Proyek ini dikembangkan sebagai bagian dari Skripsi/Tugas Akhir untuk menjawab tantangan keamanan dokumen dan integritas data di sektor kehutanan nasional.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**"Melindungi kelestarian hutan dimulai dari melindungi integritas datanya."** 🌳
