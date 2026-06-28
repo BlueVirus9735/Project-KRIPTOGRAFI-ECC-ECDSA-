@@ -41,27 +41,41 @@ export default function Login() {
   return (
     <div className="min-h-screen flex bg-[#030712] text-slate-200 overflow-hidden font-sans">
       {/* Left Panel: Branding & Identity */}
-      <div className="hidden lg:flex w-[55%] relative flex-col justify-between p-12 bg-gradient-to-br from-[#022c22] via-[#064e3b] to-[#020617] overflow-hidden border-r border-emerald-900/30 shadow-2xl">
+      <div className="hidden lg:flex w-[55%] relative flex-col justify-between p-12 bg-[#020617] overflow-hidden border-r border-emerald-900/30 shadow-2xl">
+        {/* Background Image & Overlay */}
+        <div className="absolute inset-0 bg-[url('/pexels-lauripoldre-36099638.jpg')] bg-cover bg-center bg-no-repeat opacity-40 mix-blend-luminosity z-0" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[#022c22]/90 via-[#064e3b]/80 to-[#020617]/95 z-0" />
+        
         {/* Abstract Background Elements */}
-        <div className="absolute top-[-20%] left-[-10%] w-[800px] h-[800px] bg-emerald-500/10 rounded-full blur-[120px] mix-blend-screen pointer-events-none" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-teal-500/10 rounded-full blur-[100px] mix-blend-screen pointer-events-none" />
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay" />
+        <div className="absolute top-[-20%] left-[-10%] w-[800px] h-[800px] bg-emerald-500/20 rounded-full blur-[120px] mix-blend-screen pointer-events-none z-0" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-teal-500/20 rounded-full blur-[100px] mix-blend-screen pointer-events-none z-0" />
 
         <div className="relative z-10 animate-slide-up">
           <div className="flex items-center gap-4 mb-8">
             <div className="w-16 h-16 rounded-xl bg-white p-2 shadow-2xl shadow-black/50 border border-white/10 backdrop-blur-sm">
-              <img src="/logo_perhutani.jpg" alt="Perum Perhutani Logo" className="w-full h-full object-contain rounded-md" />
+              <img
+                src="/logo_perhutani.jpg"
+                alt="Perum Perhutani Logo"
+                className="w-full h-full object-contain rounded-md"
+              />
             </div>
             <div>
-              <h2 className="text-xl font-bold tracking-tight text-white uppercase drop-shadow-md">PERUM PERHUTANI</h2>
-              <p className="text-emerald-200/80 text-sm font-medium tracking-wide">DIVISI REGIONAL JAWA BARAT DAN BANTEN</p>
+              <h2 className="text-xl font-bold tracking-tight text-white uppercase drop-shadow-md">
+                PERUM PERHUTANI
+              </h2>
+              <p className="text-emerald-200/80 text-sm font-medium tracking-wide">
+                DIVISI REGIONAL JAWA BARAT DAN BANTEN
+              </p>
             </div>
           </div>
         </div>
 
-        <div className="relative z-10 max-w-2xl mb-12 animate-fade-in stagger-children" style={{ animationDelay: "0.2s" }}>
+        <div
+          className="relative z-10 max-w-2xl mb-12 animate-fade-in stagger-children"
+          style={{ animationDelay: "0.2s" }}
+        >
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-xs font-bold mb-6 uppercase tracking-widest backdrop-blur-md">
-            <ShieldCheck size={14} /> Keamanan Militer
+            <ShieldCheck size={14} />
           </div>
           <h1 className="text-5xl font-extrabold text-white leading-tight mb-6 drop-shadow-2xl">
             Sistem Manajemen <br />
@@ -70,7 +84,9 @@ export default function Login() {
             </span>
           </h1>
           <p className="text-lg text-emerald-100/70 leading-relaxed font-light">
-            Infrastruktur digitalisasi dokumen Rencana Teknik Tahunan (RTT) yang diperkuat dengan kriptografi kurva eliptik (ECC) dan tanda tangan digital (ECDSA) untuk menjamin integritas, autentikasi, dan anti-penyangkalan data kehutanan.
+            Platform digitalisasi dokumen Rencana Teknik Tahunan (RTT) yang
+            dilengkapi enkripsi dan tanda tangan digital untuk menjaga keamanan,
+            keaslian, dan keutuhan data
           </p>
 
           <div className="grid grid-cols-2 gap-6 mt-12">
@@ -79,8 +95,12 @@ export default function Login() {
                 <LockKeyhole className="w-5 h-5 text-emerald-400" />
               </div>
               <div>
-                <h4 className="font-bold text-white text-sm">Enkripsi Asimetris</h4>
-                <p className="text-xs text-emerald-200/60 mt-1 leading-relaxed">Perlindungan data spasial & lampiran menggunakan ECC SECP256K1.</p>
+                <h4 className="font-bold text-white text-sm">
+                  Kerahasiaan Terjamin
+                </h4>
+                <p className="text-xs text-emerald-200/60 mt-1 leading-relaxed">
+                  Seluruh file lampiran dan peta lokasi dikunci rapat sehingga aman dari pencurian data.
+                </p>
               </div>
             </div>
             <div className="flex items-start gap-4">
@@ -88,8 +108,12 @@ export default function Login() {
                 <Cpu className="w-5 h-5 text-teal-400" />
               </div>
               <div>
-                <h4 className="font-bold text-white text-sm">Integritas Algoritmik</h4>
-                <p className="text-xs text-teal-200/60 mt-1 leading-relaxed">Kanonikalisasi data otomatis divalidasi dengan hashing SHA-256 tingkat lanjut.</p>
+                <h4 className="font-bold text-white text-sm">
+                  Keaslian Dokumen
+                </h4>
+                <p className="text-xs text-teal-200/60 mt-1 leading-relaxed">
+                  Mendeteksi setiap perubahan data sekecil apapun secara otomatis untuk mencegah pemalsuan.
+                </p>
               </div>
             </div>
           </div>
@@ -105,7 +129,11 @@ export default function Login() {
           {/* Mobile Header (Hidden on Desktop) */}
           <div className="lg:hidden text-center mb-10">
             <div className="w-20 h-20 bg-white rounded-2xl p-2.5 mx-auto mb-4 shadow-2xl border border-white/10">
-              <img src="/logo_perhutani.jpg" alt="Logo" className="w-full h-full object-contain" />
+              <img
+                src="/logo_perhutani.jpg"
+                alt="Logo"
+                className="w-full h-full object-contain"
+              />
             </div>
             <h2 className="text-2xl font-bold text-white">Sistem RTT</h2>
             <p className="text-slate-500 text-sm mt-1">Divre Jabar & Banten</p>
@@ -113,8 +141,9 @@ export default function Login() {
 
           <div className="bg-[#0b1121]/80 backdrop-blur-xl border border-slate-800/60 rounded-3xl p-8 shadow-2xl shadow-black">
             <div className="mb-8">
-              <h3 className="text-2xl font-bold text-white mb-2 tracking-tight">Otentikasi Akses</h3>
-              <p className="text-sm text-slate-400 font-medium">Masukkan kredensial korporat Anda untuk melanjutkan ke dashboard.</p>
+              <h3 className="text-2xl font-bold text-white mb-2 tracking-tight text-center  ">
+                Masuk Sistem
+              </h3>
             </div>
 
             {error && (
@@ -129,7 +158,7 @@ export default function Login() {
             <form onSubmit={handleLogin} className="space-y-6">
               <div>
                 <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2.5">
-                  Identitas Pengguna (Username)
+                  Username
                 </label>
                 <div className="relative">
                   <input
@@ -137,7 +166,7 @@ export default function Login() {
                     className="w-full bg-[#0f172a] border border-slate-700/50 rounded-xl px-4 py-3.5 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all shadow-inner"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    placeholder="Contoh: admin_kph"
+                    placeholder="Masukan Username Anda"
                     required
                     autoComplete="off"
                   />
@@ -146,7 +175,7 @@ export default function Login() {
 
               <div>
                 <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2.5">
-                  Kata Sandi Kredensial
+                  Password
                 </label>
                 <div className="relative">
                   <input
@@ -154,7 +183,7 @@ export default function Login() {
                     className="w-full bg-[#0f172a] border border-slate-700/50 rounded-xl px-4 py-3.5 pr-12 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all shadow-inner"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••••••"
+                    placeholder="Masukan Password Anda"
                     required
                   />
                   <button
@@ -177,10 +206,14 @@ export default function Login() {
                   {isLoading ? (
                     <>
                       <div className="w-5 h-5 border-2 border-emerald-200/30 border-t-emerald-200 rounded-full animate-spin" />
-                      <span className="font-bold text-sm text-white tracking-wide">Memverifikasi Otorisasi...</span>
+                      <span className="font-bold text-sm text-white tracking-wide">
+                        Memverifikasi Otorisasi...
+                      </span>
                     </>
                   ) : (
-                    <span className="font-bold text-sm text-white tracking-wide">OTORISASI MASUK</span>
+                    <span className="font-bold text-sm text-white tracking-wide">
+                      MASUK
+                    </span>
                   )}
                 </div>
               </button>
@@ -190,9 +223,14 @@ export default function Login() {
           <div className="mt-8 text-center flex flex-col items-center gap-2">
             <div className="flex items-center gap-1.5 text-slate-500 justify-center">
               <ShieldCheck size={14} />
-              <span className="text-xs font-semibold tracking-wide uppercase">Dilindungi oleh Kriptografi Asimetris</span>
+              <span className="text-xs font-semibold tracking-wide uppercase">
+                Dilindungi oleh Kriptografi Asimetris
+              </span>
             </div>
-            <p className="text-[10px] text-slate-600 font-medium">© 2026 Hak Cipta Perum Perhutani Divisi Regional Jawa Barat dan Banten.</p>
+            <p className="text-[10px] text-slate-600 font-medium">
+              © 2026 Hak Cipta Perum Perhutani Divisi Regional Jawa Barat dan
+              Banten.
+            </p>
           </div>
         </div>
       </div>
