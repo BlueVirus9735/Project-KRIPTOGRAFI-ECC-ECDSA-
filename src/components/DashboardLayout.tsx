@@ -148,7 +148,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </header>
 
           {/* Main Content */}
-          <main className="flex-1 overflow-y-auto px-8 py-8 custom-scrollbar relative z-10 box-border">
+          <main className="flex-1 overflow-y-auto px-8 py-8 custom-scrollbar box-border">
             {children}
           </main>
 
