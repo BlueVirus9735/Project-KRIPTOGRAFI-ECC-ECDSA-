@@ -44,8 +44,18 @@ function RttCreateContent() {
     const saved = localStorage.getItem('rtt_draft');
     if (saved) {
       const data = JSON.parse(saved);
-      if (data.identitas) setIdentitas(data.identitas);
-      if (data.sk) setSk(data.sk);
+      if (data.identitas) {
+        setIdentitas({
+          ...data.identitas,
+          nomor_dokumen: data.identitas.nomor_dokumen || generateNomor("RTT/PHT")
+        });
+      }
+      if (data.sk) {
+        setSk({
+          ...data.sk,
+          nomor_sk: data.sk.nomor_sk || generateNomor("SK/RTT")
+        });
+      }
       if (data.keputusan) setKeputusan(data.keputusan);
       if (data.tebangan) setTebangan(data.tebangan);
       if (data.beritaAcara) setBeritaAcara(data.beritaAcara);
