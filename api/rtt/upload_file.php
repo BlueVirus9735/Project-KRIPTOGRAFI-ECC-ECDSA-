@@ -39,6 +39,21 @@ if (!move_uploaded_file($file['tmp_name'], $filepath)) {
     echo json_encode(['status'=>'error','message'=>'Gagal menyimpan file']); exit;
 }
 
+// -- TRANSPARENT ENCRYPTION --
+$enc_filepath = $filepath . '.enc';
+$system_pub_key = realpath(__DIR__ . '/../keys/system_keys/public_key.pem');
+$python_script = realpath(__DIR__ . '/../../crypto/encrypt.py');
+
+$cmd = escapeshellcmd("python") . " " . escapeshellarg($python_script) . " " . escapeshellarg($system_pub_key) . " " . escapeshellarg($filepath) . " " . escapeshellarg($enc_filepath) . " 2>&1";
+$output = shell_exec($cmd);
+
+if (file_exists($enc_filepath)) {
+    unlink($filepath); // Hapus file asli yang tidak terenkripsi
+    $filename = $filename . '.enc';
+} else {
+    echo json_encode(['status'=>'error','message'=>'Gagal mengenkripsi file: ' . $output]); exit;
+}
+
 $relative_path = $type . '/' . $filename;
 
 if ($type === 'peta') {

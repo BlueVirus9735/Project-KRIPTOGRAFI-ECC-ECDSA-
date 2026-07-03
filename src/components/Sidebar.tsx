@@ -173,12 +173,7 @@ export default function Sidebar({ user }: SidebarProps) {
           name: "Validasi Digital",
           path: "/validation/digital",
           icon: <Shield size={18} />,
-        },
-        {
-          name: "Dekripsi Dokumen",
-          path: "/validation/decrypt",
-          icon: <LockOpen size={18} />,
-        },
+        }
       );
     }
 

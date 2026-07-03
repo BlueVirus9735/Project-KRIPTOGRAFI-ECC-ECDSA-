@@ -29,7 +29,10 @@ if (!$rtt) { echo json_encode(['status'=>'error','message'=>'RTT tidak ditemukan
     $calculated_hash = hash('sha256', $json_data);
 
     // ===== 1. VALIDASI HASH =====
-    if ($calculated_hash === $rtt['hash']) {
+    if ($rtt['status'] !== 'disahkan') {
+        $status_hash = 'pending';
+        $hash_detail = 'Menunggu pengesahan Kepala Divisi untuk menghasilkan Hash final.';
+    } else if ($calculated_hash === $rtt['hash']) {
         $status_hash = 'valid';
         $hash_detail = 'Hash SHA-256 cocok (' . substr($calculated_hash, 0, 16) . '...)';
     } else {

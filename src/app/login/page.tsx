@@ -44,7 +44,7 @@ export default function Login() {
       <div className="absolute inset-0 bg-[#020617] z-0" />
       <div className="absolute inset-0 bg-[url('/pexels-lauripoldre-36099638.jpg')] bg-cover bg-center bg-no-repeat opacity-50 z-0" />
       <div className="absolute inset-0 bg-gradient-to-t from-[#020617] via-[#022c22]/60 to-[#020617]/80 z-0" />
-      
+
       {/* Global Abstract Background Elements */}
       <div className="absolute top-[-20%] left-[-10%] w-[800px] h-[800px] bg-emerald-500/20 rounded-full blur-[120px] mix-blend-screen pointer-events-none z-0" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-teal-500/10 rounded-full blur-[100px] mix-blend-screen pointer-events-none z-0" />
@@ -54,10 +54,14 @@ export default function Login() {
         {/* Header / Brand */}
         <div className="text-center mb-8">
           <div className="w-20 h-20 bg-white rounded-2xl p-2.5 mx-auto mb-5 shadow-2xl border border-white/10">
-            <img src="/logo_perhutani.jpg" alt="Logo" className="w-full h-full object-contain" />
+            <img
+              src="/logo_perhutani.jpg"
+              alt="Logo"
+              className="w-full h-full object-contain"
+            />
           </div>
           <h2 className="text-2xl font-bold text-white tracking-tight drop-shadow-md">
-            Sistem Manajemen RTT
+            Perum Perhutani
           </h2>
           <p className="text-emerald-200/80 text-sm font-medium mt-1.5 tracking-wide uppercase">
             Divisi Regional Jawa Barat & Banten
@@ -67,7 +71,9 @@ export default function Login() {
         {/* Login Card */}
         <div className="bg-slate-900/40 backdrop-blur-2xl border border-slate-700/50 rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.4)]">
           <div className="mb-8 text-center">
-            <h3 className="text-xl font-bold text-white mb-2 tracking-tight">Otentikasi Akses</h3>
+            <h3 className="text-xl font-bold text-white mb-2 tracking-tight">
+              Login
+            </h3>
           </div>
 
           {error && (
@@ -82,7 +88,7 @@ export default function Login() {
           <form onSubmit={handleLogin} className="space-y-6">
             <div>
               <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2.5">
-                Identitas Pengguna
+                Username
               </label>
               <div className="relative">
                 <input
@@ -99,7 +105,7 @@ export default function Login() {
 
             <div>
               <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2.5">
-                Kata Sandi Kredensial
+                Password
               </label>
               <div className="relative">
                 <input
@@ -130,10 +136,14 @@ export default function Login() {
                 {isLoading ? (
                   <>
                     <div className="w-5 h-5 border-2 border-emerald-200/30 border-t-emerald-200 rounded-full animate-spin" />
-                    <span className="font-bold text-sm text-white tracking-wide">Memverifikasi...</span>
+                    <span className="font-bold text-sm text-white tracking-wide">
+                      Memverifikasi...
+                    </span>
                   </>
                 ) : (
-                  <span className="font-bold text-sm text-white tracking-wide">OTORISASI MASUK</span>
+                  <span className="font-bold text-sm text-white tracking-wide">
+                    MASUK
+                  </span>
                 )}
               </div>
             </button>
@@ -143,9 +153,14 @@ export default function Login() {
         <div className="mt-8 text-center flex flex-col items-center gap-2">
           <div className="flex items-center gap-1.5 text-slate-400 justify-center backdrop-blur-sm px-3 py-1 rounded-full bg-slate-900/30 border border-slate-800/50">
             <ShieldCheck size={14} className="text-emerald-400" />
-            <span className="text-[11px] font-semibold tracking-wide uppercase">Dilindungi Kriptografi Asimetris ECC</span>
+            <span className="text-[11px] font-semibold tracking-wide uppercase">
+              Dilindungi Kriptografi Asimetris ECC
+            </span>
           </div>
-          <p className="text-[10px] text-slate-500 font-medium mt-1">© 2026 Hak Cipta Perum Perhutani Divisi Regional Jawa Barat dan Banten.</p>
+          <p className="text-[10px] text-slate-500 font-medium mt-1">
+            © 2026 Hak Cipta Perum Perhutani Divisi Regional Jawa Barat dan
+            Banten.
+          </p>
         </div>
       </div>
     </div>
