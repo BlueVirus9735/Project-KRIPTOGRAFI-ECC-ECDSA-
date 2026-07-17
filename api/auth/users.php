@@ -72,7 +72,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 switch ($method) {
     case 'GET':
-        $stmt = $pdo->query("SELECT id, nama, username, email, role, is_active, created_at, last_login FROM users ORDER BY created_at DESC");
+        $stmt = $pdo->query("SELECT id, nama, username, email, role, wilayah_kph, wilayah_phw, is_active, created_at, last_login FROM users ORDER BY created_at DESC");
         $users = $stmt->fetchAll();
         echo json_encode(['status' => 'success', 'data' => $users]);
         break;
@@ -87,7 +87,7 @@ switch ($method) {
             exit;
         }
         
-        $allowedRoles = ['sysadmin', 'kph', 'phw', 'direksi'];
+        $allowedRoles = ['sysadmin', 'admin', 'kph', 'phw', 'direksi', 'gis', 'lapangan'];
         if (!in_array($data['role'], $allowedRoles)) {
             http_response_code(400);
             echo json_encode(['status' => 'error', 'message' => 'Invalid role']);
@@ -96,13 +96,15 @@ switch ($method) {
         
         try {
             $hashedPassword = password_hash($data['password'], PASSWORD_DEFAULT);
-            $stmt = $pdo->prepare("INSERT INTO users (nama, username, email, password, role, is_active) VALUES (?, ?, ?, ?, ?, 1)");
+            $stmt = $pdo->prepare("INSERT INTO users (nama, username, email, password, role, wilayah_kph, wilayah_phw, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, 1)");
             $stmt->execute([
                 $data['nama'],
                 $data['username'],
                 $data['email'] ?? null,
                 $hashedPassword,
-                $data['role']
+                $data['role'],
+                $data['role'] === 'kph' ? ($data['wilayah_kph'] ?? null) : null,
+                ($data['role'] === 'kph' || $data['role'] === 'phw') ? ($data['wilayah_phw'] ?? null) : null
             ]);
             
             $newUserId = $pdo->lastInsertId();
@@ -156,7 +158,7 @@ switch ($method) {
             $params[] = $data['email'];
         }
         if (isset($data['role'])) {
-            $allowedRoles = ['sysadmin', 'kph', 'phw', 'direksi'];
+            $allowedRoles = ['sysadmin', 'admin', 'kph', 'phw', 'direksi', 'gis', 'lapangan'];
             if (!in_array($data['role'], $allowedRoles)) {
                 http_response_code(400);
                 echo json_encode(['status' => 'error', 'message' => 'Invalid role']);
@@ -164,6 +166,23 @@ switch ($method) {
             }
             $updates[] = "role = ?";
             $params[] = $data['role'];
+
+            if ($data['role'] !== 'kph') {
+                $updates[] = "wilayah_kph = NULL";
+            }
+            
+            if ($data['role'] !== 'kph' && $data['role'] !== 'phw') {
+                $updates[] = "wilayah_phw = NULL";
+            }
+        }
+        if (isset($data['wilayah_kph']) && (isset($data['role']) ? $data['role'] === 'kph' : $oldData['role'] === 'kph')) {
+            $updates[] = "wilayah_kph = ?";
+            $params[] = $data['wilayah_kph'];
+        }
+        $targetRole = isset($data['role']) ? $data['role'] : $oldData['role'];
+        if (isset($data['wilayah_phw']) && ($targetRole === 'kph' || $targetRole === 'phw')) {
+            $updates[] = "wilayah_phw = ?";
+            $params[] = $data['wilayah_phw'];
         }
         if (isset($data['is_active'])) {
             $updates[] = "is_active = ?";

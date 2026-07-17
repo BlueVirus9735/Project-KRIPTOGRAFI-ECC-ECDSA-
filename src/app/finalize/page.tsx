@@ -14,7 +14,7 @@ import {
 const API = "http://localhost:8000/api";
 
 function FinalizeContent() {
-  const { token, user } = useAuth();
+  const { user, token } = useAuth();
   const [rttList, setRttList] = useState<any[]>([]);
   const [selectedRtt, setSelectedRtt] = useState("");
   const [privateKey, setPrivateKey] = useState("");
@@ -23,7 +23,7 @@ function FinalizeContent() {
 
   useEffect(() => {
     // Ambil daftar RTT
-    fetch(`${API}/rtt/list.php`)
+    fetch(`${API}/rtt/list.php?token=${token}`)
       .then((r) => r.json())
       .then((d) => {
         if (d.status === "success") {

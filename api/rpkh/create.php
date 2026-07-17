@@ -12,7 +12,7 @@ include __DIR__ . '/../db.php';
 $data = json_decode(file_get_contents('php://input'), true);
 $token = $data['token'] ?? '';
 
-$stmt = $pdo->prepare("SELECT id, role FROM users WHERE session_token = ?");
+$stmt = $pdo->prepare("SELECT id, role, wilayah_kph, wilayah_phw FROM users WHERE session_token = ?");
 $stmt->execute([$token]);
 $user = $stmt->fetch();
 if (!$user) { http_response_code(401); echo json_encode(['status' => 'error', 'message' => 'Sesi tidak valid']); exit; }
@@ -20,7 +20,8 @@ if (!$user) { http_response_code(401); echo json_encode(['status' => 'error', 'm
 $tahun_mulai  = $data['tahun_mulai'] ?? '';
 $tahun_selesai = $data['tahun_selesai'] ?? '';
 $wilayah = $data['wilayah'] ?? '';
-$kph  = $data['kph'] ?? '';
+$kph  = ($user['role'] === 'kph') ? ($user['wilayah_kph'] ?? '') : ($data['kph'] ?? '');
+$phw  = ($user['role'] === 'kph') ? ($user['wilayah_phw'] ?? '') : '';
 $bkph = $data['bkph'] ?? '';
 $rph  = $data['rph'] ?? '';
 $keterangan = $data['keterangan'] ?? '';
@@ -34,8 +35,8 @@ if (!$tahun_mulai || !$tahun_selesai || !$wilayah || !$kph || !$bkph || !$rph) {
 try {
     $pdo->beginTransaction();
 
-    $stmt = $pdo->prepare("INSERT INTO rpkh (tahun_mulai, tahun_selesai, wilayah, kph, bkph, rph, created_by, keterangan) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-    $stmt->execute([$tahun_mulai, $tahun_selesai, $wilayah, $kph, $bkph, $rph, $user['id'], $keterangan]);
+    $stmt = $pdo->prepare("INSERT INTO rpkh (tahun_mulai, tahun_selesai, wilayah, kph, phw, bkph, rph, created_by, keterangan) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt->execute([$tahun_mulai, $tahun_selesai, $wilayah, $kph, $phw, $bkph, $rph, $user['id'], $keterangan]);
     $rpkh_id = $pdo->lastInsertId();
 
     if (!empty($details)) {

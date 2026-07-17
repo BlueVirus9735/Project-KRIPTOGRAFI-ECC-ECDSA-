@@ -22,6 +22,7 @@ import {
   PenTool,
   Eye,
   LockOpen,
+  ShieldCheck,
 } from "lucide-react";
 import {
   hasPermission,
@@ -140,10 +141,7 @@ export default function Sidebar({ user }: SidebarProps) {
     // 3. VALIDASI & WORKFLOW - For KPH, PHW, Divisi
     const validasiItems = [];
 
-    if (
-      hasPermission(user, PERMISSIONS.DOCUMENT_REVIEW) ||
-      hasPermission(user, PERMISSIONS.DOCUMENT_APPROVE_KPH)
-    ) {
+    if (hasPermission(user, PERMISSIONS.DOCUMENT_REVIEW) && !hasPermission(user, PERMISSIONS.DOCUMENT_VERIFY_PHW)) {
       validasiItems.push({
         name: "Review Dokumen",
         path: "/validation",
@@ -154,10 +152,11 @@ export default function Sidebar({ user }: SidebarProps) {
     if (hasPermission(user, PERMISSIONS.DOCUMENT_VERIFY_PHW)) {
       validasiItems.push({
         name: "Verifikasi PHW",
-        path: "/verify",
+        path: "/validation",
         icon: <CheckCircle size={18} />,
       });
     }
+
 
     if (hasPermission(user, PERMISSIONS.DOCUMENT_FINALIZE)) {
       validasiItems.push({

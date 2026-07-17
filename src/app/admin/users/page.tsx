@@ -37,7 +37,7 @@ const ROLE_OPTIONS: UserRole[] = [
   "admin",
   "kph",
   "phw",
-  "divisi",
+  "direksi",
   "gis",
   "lapangan",
 ];
@@ -55,6 +55,8 @@ export default function UserManagement() {
     email: "",
     password: "",
     role: "lapangan" as UserRole,
+    wilayah_kph: "",
+    wilayah_phw: "",
     is_active: true,
   });
 
@@ -117,6 +119,8 @@ export default function UserManagement() {
       if (formData.email !== editingUser.email)
         updateData.email = formData.email;
       if (formData.role !== editingUser.role) updateData.role = formData.role;
+      if (formData.role === "kph" && formData.wilayah_kph !== editingUser.wilayah_kph) updateData.wilayah_kph = formData.wilayah_kph;
+      if ((formData.role === "kph" || formData.role === "phw") && formData.wilayah_phw !== editingUser.wilayah_phw) updateData.wilayah_phw = formData.wilayah_phw;
       if (formData.is_active !== !!editingUser.is_active)
         updateData.is_active = formData.is_active;
       if (formData.password) updateData.password = formData.password;
@@ -173,6 +177,8 @@ export default function UserManagement() {
       email: "",
       password: "",
       role: "lapangan",
+      wilayah_kph: "",
+      wilayah_phw: "",
       is_active: true,
     });
   };
@@ -185,6 +191,8 @@ export default function UserManagement() {
       email: user.email || "",
       password: "",
       role: user.role,
+      wilayah_kph: user.wilayah_kph || "",
+      wilayah_phw: user.wilayah_phw || "",
       is_active: !!user.is_active,
     });
     setShowModal(true);
@@ -322,6 +330,16 @@ export default function UserManagement() {
                           <p className="text-xs text-slate-500">
                             @{user.username}
                           </p>
+                          {user.role === 'kph' && user.wilayah_kph && (
+                            <p className="text-[10px] font-bold text-amber-400 mt-0.5">
+                              {user.wilayah_kph} {user.wilayah_phw ? `(${user.wilayah_phw})` : ''}
+                            </p>
+                          )}
+                          {user.role === 'phw' && user.wilayah_phw && (
+                            <p className="text-[10px] font-bold text-indigo-400 mt-0.5">
+                              {user.wilayah_phw}
+                            </p>
+                          )}
                           {user.email && (
                             <p className="text-xs text-slate-600">
                               {user.email}
@@ -494,6 +512,54 @@ export default function UserManagement() {
                     {getRoleDescription(formData.role)}
                   </p>
                 </div>
+                {formData.role === "kph" && (
+                  <div className="animate-fade-in">
+                    <label className="block text-xs font-medium text-amber-400 mb-1.5">
+                      Wilayah KPH *
+                    </label>
+                    <input
+                      type="text"
+                      required={formData.role === "kph"}
+                      placeholder="Contoh: KPH Garut"
+                      className="glass-input w-full px-3 py-2 text-sm border-amber-500/30 bg-amber-500/5 focus:border-amber-500/50"
+                      value={formData.wilayah_kph}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          wilayah_kph: e.target.value,
+                        })
+                      }
+                    />
+                    <p className="text-xs text-amber-500/70 mt-1">
+                      Wajib diisi untuk membatasi akses data KPH.
+                    </p>
+                  </div>
+                )}
+                {(formData.role === "kph" || formData.role === "phw") && (
+                  <div className="animate-fade-in">
+                    <label className={`block text-xs font-medium mb-1.5 ${formData.role === 'kph' ? 'text-slate-400' : 'text-indigo-400'}`}>
+                      {formData.role === "kph" ? "Di Bawah Naungan PHW *" : "Wilayah PHW *"}
+                    </label>
+                    <input
+                      type="text"
+                      required={formData.role === "kph" || formData.role === "phw"}
+                      placeholder="Contoh: SPHW I"
+                      className={`glass-input w-full px-3 py-2 text-sm ${formData.role === 'phw' ? 'border-indigo-500/30 bg-indigo-500/5 focus:border-indigo-500/50' : ''}`}
+                      value={formData.wilayah_phw}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          wilayah_phw: e.target.value,
+                        })
+                      }
+                    />
+                    <p className={`text-xs mt-1 ${formData.role === 'kph' ? 'text-slate-500' : 'text-indigo-500/70'}`}>
+                      {formData.role === "kph" 
+                        ? "PHW mana yang akan memverifikasi dokumen dari KPH ini?" 
+                        : "Wajib diisi untuk membatasi akses verifikasi PHW."}
+                    </p>
+                  </div>
+                )}
                 <div>
                   <label className="block text-xs font-medium text-slate-400 mb-1.5">
                     Password{" "}

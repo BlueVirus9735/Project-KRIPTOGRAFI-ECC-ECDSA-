@@ -21,7 +21,8 @@ export default function ReportsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${API}/rtt/reports.php`)
+    const token = localStorage.getItem("token") || "";
+    fetch(`${API}/rtt/reports.php?token=${encodeURIComponent(token)}`)
       .then((r) => r.json())
       .then((d) => {
         if (d.status === "success") setData(d.data);

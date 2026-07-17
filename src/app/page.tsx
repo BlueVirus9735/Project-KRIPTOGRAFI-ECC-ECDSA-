@@ -16,14 +16,14 @@ const API = "http://localhost:8000/api";
 
 
 function DashboardContent() {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const [stats, setStats] = useState({ rpkh: 0, rtt: 0, draft: 0, review: 0, sah: 0 });
   const [dynamicChart, setDynamicChart] = useState<any[]>([]);
 
   useEffect(() => {
     Promise.all([
-      fetch(`${API}/rtt/list.php`).then(r => r.json()),
-      fetch(`${API}/rpkh/list.php`).then(r => r.json())
+      fetch(`${API}/rtt/list.php?token=${token}`).then(r => r.json()),
+      fetch(`${API}/rpkh/list.php?token=${token}`).then(r => r.json())
     ]).then(([rttData, rpkhData]) => {
         const rttList = rttData.data || [];
         const rpkhList = rpkhData.data || [];

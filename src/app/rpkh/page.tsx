@@ -16,7 +16,7 @@ function RpkhListContent() {
 
   const fetchRpkh = async () => {
     try {
-      const res = await fetch(`${API}/rpkh/list.php`);
+      const res = await fetch(`${API}/rpkh/list.php?token=${token || (typeof window !== "undefined" ? localStorage.getItem("token") : "")}`);
       const data = await res.json();
       if (data.status === "success") setRpkhList(data.data || []);
     } catch (e) { console.error(e); }

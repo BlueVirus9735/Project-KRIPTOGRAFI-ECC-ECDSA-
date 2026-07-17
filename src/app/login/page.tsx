@@ -151,13 +151,15 @@ export default function Login() {
         </div>
 
         <div className="mt-8 text-center flex flex-col items-center gap-2">
-          <div className="flex items-center gap-1.5 text-slate-400 justify-center backdrop-blur-sm px-3 py-1 rounded-full bg-slate-900/30 border border-slate-800/50">
-            <ShieldCheck size={14} className="text-emerald-400" />
-            <span className="text-[11px] font-semibold tracking-wide uppercase">
-              Dilindungi Kriptografi Asimetris ECC
-            </span>
-          </div>
-          <p className="text-[10px] text-slate-500 font-medium mt-1">
+          <button
+            onClick={() => router.push("/verify")}
+            type="button"
+            className="mt-4 flex items-center justify-center gap-2 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 px-5 py-2.5 rounded-xl transition-all font-bold text-xs uppercase tracking-widest w-full max-w-[280px]"
+          >
+            <ShieldCheck size={16} /> Cek Keaslian Dokumen
+          </button>
+
+          <p className="text-[10px] text-slate-500 font-medium mt-4">
             © 2026 Hak Cipta Perum Perhutani Divisi Regional Jawa Barat dan
             Banten.
           </p>

@@ -19,7 +19,7 @@ const generateNomor = (prefix: string, suffix: string = "---") => {
 
 function RttCreateContent() {
   const router = useRouter();
-  const { token } = useAuth();
+  const { user, token } = useAuth();
   const [step, setStep] = useState(0);
   const [rttId, setRttId] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
@@ -62,7 +62,7 @@ function RttCreateContent() {
       if (data.step) setStep(data.step);
       if (data.rttId) setRttId(data.rttId);
     }
-    fetch(`${API}/rpkh/list.php`).then(r => r.json()).then(d => { if (d.status === "success") setRpkhList(d.data || []); });
+    fetch(`${API}/rpkh/list.php?token=${token || (typeof window !== "undefined" ? localStorage.getItem("token") : "")}`).then(r => r.json()).then(d => { if (d.status === "success") setRpkhList(d.data || []); });
   }, []);
 
   // Auto-save to localStorage

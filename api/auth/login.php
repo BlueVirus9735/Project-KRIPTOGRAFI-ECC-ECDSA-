@@ -17,7 +17,7 @@ if (!$username || !$password) {
     exit;
 }
 
-$stmt = $pdo->prepare("SELECT id, username, nama, password, role FROM users WHERE username = ? AND is_active = 1");
+$stmt = $pdo->prepare("SELECT id, username, nama, password, role, wilayah_kph, wilayah_phw FROM users WHERE username = ? AND is_active = 1");
 $stmt->execute([$username]);
 $user = $stmt->fetch();
 
@@ -43,7 +43,9 @@ echo json_encode([
         'id' => $user['id'],
         'username' => $user['username'],
         'nama' => $user['nama'],
-        'role' => $user['role']
+        'role' => $user['role'],
+        'wilayah_kph' => $user['wilayah_kph'],
+        'wilayah_phw' => $user['wilayah_phw']
     ]
 ]);
 ?>

@@ -20,7 +20,7 @@ import {
 const API = "http://localhost:8000/api";
 
 function DigitalValidationContent() {
-  const { token } = useAuth();
+  const { user, token } = useAuth();
   const [rttList, setRttList] = useState<any[]>([]);
   const [selectedRtt, setSelectedRtt] = useState("");
   const [result, setResult] = useState<any>(null);
@@ -29,7 +29,7 @@ function DigitalValidationContent() {
   const [timestamp, setTimestamp] = useState("");
 
   useEffect(() => {
-    fetch(`${API}/rtt/list.php`)
+    fetch(`${API}/rtt/list.php?token=${token}`)
       .then((r) => r.json())
       .then((d) => {
         if (d.status === "success") {

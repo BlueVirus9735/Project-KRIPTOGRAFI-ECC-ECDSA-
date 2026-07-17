@@ -81,7 +81,7 @@ function RttListContent() {
 
   const fetchRtt = async () => {
     try {
-      const res = await fetch(`${API}/rtt/list.php`);
+      const res = await fetch(`${API}/rtt/list.php?token=${user?.token || (typeof window !== "undefined" ? localStorage.getItem("token") : "")}`);
       const data = await res.json();
       if (data.status === "success") setRttList(data.data || []);
     } catch (e) {

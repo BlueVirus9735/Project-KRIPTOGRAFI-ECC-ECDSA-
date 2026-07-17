@@ -1,98 +1,98 @@
-# 🌲 Sistem Keamanan Digital RTT & RPKH Perum Perhutani
+# Sistem Informasi Manajemen Pengelolaan RTT Perum Perhutani
+**Terintegrasi dengan Algoritma Kriptografi Asimetris ECC & Tanda Tangan Digital ECDSA**
 
-**Prototipe Enterprise Security Management System menggunakan Kriptografi Kurva Eliptik (ECC) & ECDSA**
+![Perum Perhutani](https://upload.wikimedia.org/wikipedia/id/thumb/7/7f/Logo_Perhutani.svg/1200px-Logo_Perhutani.svg.png)
 
-![Next.js](https://img.shields.io/badge/Next.js-14+-black?style=for-the-badge&logo=next.js)
-![React](https://img.shields.io/badge/React-18+-blue?style=for-the-badge&logo=react)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC?style=for-the-badge&logo=tailwind-css)
-![PHP](https://img.shields.io/badge/PHP-8.2+-777BB4?style=for-the-badge&logo=php)
-![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?style=for-the-badge&logo=mysql)
-![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python)
-![Security](https://img.shields.io/badge/Security-ECC_ECDSA_SHA256-red?style=for-the-badge&logo=security)
+Proyek ini merupakan **Sistem Informasi Manajemen Rencana Teknik Tahunan (RTT)** yang dikembangkan khusus untuk Perum Perhutani Divisi Regional Jawa Barat dan Banten. Sistem ini mendigitalisasi alur pengajuan, verifikasi, dan pengesahan dokumen RTT dari tingkat **KPH (Kesatuan Pemangkuan Hutan)**, divalidasi oleh **PHW (Perencanaan Hutan Wilayah)**, hingga disahkan secara final oleh **Direksi/Divisi Regional**.
+
+Keunggulan utama dari sistem ini adalah implementasi **Keamanan Kriptografi Tingkat Lanjut** menggunakan algoritma *Elliptic Curve Cryptography (ECC)* dan *Elliptic Curve Digital Signature Algorithm (ECDSA)* untuk menjamin keaslian, integritas, dan anti-penyangkalan (*non-repudiation*) dari setiap dokumen yang diterbitkan.
 
 ---
 
-## 📖 Deskripsi Proyek
+## 🌟 Fitur Utama (Core Features)
 
-Aplikasi ini merupakan sistem manajemen dokumen digital tingkat tinggi yang dibangun khusus untuk **Perum Perhutani Divisi Regional Jawa Barat dan Banten**. 
+### 1. Hierarchical Role-Based Access Control (RBAC)
+Sistem memiliki kontrol akses ketat yang dibagi menjadi 4 tingkatan pengguna:
+- **Sysadmin:** Mengelola akun pengguna (*User Management*) dan melihat Audit Log.
+- **KPH (Kesatuan Pemangkuan Hutan):** Menginisiasi RTT, menyusun dokumen (Summary, NETT, Peta, Klem, BAP), dan mengunggah lampiran fisik.
+- **PHW (Perencanaan Hutan Wilayah):** Melakukan validasi teknis dan *cross-check* kesesuaian luasan petak antara RTT dan RPKH.
+- **Direksi / Divisi Regional:** Melakukan audit validasi digital kriptografi internal dan memberikan Pengesahan Final (Tanda Tangan Digital).
 
-Tujuan utama sistem ini adalah mendigitalisasi proses pengajuan, persetujuan, dan pengesahan dokumen kelestarian hutan (RPKH & RTT) sembari memberikan **lapisan keamanan siber kelas militer (Military-Grade Security)** untuk mencegah manipulasi, pemalsuan dokumen, *illegal logging*, dan kebocoran data secara ilegal.
+### 2. Multi-Layer Cryptography (Keamanan Berlapis)
+- **BCRYPT Password Hashing:** Seluruh *password* pengguna dienkripsi searah agar tidak dapat dibaca oleh siapapun (termasuk *Database Administrator*).
+- **SHA-256 Message Digest:** Menjamin integritas data (*Data Integrity*) dengan mengalkulasi *hash* setiap kali komponen dokumen RTT disimpan/diedit.
+- **ECC Transparent Encryption:** Setiap file fisik (Peta Lokasi & Peta BAP) yang diunggah oleh KPH akan langsung dienkripsi menggunakan *Public Key* sistem ke format `.enc`. File mentah langsung dihapus dari *server*.
+- **ECDSA Digital Signature:** Direksi menggunakan *Private Key* untuk men-*generate* Tanda Tangan Digital berbasis kurva matematis **SECP256K1**.
 
-Sistem ini menerapkan **Kriptografi Asimetris (Elliptic Curve Cryptography)** dengan algoritma **ECDSA (SECP256K1)** untuk Tanda Tangan Digital (*Digital Signature*), **SHA-256** untuk menjamin integritas data (*Hash Integrity*), serta arsitektur **Transparent At-Rest Encryption** untuk mengamankan file *attachment*.
+### 3. Portal Verifikasi Publik (Public Validation Portal)
+Fasilitas terbuka (tanpa perlu *login*) bagi pihak eksternal (Auditor, Polhut, Instansi lain) untuk memverifikasi keaslian dokumen RTT. Sistem akan memvalidasi *Hash* dokumen, mencocokkan *Signature ECDSA* menggunakan *Public Key*, dan memverifikasi *Cross-Reference* luasan petak dengan RPKH.
 
----
-
-## ✨ Fitur Keamanan Tingkat Tinggi (Advanced Security)
-
-- 🔐 **Tanda Tangan Digital (ECDSA SECP256K1):** 
-  Setiap dokumen RTT yang disahkan akan ditandatangani secara digital menggunakan *Private Key* rahasia milik Kepala Divisi. Memastikan asas **Nir-Penyangkalan (Non-Repudiation)**.
-- 🛡️ **Integritas Hash (SHA-256) & Avalanche Effect:** 
-  Data krusial di-*hash* menjadi satu kesatuan payload kanonikal. Perubahan sekecil 1 karakter (misal: "Tebangan A" diubah *hacker* menjadi "Tebangan B") pada database akan merusak *Digital Signature* dan membuat status dokumen otomatis menjadi **🚨 INVALID / PALSU**.
-- 🗄️ **Transparent At-Rest Encryption (Anti-Backdoor):** 
-  Seluruh file sensitif (Peta Lokasi & Lampiran) dienkripsi secara *background* menggunakan *System Keys*. Ekstensi file diubah paksa menjadi `.enc` dan isinya diacak (Ciphertext). Sistem ini otomatis menggagalkan serangan *Upload Web Shell / Backdoor* karena file berbahaya tidak akan pernah dieksekusi oleh Web Server. File akan didekripsi secara transparan ke *Temporary Memory* saat diakses oleh pengguna yang memiliki *Session Token* valid.
-- 🕵️ **Portal Verifikasi Publik (Independent Audit):** 
-  Tersedia portal publik independen (`/verify`) bagi auditor, kepolisian hutan, atau pihak ketiga untuk membuktikan keaslian dokumen `.json` dan `.sig` secara matematis tanpa perlu memiliki akses *login* ke sistem internal perusahaan.
-- 📄 **Cetak Laporan PDF Ber-Watermark:** 
-  Men-*generate* laporan RTT instan (Real-time) dengan format Lanskap A4 elegan, dilengkapi QR Code dan status otentikasi dinamis (Sah/Palsu).
+### 4. Audit Trail Log (Rekam Jejak)
+Seluruh aktivitas manipulasi data (Tambah, Edit, Hapus) yang dilakukan oleh pengguna dicatat secara *real-time* ke dalam tabel `audit_log`, mencakup Waktu, Alamat IP, dan Detail Perubahan Data.
 
 ---
 
-## 🛠️ Tech Stack & Arsitektur (Decoupled Architecture)
+## 🛠️ Teknologi yang Digunakan (Tech Stack)
 
-### 🎨 Frontend (Client-Side)
-- **Framework:** Next.js (dengan Turbopack untuk HMR super cepat)
-- **Library UI:** React.js
-- **Styling:** Tailwind CSS (Modern Glassmorphism & Cyberpunk-lite UI)
-- **UX Logic:** Auto-fill & relational Dropdown data (RPKH -> RTT) terintegrasi dengan backend.
-
-### ⚙️ Backend (API & Logika Bisnis)
-- **Bahasa:** PHP 8+ (Native/Vanilla RESTful API)
-- **Database:** MySQL (Relational Mapping RPKH & RTT)
-- **Autentikasi:** Custom Secure Session Token Storage (Anti-Hijacking)
-
-### 🔐 Core Cryptography Engine
-- **Engine Utama:** Python Scripting terintegrasi erat dengan PHP (menggunakan *tempnam isolation*)
-- **Library Kriptografi:** `ecdsa`, `hashlib`, `cryptography`
-- **Curve Standard:** SECP256K1 (Standar Keamanan Jaringan Bitcoin)
+* **Frontend:** Next.js (React), Tailwind CSS, Lucide Icons (Untuk UI/UX yang modern & *responsive*).
+* **Backend:** PHP 8+ Native API (RESTful).
+* **Database:** MySQL / MariaDB (Relational Database Management System).
+* **Cryptography Engine:** Python 3 (Modul `cryptography`, `hashlib`, dan `ecdsa`) dipanggil melalui *Shell Execution* oleh PHP.
 
 ---
 
-## 🚀 Panduan Instalasi (Development Mode)
+## 📂 Struktur Direktori Utama
 
-Ikuti langkah-langkah di bawah ini untuk menjalankan proyek secara lokal:
-
-### 1. Persiapan Sistem & Database
-- Pastikan Anda memiliki **Node.js** (18.x), **Laragon/XAMPP** (PHP 8+, MySQL), dan **Python** (3.10+).
-- Buat database `perum_perhutani` dan *import* skema SQL.
-
-### 2. Install Dependencies
-Buka terminal dan install *library* Kriptografi Python:
-```bash
-pip install ecdsa cryptography
 ```
-Lalu install *dependencies* Frontend Next.js:
-```bash
-npm install
-# atau
-pnpm install
+/
+├── api/                  # Backend PHP API Endpoints
+│   ├── auth/             # Autentikasi (Login, Register, Users, Audit)
+│   ├── rtt/              # CRUD RTT, Upload File (Enkripsi), & Pengesahan ECDSA
+│   ├── rpkh/             # CRUD RPKH Induk
+│   ├── validation/       # Validasi Digital (Crosscheck Hash, Signature, Relasi)
+│   ├── db.php            # Koneksi Database PDO MySQL
+│   └── crypto_utils.php  # Utilitas Canonical JSON untuk Payload Kriptografi
+├── crypto/               # Modul Python untuk Kriptografi ECC & ECDSA
+│   ├── encrypt.py        # Algoritma Transparent Encryption ECC
+│   ├── sign.py           # Algoritma Digital Signature ECDSA
+│   └── verify.py         # Algoritma Verifikasi Signature
+├── src/                  # Frontend Next.js Source Code
+│   ├── app/              # Halaman / Pages (Login, Dashboard, Validasi, Verify)
+│   ├── components/       # Reusable React Components (Sidebar, UI elements)
+│   └── lib/              # Konfigurasi RBAC & Permissions (auth.ts)
+└── public/               # Asset statis (Gambar, CSS)
 ```
 
-### 3. Menjalankan Aplikasi
-Sistem menggunakan `concurrently` untuk menyalakan Backend PHP, Tailwind Watcher, dan Next.js secara bersamaan.
-```bash
-npm run dev
-# atau
-pnpm run dev
-```
+---
 
-Server akan aktif secara otomatis pada:
-- **Frontend (UI):** [http://localhost:3000](http://localhost:3000)
-- **Backend (API PHP):** [http://localhost:8000](http://localhost:8000)
+## ⚙️ Cara Instalasi & Menjalankan Sistem Secara Lokal
+
+### Persyaratan Sistem (*Prerequisites*):
+1. **Node.js** (v18 atau lebih baru)
+2. **PHP** (v8.1 atau lebih baru)
+3. **MySQL / MariaDB** (Bawaan XAMPP / Laragon)
+4. **Python** (v3.9 atau lebih baru) dengan library: `pip install cryptography ecdsa`
+
+### Langkah-langkah:
+1. **Clone Repository ini:**
+   ```bash
+   git clone https://github.com/BlueVirus9735/Project-KRIPTOGRAFI-ECC-ECDSA-.git
+   cd Project-KRIPTOGRAFI-ECC-ECDSA-
+   ```
+2. **Siapkan Database MySQL:**
+   - Buat *database* baru dengan nama `perhutani`.
+   - Lakukan *import* struktur tabel dari file `.sql` yang tersedia (jika ada).
+3. **Konfigurasi Backend:**
+   - Sesuaikan *credentials* database di file `api/db.php`.
+4. **Jalankan Frontend Next.js:**
+   ```bash
+   npm install
+   npm run dev
+   ```
+5. Akses aplikasi melalui `http://localhost:3000`. Backend API otomatis berjalan di Laragon/XAMPP (biasanya `http://localhost/api` atau `http://localhost:8000/api`).
 
 ---
 
-## 📞 Penutup
-
-Proyek ini dikembangkan sebagai bagian dari Skripsi / Tugas Akhir untuk menjawab tantangan keamanan dokumen dan integritas data di sektor kehutanan nasional.
-
-> **"Melindungi kelestarian hutan dimulai dari melindungi integritas datanya."** 🌳
+## 📜 Lisensi & Hak Cipta
+Dikembangkan khusus untuk keperluan Penelitian Skripsi Keamanan Sistem Informasi & Kriptografi.
+Hak Cipta © 2026. All rights reserved.

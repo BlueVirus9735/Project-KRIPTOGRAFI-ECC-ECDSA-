@@ -7,14 +7,14 @@ import { CheckCircle, XCircle, Clock, Shield, Hash, Link2, FileText } from "luci
 const API = "http://localhost:8000/api";
 
 function ValidationContent() {
-  const { token } = useAuth();
+  const { user, token } = useAuth();
   const [rttList, setRttList] = useState<any[]>([]);
   const [selectedRtt, setSelectedRtt] = useState("");
   const [result, setResult] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    fetch(`${API}/rtt/list.php`).then(r => r.json()).then(d => { if (d.status === "success") setRttList(d.data || []); });
+    fetch(`${API}/rtt/list.php?token=${token}`).then(r => r.json()).then(d => { if (d.status === "success") setRttList(d.data || []); });
   }, []);
 
   const handleValidate = async () => {
@@ -139,7 +139,7 @@ function ValidationContent() {
                     setResult(null);
                     setSelectedRtt("");
                     // refresh list
-                    const listRes = await fetch(`${API}/rtt/list.php`);
+                    const listRes = await fetch(`${API}/rtt/list.php?token=${token}`);
                     const listData = await listRes.json();
                     setRttList(listData.data || []);
                   } else alert(d.message);
@@ -164,7 +164,7 @@ function ValidationContent() {
                     setResult(null);
                     setSelectedRtt("");
                     // refresh list
-                    const listRes = await fetch(`${API}/rtt/list.php`);
+                    const listRes = await fetch(`${API}/rtt/list.php?token=${token}`);
                     const listData = await listRes.json();
                     setRttList(listData.data || []);
                   } else alert(d.message);

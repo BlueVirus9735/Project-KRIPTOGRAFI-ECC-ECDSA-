@@ -10,7 +10,7 @@ include __DIR__ . '/../db.php';
 $data = json_decode(file_get_contents('php://input'), true);
 $token = $data['token'] ?? '';
 
-$stmt = $pdo->prepare("SELECT id, role FROM users WHERE session_token = ?");
+$stmt = $pdo->prepare("SELECT id, role, wilayah_kph, wilayah_phw FROM users WHERE session_token = ?");
 $stmt->execute([$token]); $user = $stmt->fetch();
 if (!$user) { http_response_code(401); echo json_encode(['status'=>'error','message'=>'Sesi tidak valid']); exit; }
 
@@ -23,7 +23,8 @@ if ($user['role'] !== 'kph' && $user['role'] !== 'admin' && $user['role'] !== 's
 $rpkh_id = $data['rpkh_id'] ?? 0;
 $nomor   = $data['nomor_dokumen'] ?? '';
 $tanggal = $data['tanggal'] ?? date('Y-m-d');
-$kph  = $data['kph'] ?? '';
+$kph  = ($user['role'] === 'kph') ? ($user['wilayah_kph'] ?? '') : ($data['kph'] ?? '');
+$phw  = ($user['role'] === 'kph') ? ($user['wilayah_phw'] ?? '') : '';
 $bkph = $data['bkph'] ?? '';
 $rph  = $data['rph'] ?? '';
 
@@ -38,8 +39,8 @@ if (!$stmt->fetch()) { echo json_encode(['status'=>'error','message'=>'RPKH tida
 try {
     $pdo->beginTransaction();
 
-    $stmt = $pdo->prepare("INSERT INTO rtt (rpkh_id, nomor_dokumen, tanggal, kph, bkph, rph, status, created_by) VALUES (?,?,?,?,?,?,?,?)");
-    $stmt->execute([$rpkh_id, $nomor, $tanggal, $kph, $bkph, $rph, 'draft', $user['id']]);
+    $stmt = $pdo->prepare("INSERT INTO rtt (rpkh_id, nomor_dokumen, tanggal, kph, phw, bkph, rph, status, created_by) VALUES (?,?,?,?,?,?,?,?,?)");
+    $stmt->execute([$rpkh_id, $nomor, $tanggal, $kph, $phw, $bkph, $rph, 'draft', $user['id']]);
     $rtt_id = $pdo->lastInsertId();
 
     // Create empty sub-records

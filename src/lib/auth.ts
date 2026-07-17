@@ -8,6 +8,8 @@ export interface User {
   username: string;
   nama: string;
   role: UserRole;
+  wilayah_kph?: string;
+  wilayah_phw?: string;
 }
 
 // Role hierarchy (higher number = more access)
@@ -95,8 +97,6 @@ const ROLE_PERMISSIONS: Record<UserRole, string[]> = {
     PERMISSIONS.KLEM_REKAP_EDIT,
     PERMISSIONS.BERITA_ACARA_EDIT,
     PERMISSIONS.DASHBOARD_VIEW,
-    PERMISSIONS.DOCUMENT_REVIEW,
-    PERMISSIONS.DOCUMENT_APPROVE_KPH,
     PERMISSIONS.DOCUMENT_VIEW,
     PERMISSIONS.REPORT_VIEW,
     PERMISSIONS.RPKH_VIEW,
@@ -114,6 +114,8 @@ const ROLE_PERMISSIONS: Record<UserRole, string[]> = {
     PERMISSIONS.DOCUMENT_VIEW,
     PERMISSIONS.PDF_GENERATE,
     PERMISSIONS.DASHBOARD_VIEW,
+    PERMISSIONS.VALIDATION_VIEW,
+    PERMISSIONS.REPORT_VIEW,
   ],
 };
 
