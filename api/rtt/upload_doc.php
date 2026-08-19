@@ -41,13 +41,44 @@ try {
     }
     else if ($type === 'rekap_klem') {
         $pdo->prepare("DELETE FROM rtt_rekap_klem WHERE rtt_id = ?")->execute([$rtt_id]);
-        $stmt = $pdo->prepare("INSERT INTO rtt_rekap_klem (rtt_id, kph, bkph, rph, kelas_hutan, petak, anak_petak, luas_baku, luas_rencana, tahun_tanam, jenis_tanaman, no_blok, luas_blok, jumlah_pohon, volume, keterangan) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
-        $stmt->execute([$rtt_id, $payload['kph']??'', $payload['bkph']??'', $payload['rph']??'', $payload['kelas_hutan']??'', $payload['petak']??'', $payload['anak_petak']??'', $payload['luas_baku']??null, $payload['luas_rencana']??null, $payload['tahun_tanam']??null, $payload['jenis_tanaman']??'', $payload['no_blok']??'Blok 1', $payload['luas_blok']??0, $payload['jumlah_pohon']??0, $payload['volume']??0, $payload['keterangan']??'']);
+        $items = isset($payload[0]) ? $payload : [$payload]; // Support array or single object
+        foreach ($items as $item) {
+            $stmt = $pdo->prepare("INSERT INTO rtt_rekap_klem (rtt_id, kph, bkph, rph, kelas_hutan, petak, anak_petak, luas_baku, luas_rencana, tahun_tanam, jenis_tanaman, no_blok, luas_blok, jumlah_pohon, volume, keterangan) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+            $stmt->execute([
+                $rtt_id, 
+                $item['kph'] ?? '', 
+                $item['bkph'] ?? '', 
+                $item['rph'] ?? '', 
+                $item['kelas_hutan'] ?? '', 
+                $item['petak'] ?? '', 
+                $item['anak_petak'] ?? '', 
+                $item['luas_baku'] ?? null, 
+                $item['luas_rencana'] ?? null, 
+                $item['tahun_tanam'] ?? null, 
+                $item['jenis_tanaman'] ?? '', 
+                $item['no_blok'] ?? 'Blok 1', 
+                $item['luas_blok'] ?? 0, 
+                $item['jumlah_pohon'] ?? 0, 
+                $item['volume'] ?? 0, 
+                $item['keterangan'] ?? ''
+            ]);
+        }
     }
     else if ($type === 'klem_detail') {
         $pdo->prepare("DELETE FROM rtt_klem_detail WHERE rtt_id = ?")->execute([$rtt_id]);
-        $stmt = $pdo->prepare("INSERT INTO rtt_klem_detail (rtt_id, no_blok, no_pohon, keliling, volume, jenis_pohon, keterangan) VALUES (?,?,?,?,?,?,?)");
-        $stmt->execute([$rtt_id, $payload['no_blok']??'', $payload['no_pohon']??'001', $payload['keliling']??0, $payload['volume']??0, $payload['jenis_pohon']??'Jati', $payload['keterangan']??'']);
+        $items = isset($payload[0]) ? $payload : [$payload]; // Support array or single object
+        foreach ($items as $item) {
+            $stmt = $pdo->prepare("INSERT INTO rtt_klem_detail (rtt_id, no_blok, no_pohon, keliling, volume, jenis_pohon, keterangan) VALUES (?,?,?,?,?,?,?)");
+            $stmt->execute([
+                $rtt_id, 
+                $item['no_blok'] ?? '', 
+                $item['no_pohon'] ?? '001', 
+                $item['keliling'] ?? 0, 
+                $item['volume'] ?? 0, 
+                $item['jenis_pohon'] ?? 'Jati', 
+                $item['keterangan'] ?? ''
+            ]);
+        }
     }
     else if ($type === 'berita_acara') {
         $pdo->prepare("DELETE FROM rtt_berita_acara WHERE rtt_id = ?")->execute([$rtt_id]);

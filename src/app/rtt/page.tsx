@@ -11,7 +11,7 @@ import {
   ShieldCheck,
   MapPin,
   Search,
-  Filter,
+  Trash2,
 } from "lucide-react";
 
 const API = "http://localhost:8000/api";
@@ -74,6 +74,8 @@ function RttListContent() {
   const { user } = useAuth();
   const [rttList, setRttList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [confirmDelete, setConfirmDelete] = useState<any | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     fetchRtt();
@@ -88,6 +90,30 @@ function RttListContent() {
       console.error(e);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!confirmDelete) return;
+    setDeleting(true);
+    try {
+      const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
+      const res = await fetch(`${API}/rtt/delete.php`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token, rtt_id: confirmDelete.id }),
+      });
+      const data = await res.json();
+      if (data.status === "success") {
+        setRttList((prev) => prev.filter((r) => r.id !== confirmDelete.id));
+        setConfirmDelete(null);
+      } else {
+        alert(data.message);
+      }
+    } catch {
+      alert("Gagal terhubung ke server");
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -136,6 +162,7 @@ function RttListContent() {
         <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-5 stagger-children">
           {rttList.map((rtt) => {
             const st = statusConfig[rtt.status] || statusConfig.draft;
+            const isSigned = rtt.status === "disahkan";
             return (
               <div
                 key={rtt.id}
@@ -143,13 +170,28 @@ function RttListContent() {
               >
                 <div className="flex justify-between items-start mb-5">
                   <div className={`status-badge border ${st.bg} ${st.color}`}>
-                    <div
-                      className={`w-1.5 h-1.5 rounded-full ${st.dotColor}`}
-                    />
+                    <div className={`w-1.5 h-1.5 rounded-full ${st.dotColor}`} />
                     {st.label}
                   </div>
-                  <div className="text-slate-600 group-hover:text-slate-400 transition-colors">
-                    <FileText size={20} />
+                  <div className="flex items-center gap-2">
+                    {/* Tombol hapus — hanya sysadmin */}
+                    {user?.role === "sysadmin" && (
+                      <button
+                        onClick={() => setConfirmDelete(rtt)}
+                        title={isSigned ? "Dokumen yang sudah disahkan tidak dapat dihapus" : "Hapus dokumen"}
+                        className={`p-1.5 rounded-lg transition-all ${
+                          isSigned
+                            ? "text-slate-700 cursor-not-allowed"
+                            : "text-slate-600 hover:text-rose-400 hover:bg-rose-500/10"
+                        }`}
+                        disabled={isSigned}
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                    )}
+                    <div className="text-slate-600 group-hover:text-slate-400 transition-colors">
+                      <FileText size={20} />
+                    </div>
                   </div>
                 </div>
 
@@ -192,6 +234,55 @@ function RttListContent() {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Dialog Konfirmasi Hapus */}
+      {confirmDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="bg-[#0f172a] border border-slate-700 rounded-2xl p-7 w-full max-w-md shadow-2xl shadow-black/60 animate-fade-in">
+            {/* Icon warning */}
+            <div className="flex items-center justify-center w-14 h-14 rounded-full bg-rose-500/10 border border-rose-500/20 mx-auto mb-5">
+              <Trash2 size={24} className="text-rose-400" />
+            </div>
+
+            <h3 className="text-white font-bold text-center text-[16px] mb-2">
+              Hapus Dokumen RTT?
+            </h3>
+            <p className="text-slate-400 text-[13px] text-center mb-1">
+              Dokumen berikut akan dihapus permanen:
+            </p>
+            <p className="text-white font-semibold text-[13px] text-center mb-5">
+              &quot;{confirmDelete.nomor_dokumen || "Dokumen Tanpa Nomor"}&quot;
+            </p>
+
+            <div className="bg-rose-500/5 border border-rose-500/20 rounded-xl px-4 py-3 mb-6">
+              <p className="text-rose-300 text-[12px] text-center">
+                ⚠️ Tindakan ini tidak dapat dibatalkan. Semua data terkait RTT ini akan ikut terhapus.
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setConfirmDelete(null)}
+                disabled={deleting}
+                className="flex-1 py-2.5 rounded-xl border border-slate-700 text-slate-400 hover:text-white hover:border-slate-500 text-[13px] font-semibold transition-all disabled:opacity-50"
+              >
+                Batal
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-[13px] font-bold transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {deleting ? (
+                  <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Menghapus...</>
+                ) : (
+                  <><Trash2 size={14} /> Ya, Hapus</>
+                )}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

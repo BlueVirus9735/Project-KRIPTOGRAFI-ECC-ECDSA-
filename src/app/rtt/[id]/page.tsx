@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import DashboardLayout, { useAuth } from "@/components/DashboardLayout";
+import FieldHint from "@/components/FieldHint";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -13,7 +14,6 @@ import {
   ClipboardList,
   PenTool,
   PlaySquare,
-  FilePlus,
   X,
   Layers,
   Zap,
@@ -26,6 +26,8 @@ import {
   Lock,
   Download,
   Key,
+  Plus,
+  Trash2,
 } from "lucide-react";
 
 // Wrapper component that uses useAuth inside DashboardLayout context
@@ -58,6 +60,113 @@ function RttDetailContent({ id }: { id: string }) {
 
   const handleInputChange = (e: any) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handlePetakChange = (e: any) => {
+    const selectedPetak = e.target.value;
+    const tebangan = data?.tebangan?.find(
+      (t: any) => t.petak === selectedPetak,
+    );
+    if (tebangan) {
+      setFormData({
+        ...formData,
+        petak: tebangan.petak,
+        anak_petak: tebangan.anak_petak,
+        luas_rencana: tebangan.luas,
+      });
+    } else {
+      setFormData({
+        ...formData,
+        petak: selectedPetak,
+        anak_petak: "",
+        luas_rencana: "",
+      });
+    }
+  };
+
+  const handleRekapKlemListChange = (
+    index: number,
+    field: string,
+    value: any,
+  ) => {
+    const newList = [...(formData.rekap_klem_list || [])];
+    newList[index][field] = value;
+    setFormData({ ...formData, rekap_klem_list: newList });
+  };
+
+  const handleKlemDetailChange = (index: number, field: string, value: any) => {
+    const newList = [...(formData.klem_detail_list || [])];
+    newList[index][field] = value;
+    setFormData({ ...formData, klem_detail_list: newList });
+  };
+
+  const handleAddKlemDetailRow = () => {
+    const newList = [
+      ...(formData.klem_detail_list || []),
+      {
+        no_blok: "",
+        no_pohon: "",
+        jenis_pohon: "Jati",
+        keliling: "",
+        volume: "",
+        keterangan: "",
+      },
+    ];
+    setFormData({ ...formData, klem_detail_list: newList });
+  };
+
+  const handleRemoveKlemDetailRow = (index: number) => {
+    const newList = formData.klem_detail_list?.filter(
+      (_: any, i: number) => i !== index,
+    );
+    setFormData({ ...formData, klem_detail_list: newList });
+  };
+
+  const handleOpenModal = (key: string) => {
+    if (key === "rekap_klem" && data) {
+      const initialList =
+        data.tebangan?.map((t: any) => {
+          const existing = data.rekap_klem?.find(
+            (rk: any) => rk.petak === t.petak && rk.anak_petak === t.anak_petak,
+          );
+          return {
+            kph: data.rtt?.kph || "",
+            bkph: data.rtt?.bkph || "",
+            rph: data.rtt?.rph || "",
+            kelas_hutan: data.nett?.kelas_hutan || "",
+            tahun_tanam: data.nett?.tahun_tanam || "",
+            luas_baku: data.nett?.luas_baku || "",
+            jenis_tanaman: data.nett?.jenis_tanaman || "",
+            petak: t.petak || "",
+            anak_petak: t.anak_petak || "",
+            luas_rencana: t.luas || "",
+            no_blok: existing?.no_blok || "Blok 1",
+            luas_blok: existing?.luas_blok || "",
+            jumlah_pohon: existing?.jumlah_pohon || "",
+            volume: existing?.volume || "",
+            keterangan: existing?.keterangan || "",
+          };
+        }) || [];
+      setFormData({ rekap_klem_list: initialList });
+    } else if (key === "klem_detail" && data) {
+      const initialTrees =
+        data.klem_detail?.length > 0
+          ? data.klem_detail
+          : [
+              {
+                no_blok: "",
+                no_pohon: "",
+                jenis_pohon: "Jati",
+                keliling: "",
+                volume: "",
+                keterangan: "",
+              },
+            ];
+      setFormData({ klem_detail_list: initialTrees });
+    } else {
+      setFormData({});
+    }
+    setActiveModal(key);
   };
 
   // --- SMART INPUTS ---
@@ -160,7 +269,12 @@ function RttDetailContent({ id }: { id: string }) {
         }
       } else {
         // Data biasa (non-file)
-        const payloadToSubmit = { ...formData };
+        const payloadToSubmit =
+          activeModal === "rekap_klem"
+            ? formData.rekap_klem_list
+            : activeModal === "klem_detail"
+              ? formData.klem_detail_list
+              : { ...formData };
         if (activeModal === "ba_detail") {
           payloadToSubmit.berita_acara_id =
             data.berita_acara?.[0]?.id || data.berita_acara?.id || 0;
@@ -326,219 +440,228 @@ function RttDetailContent({ id }: { id: string }) {
 
   return (
     <>
-    <div className="space-y-6 animate-fade-in pb-20 max-w-5xl mx-auto">
-      {/* Top Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-700/50">
-        <div className="flex items-center gap-4">
-          <Link
-            href="/rtt"
-            className="w-9 h-9 rounded-md bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400 hover:text-white transition-all"
-          >
-            <ArrowLeft size={16} />
-          </Link>
-          <div>
-            <h2 className="text-xl font-bold text-white tracking-tight">
-              Berkas RTT: {rtt.nomor_dokumen || "Tanpa Nomor"}
-            </h2>
-            <p className="text-[12px] text-slate-500 font-medium mt-0.5 uppercase tracking-wider">
-              Kesatuan Pemangkuan Hutan {rtt.kph}
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <div
-            className={`px-3 py-1.5 rounded-md border text-[11px] font-bold tracking-wider uppercase ${isSah ? "bg-emerald-900/30 border-emerald-500/50 text-emerald-400" : "bg-slate-800 border-slate-700 text-slate-400"}`}
-          >
-            Status:{" "}
-            {isSah ? "SAH & TERENKRIPSI" : rtt.status.replace(/_/g, " ")}
-          </div>
-        </div>
-      </div>
-
-      {/* Security & Audit Info */}
-      <div className="bg-[#0f172a] border border-slate-700/50 rounded-lg p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        <div className="flex items-start gap-4">
-          <div className="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400 shrink-0 mt-0.5">
-            <ShieldCheck size={20} />
-          </div>
-          <div>
-            <h3 className="text-[14px] font-bold text-white">
-              Jejak Audit Kriptografi
-            </h3>
-            <p className="text-[11px] text-slate-400 font-mono mt-1">
-              Hash ID: {rtt.hash || "Menunggu finalisasi dokumen..."}
-            </p>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap gap-2">
-          {doneCount === 8 &&
-          (rtt.status === "draft" ||
-            rtt.status === "revisi_phw" ||
-            rtt.status === "revisi_kph") &&
-          (user?.role === "sysadmin" || user?.role === "kph") ? (
-            <button
-              onClick={async () => {
-                if (!confirm("Kirim dokumen ini ke PHW untuk diverifikasi?"))
-                  return;
-                try {
-                  const res = await fetch(
-                    `http://localhost:8000/api/rtt/submit.php`,
-                    {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({
-                        rtt_id: id,
-                        token: localStorage.getItem("token"),
-                      }),
-                    },
-                  );
-                  const d = await res.json();
-                  if (d.status === "success") {
-                    alert("Berhasil dikirim ke PHW!");
-                    fetchWorkspace();
-                  } else alert(d.message);
-                } catch (e) {
-                  alert("Error server");
-                }
-              }}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 border border-blue-500 text-white rounded-md text-[12px] font-bold transition-all shadow-lg"
+      <div className="space-y-6 animate-fade-in pb-20 max-w-5xl mx-auto">
+        {/* Top Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-700/50">
+          <div className="flex items-center gap-4">
+            <Link
+              href="/rtt"
+              className="w-9 h-9 rounded-md bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400 hover:text-white transition-all"
             >
-              Ajukan Verifikasi ke PHW
-            </button>
-          ) : rtt.status === "menunggu_verifikasi_phw" ? (
-            <div className="px-4 py-2 bg-indigo-900/30 border border-indigo-700/50 text-indigo-400 rounded-md text-[11px] font-bold">
-              Menunggu Verifikasi PHW
+              <ArrowLeft size={16} />
+            </Link>
+            <div>
+              <h2 className="text-xl font-bold text-white tracking-tight">
+                Berkas RTT: {rtt.nomor_dokumen || "Tanpa Nomor"}
+              </h2>
+              <p className="text-[12px] text-slate-500 font-medium mt-0.5 uppercase tracking-wider">
+                Kesatuan Pemangkuan Hutan {rtt.kph}
+              </p>
             </div>
-          ) : rtt.status === "menunggu_pengesahan" ? (
-            <div className="px-4 py-2 bg-amber-900/30 border border-amber-700/50 text-amber-400 rounded-md text-[11px] font-bold">
-              Menunggu Pengesahan Final
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div
+              className={`px-3 py-1.5 rounded-md border text-[11px] font-bold tracking-wider uppercase ${isSah ? "bg-emerald-900/30 border-emerald-500/50 text-emerald-400" : "bg-slate-800 border-slate-700 text-slate-400"}`}
+            >
+              Status:{" "}
+              {isSah ? "SAH & TERENKRIPSI" : rtt.status.replace(/_/g, " ")}
             </div>
-          ) : isSah ? (
-            <>
+          </div>
+        </div>
+
+        {/* Security & Audit Info */}
+        <div className="bg-[#0f172a] border border-slate-700/50 rounded-lg p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="flex items-start gap-4">
+            <div className="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400 shrink-0 mt-0.5">
+              <ShieldCheck size={20} />
+            </div>
+            <div>
+              <h3 className="text-[14px] font-bold text-white">
+                Jejak Audit Kriptografi
+              </h3>
+              <p className="text-[11px] text-slate-400 font-mono mt-1">
+                Hash ID: {rtt.hash || "Menunggu finalisasi dokumen..."}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {doneCount === 8 &&
+            (rtt.status === "draft" ||
+              rtt.status === "revisi_phw" ||
+              rtt.status === "revisi_kph") &&
+            (user?.role === "sysadmin" || user?.role === "kph") ? (
               <button
-                onClick={() =>
-                  window.open(
-                    `http://localhost:8000/api/rtt/generate_pdf.php?id=${id}`,
-                  )
-                }
-                className="px-4 py-2 bg-slate-800 border border-slate-600 hover:bg-slate-700 text-white rounded-md text-[11px] font-bold flex items-center gap-2 transition-all"
+                onClick={async () => {
+                  if (!confirm("Kirim dokumen ini ke PHW untuk diverifikasi?"))
+                    return;
+                  try {
+                    const res = await fetch(
+                      `http://localhost:8000/api/rtt/submit.php`,
+                      {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          rtt_id: id,
+                          token: localStorage.getItem("token"),
+                        }),
+                      },
+                    );
+                    const d = await res.json();
+                    if (d.status === "success") {
+                      alert("Berhasil dikirim ke PHW!");
+                      fetchWorkspace();
+                    } else alert(d.message);
+                  } catch (e) {
+                    alert("Error server");
+                  }
+                }}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 border border-blue-500 text-white rounded-md text-[12px] font-bold transition-all shadow-lg"
               >
-                <Printer size={14} /> Cetak PDF
+                Ajukan Verifikasi ke PHW
               </button>
-              <div className="flex gap-2">
-                <button
-                  onClick={() =>
-                    window.open(
-                      `http://localhost:8000/api/rtt/download_bundle.php?id=${id}&type=sig`,
-                    )
-                  }
-                  className="px-3 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-md text-[10px] font-bold text-slate-300 flex items-center gap-1.5 transition-all"
-                >
-                  <Download size={12} /> .SIG
-                </button>
-                <button
-                  onClick={() =>
-                    window.open(
-                      `http://localhost:8000/api/rtt/download_bundle.php?id=${id}&type=pub`,
-                    )
-                  }
-                  className="px-3 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-md text-[10px] font-bold text-slate-300 flex items-center gap-1.5 transition-all"
-                >
-                  <Key size={12} /> .PEM
-                </button>
+            ) : rtt.status === "menunggu_verifikasi_phw" ? (
+              <div className="px-4 py-2 bg-indigo-900/30 border border-indigo-700/50 text-indigo-400 rounded-md text-[11px] font-bold">
+                Menunggu Verifikasi PHW
               </div>
-            </>
-          ) : (
-            <div className="px-4 py-2 bg-slate-800/50 border border-slate-700/50 text-slate-500 rounded-md text-[11px] font-bold">
-              {doneCount < 8
-                ? `Modul Tersisa: ${8 - doneCount}`
-                : "Menunggu Proses"}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Progress & Modules List */}
-      <div className="bg-[#0b1120] border border-slate-700/50 rounded-lg overflow-hidden shadow-2xl">
-        <div className="p-5 border-b border-slate-700/50 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[#0f172a]">
-          <div>
-            <h3 className="text-[15px] font-bold text-white">
-              Kelengkapan Lampiran Dokumen
-            </h3>
-            <p className="text-[12px] text-slate-400 mt-0.5">
-              Lengkapi seluruh formulir dan unggahan berkas di bawah ini.
-            </p>
-          </div>
-          <div className="w-full md:w-64">
-            <div className="flex justify-between text-[11px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">
-              <span>Progres Pengisian</span>
-              <span className="text-emerald-400">
-                {Math.round((doneCount / 8) * 100)}%
-              </span>
-            </div>
-            <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-emerald-500 transition-all duration-500"
-                style={{ width: `${(doneCount / 8) * 100}%` }}
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="divide-y divide-slate-700/50">
-          {docModules.map((doc, idx) => {
-            const isMyRole = user?.role === "sysadmin" || user?.role === "kph";
-            return (
-              <div
-                key={idx}
-                className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-800/30 transition-colors"
-              >
-                <div className="flex items-center gap-4">
-                  <div
-                    className={`w-10 h-10 rounded-lg flex items-center justify-center border shrink-0 ${doc.done ? "bg-emerald-900/20 border-emerald-500/30 text-emerald-400" : "bg-slate-800/50 border-slate-700 text-slate-500"}`}
+            ) : rtt.status === "menunggu_pengesahan" ? (
+              <div className="px-4 py-2 bg-amber-900/30 border border-amber-700/50 text-amber-400 rounded-md text-[11px] font-bold">
+                Menunggu Pengesahan Final
+              </div>
+            ) : isSah ? (
+              <>
+                <button
+                  onClick={() =>
+                    window.open(
+                      `http://localhost:8000/api/rtt/generate_pdf.php?id=${id}`,
+                    )
+                  }
+                  className="px-4 py-2 bg-slate-800 border border-slate-600 hover:bg-slate-700 text-white rounded-md text-[11px] font-bold flex items-center gap-2 transition-all"
+                >
+                  <Printer size={14} /> Cetak PDF
+                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() =>
+                      window.open(
+                        `http://localhost:8000/api/rtt/download_bundle.php?id=${id}&type=sig`,
+                      )
+                    }
+                    className="px-3 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-md text-[10px] font-bold text-slate-300 flex items-center gap-1.5 transition-all"
                   >
-                    {doc.done ? <CheckCircle2 size={18} /> : doc.icon}
-                  </div>
-                  <div>
-                    <h4 className="text-[13px] font-bold text-slate-200">
-                      {doc.name}
-                    </h4>
-                    <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed hidden sm:block">
-                      {doc.desc}
-                    </p>
-                  </div>
+                    <Download size={12} /> .SIG
+                  </button>
+                  <button
+                    onClick={() =>
+                      window.open(
+                        `http://localhost:8000/api/rtt/download_bundle.php?id=${id}&type=pub`,
+                      )
+                    }
+                    className="px-3 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-md text-[10px] font-bold text-slate-300 flex items-center gap-1.5 transition-all"
+                  >
+                    <Key size={12} /> .PEM
+                  </button>
                 </div>
-
-                <div className="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto mt-2 sm:mt-0">
-                  {isMyRole &&
-                  (rtt.status === "draft" ||
-                    rtt.status === "revisi_phw" ||
-                    rtt.status === "revisi_kph") ? (
-                    <button
-                      onClick={() => setActiveModal(doc.key)}
-                      className={`w-24 py-1.5 text-[11px] font-bold rounded border transition-all ${doc.done ? "bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700" : "bg-blue-600/20 border-blue-500/50 text-blue-400 hover:bg-blue-600/40 hover:text-blue-300"}`}
-                    >
-                      {doc.done ? "Ubah" : "Lengkapi"}
-                    </button>
-                  ) : (
-                    <div className="w-24 text-right sm:text-center text-[10px] text-slate-600 font-bold uppercase">
-                      {doc.done ? "Tersimpan" : "-"}
-                    </div>
-                  )}
-                </div>
+              </>
+            ) : (
+              <div className="px-4 py-2 bg-slate-800/50 border border-slate-700/50 text-slate-500 rounded-md text-[11px] font-bold">
+                {doneCount < 8
+                  ? `Modul Tersisa: ${8 - doneCount}`
+                  : "Menunggu Proses"}
               </div>
-            );
-          })}
+            )}
+          </div>
+        </div>
+
+        {/* Progress & Modules List */}
+        <div className="bg-[#0b1120] border border-slate-700/50 rounded-lg overflow-hidden shadow-2xl">
+          <div className="p-5 border-b border-slate-700/50 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[#0f172a]">
+            <div>
+              <h3 className="text-[15px] font-bold text-white">
+                Kelengkapan Lampiran Dokumen
+              </h3>
+              <p className="text-[12px] text-slate-400 mt-0.5">
+                Lengkapi seluruh formulir dan unggahan berkas di bawah ini.
+              </p>
+            </div>
+            <div className="w-full md:w-64">
+              <div className="flex justify-between text-[11px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">
+                <span>Progres Pengisian</span>
+                <span className="text-emerald-400">
+                  {Math.round((doneCount / 8) * 100)}%
+                </span>
+              </div>
+              <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-emerald-500 transition-all duration-500"
+                  style={{ width: `${(doneCount / 8) * 100}%` }}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="divide-y divide-slate-700/50">
+            {docModules.map((doc, idx) => {
+              const isMyRole =
+                user?.role === "sysadmin" || user?.role === "kph";
+              return (
+                <div
+                  key={idx}
+                  className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-800/30 transition-colors"
+                >
+                  <div className="flex items-center gap-4">
+                    <div
+                      className={`w-10 h-10 rounded-lg flex items-center justify-center border shrink-0 ${doc.done ? "bg-emerald-900/20 border-emerald-500/30 text-emerald-400" : "bg-slate-800/50 border-slate-700 text-slate-500"}`}
+                    >
+                      {doc.done ? <CheckCircle2 size={18} /> : doc.icon}
+                    </div>
+                    <div>
+                      <h4 className="text-[13px] font-bold text-slate-200">
+                        {doc.name}
+                      </h4>
+                      <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed hidden sm:block">
+                        {doc.desc}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto mt-2 sm:mt-0">
+                    {isMyRole &&
+                    (rtt.status === "draft" ||
+                      rtt.status === "revisi_phw" ||
+                      rtt.status === "revisi_kph") ? (
+                      <button
+                        onClick={() => handleOpenModal(doc.key)}
+                        className={`w-24 py-1.5 text-[11px] font-bold rounded border transition-all ${doc.done ? "bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700" : "bg-blue-600/20 border-blue-500/50 text-blue-400 hover:bg-blue-600/40 hover:text-blue-300"}`}
+                      >
+                        {doc.done ? "Ubah" : "Lengkapi"}
+                      </button>
+                    ) : (
+                      <div className="w-24 text-right sm:text-center text-[10px] text-slate-600 font-bold uppercase">
+                        {doc.done ? "Tersimpan" : "-"}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
-    </div>
 
       {/* Modal */}
       {activeModal && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-6 bg-slate-900/80 backdrop-blur-sm [color-scheme:dark] animate-fade-in">
-          <div className="bg-[#0f172a] border border-slate-700/80 rounded-xl shadow-2xl p-8 max-w-lg w-full shadow-2xl relative animate-scale-in max-h-[90vh] overflow-y-auto">
+          <div
+            className={`bg-[#0f172a] border border-slate-700/80 rounded-xl shadow-2xl p-8 w-full shadow-2xl relative animate-scale-in max-h-[90vh] overflow-y-auto ${
+              activeModal === "klem_detail" ||
+              activeModal === "klem" ||
+              activeModal === "rekap_klem"
+                ? "max-w-5xl"
+                : "max-w-lg"
+            }`}
+          >
             <button
               onClick={() => setActiveModal(null)}
               className="absolute top-5 right-5 text-slate-500 hover:text-white transition-colors"
@@ -571,7 +694,7 @@ function RttDetailContent({ id }: { id: string }) {
                       name="bentuk_tebangan"
                       onChange={handleInputChange}
                       className="w-full px-4 py-2.5 text-[13px] bg-[#0b1120] border border-slate-700/80 rounded-md text-slate-200 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600/50 transition-all [color-scheme:dark]"
-                      placeholder="e.g. TEBANGAN A 2026"
+                      placeholder=""
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
@@ -865,7 +988,7 @@ function RttDetailContent({ id }: { id: string }) {
                       value={uploadKeterangan}
                       onChange={(e) => setUploadKeterangan(e.target.value)}
                       className="w-full px-4 py-2.5 text-[13px] bg-[#0b1120] border border-slate-700/80 rounded-md text-slate-200 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600/50 transition-all [color-scheme:dark]"
-                      placeholder="e.g. Lampiran File"
+                      placeholder=""
                     />
                   </div>
                 </div>
@@ -873,45 +996,6 @@ function RttDetailContent({ id }: { id: string }) {
 
               {activeModal === "nett" && (
                 <div className="space-y-6">
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      className="btn-secondary flex-1 py-2 text-[11px] flex items-center justify-center gap-2"
-                      onClick={() => {
-                        const input = document.createElement("input");
-                        input.type = "file";
-                        input.accept = ".csv";
-                        input.onchange = (e: any) => {
-                          const file = e.target.files[0];
-                          if (!file) return;
-                          const reader = new FileReader();
-                          reader.onload = (ev) => {
-                            const text = ev.target?.result as string;
-                            const lines = text.split("\n");
-                            if (lines.length > 1) {
-                              const headers = lines[0]
-                                .split(",")
-                                .map((h) => h.trim());
-                              const values = lines[1]
-                                .split(",")
-                                .map((v) => v.trim());
-                              const newFormData = { ...formData };
-                              headers.forEach((h, i) => {
-                                if (h) newFormData[h] = values[i];
-                              });
-                              setFormData(newFormData);
-                              alert("Data berhasil di-import dari CSV!");
-                            }
-                          };
-                          reader.readAsText(file);
-                        };
-                        input.click();
-                      }}
-                    >
-                      <FilePlus size={14} /> Import CSV
-                    </button>
-                  </div>
-
                   <div className="space-y-4">
                     <p className="text-[11px] font-bold text-emerald-400 uppercase tracking-wider border-b border-white/[0.06] pb-2">
                       Identitas Petak
@@ -954,7 +1038,7 @@ function RttDetailContent({ id }: { id: string }) {
                             value={formData.petak || ""}
                             onChange={handleInputChange}
                             className="w-full px-4 py-2.5 text-[13px] bg-[#0b1120] border border-slate-700/80 rounded-md text-slate-200 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600/50 transition-all [color-scheme:dark]"
-                            placeholder="e.g. 23A"
+                            placeholder=""
                           />
                         )}
                         {formData.petak &&
@@ -1097,12 +1181,16 @@ function RttDetailContent({ id }: { id: string }) {
 
                   <div className="space-y-4">
                     <p className="text-[11px] font-bold text-emerald-400 uppercase tracking-wider border-b border-white/[0.06] pb-2">
-                      Data Bonita & Hutan (Auto-fetch)
+                      Data Bonita &amp; Hutan (Auto-fetch)
                     </p>
                     <div className="grid grid-cols-3 gap-4">
                       <div className="space-y-2">
                         <label className="text-[11px] text-slate-400 font-semibold block">
-                          Kelas Hutan
+                          <FieldHint
+                            label="Kelas Hutan"
+                            title="Kelas Umur Tegakan"
+                            description="Pengelompokan umur pohon: KU I (10 thn), KU II (20 thn), dst."
+                          />
                         </label>
                         <input
                           type="text"
@@ -1114,7 +1202,11 @@ function RttDetailContent({ id }: { id: string }) {
                       </div>
                       <div className="space-y-2">
                         <label className="text-[11px] text-slate-400 font-semibold block">
-                          BON
+                          <FieldHint
+                            label="BON"
+                            title="Bonita"
+                            description="Kualitas tempat tumbuh pohon. B1 = terbaik, B5 = terburuk."
+                          />
                         </label>
                         <input
                           type="text"
@@ -1126,7 +1218,12 @@ function RttDetailContent({ id }: { id: string }) {
                       </div>
                       <div className="space-y-2">
                         <label className="text-[11px] text-slate-400 font-semibold block">
-                          KBD
+                          <FieldHint
+                            label="KBD"
+                            title="Kerapatan Bidang Dasar"
+                            description="Luas penampang batang pohon per hektar (m²/Ha). Ukuran kepadatan hutan."
+                            align="right"
+                          />
                         </label>
                         <input
                           type="text"
@@ -1140,7 +1237,11 @@ function RttDetailContent({ id }: { id: string }) {
                     <div className="grid grid-cols-3 gap-4">
                       <div className="space-y-2">
                         <label className="text-[11px] text-slate-400 font-semibold block">
-                          DKN
+                          <FieldHint
+                            label="DKN"
+                            title="Diameter Kuadrat Netto"
+                            description="Diameter rata-rata pohon hasil pengukuran, dipakai untuk menghitung volume kayu."
+                          />
                         </label>
                         <input
                           type="text"
@@ -1152,7 +1253,11 @@ function RttDetailContent({ id }: { id: string }) {
                       </div>
                       <div className="space-y-2">
                         <label className="text-[11px] text-slate-400 font-semibold block">
-                          N/Ha
+                          <FieldHint
+                            label="N/Ha"
+                            title="Jumlah Pohon per Hektar"
+                            description="Kepadatan tegakan: berapa batang pohon dalam 1 Hektar luas lahan."
+                          />
                         </label>
                         <input
                           type="number"
@@ -1185,7 +1290,11 @@ function RttDetailContent({ id }: { id: string }) {
                     <div className="grid grid-cols-3 gap-4">
                       <div className="space-y-2">
                         <label className="text-[11px] text-slate-400 font-semibold block">
-                          AI (m³)
+                          <FieldHint
+                            label="AI (m³)"
+                            title="Sortimen Kayu Kelas A-I"
+                            description="Kayu berkualitas terbaik: diameter besar, lurus, tanpa cacat. Harga tertinggi."
+                          />
                         </label>
                         <input
                           type="number"
@@ -1198,7 +1307,11 @@ function RttDetailContent({ id }: { id: string }) {
                       </div>
                       <div className="space-y-2">
                         <label className="text-[11px] text-slate-400 font-semibold block">
-                          AII (m³)
+                          <FieldHint
+                            label="AII (m³)"
+                            title="Sortimen Kayu Kelas A-II"
+                            description="Kayu kualitas menengah: diameter sedang atau sedikit cacat."
+                          />
                         </label>
                         <input
                           type="number"
@@ -1211,7 +1324,12 @@ function RttDetailContent({ id }: { id: string }) {
                       </div>
                       <div className="space-y-2">
                         <label className="text-[11px] text-slate-400 font-semibold block">
-                          AIII (m³)
+                          <FieldHint
+                            label="AIII (m³)"
+                            title="Sortimen Kayu Kelas A-III"
+                            description="Kayu kualitas terendah: diameter kecil atau banyak cacat. Biasanya untuk kayu bakar/arang."
+                            align="right"
+                          />
                         </label>
                         <input
                           type="number"
@@ -1266,7 +1384,11 @@ function RttDetailContent({ id }: { id: string }) {
                       </div>
                       <div className="space-y-2">
                         <label className="text-[11px] text-slate-400 font-semibold block">
-                          Tunggak
+                          <FieldHint
+                            label="Tunggak"
+                            title="Volume Tunggak"
+                            description="Volume sisa batang pohon yang tertinggal di tanah setelah penebangan."
+                          />
                         </label>
                         <input
                           type="number"
@@ -1279,7 +1401,12 @@ function RttDetailContent({ id }: { id: string }) {
                       </div>
                       <div className="space-y-2">
                         <label className="text-[11px] text-slate-400 font-semibold block">
-                          Kulit
+                          <FieldHint
+                            label="Kulit"
+                            title="Volume Kulit Kayu"
+                            description="Volume bagian kulit kayu yang dipisahkan dari batang saat pengolahan."
+                            align="right"
+                          />
                         </label>
                         <input
                           type="number"
@@ -1325,7 +1452,11 @@ function RttDetailContent({ id }: { id: string }) {
                       </div>
                       <div className="space-y-2">
                         <label className="text-[11px] text-slate-400 font-semibold block">
-                          Tahun YAD
+                          <FieldHint
+                            label="Tahun YAD"
+                            title="Tahun Yang Akan Datang"
+                            description="Estimasi volume kayu yang direncanakan untuk ditebang di tahun berikutnya."
+                          />
                         </label>
                         <input
                           type="number"
@@ -1368,7 +1499,11 @@ function RttDetailContent({ id }: { id: string }) {
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <label className="text-[11px] text-slate-400 font-semibold block">
-                          Faktor Koreksi KPH
+                          <FieldHint
+                            label="Faktor Koreksi KPH"
+                            title="Faktor Koreksi KPH"
+                            description="Angka penyesuaian volume berdasarkan kondisi nyata di lapangan menurut data KPH."
+                          />
                         </label>
                         <input
                           type="number"
@@ -1381,7 +1516,12 @@ function RttDetailContent({ id }: { id: string }) {
                       </div>
                       <div className="space-y-2">
                         <label className="text-[11px] text-slate-400 font-semibold block">
-                          X Faktor Klem
+                          <FieldHint
+                            label="X Faktor Klem"
+                            title="Faktor Pengali Klem"
+                            description="Koefisien pengurang volume kayu akibat potongan klem (bagian yang tidak bisa dipakai)."
+                            align="right"
+                          />
                         </label>
                         <input
                           type="number"
@@ -1476,123 +1616,283 @@ function RttDetailContent({ id }: { id: string }) {
               )}
 
               {activeModal === "rekap_klem" && (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <label className="text-[11px] text-slate-400 font-semibold block">
-                        Nomor Blok
-                      </label>
-                      <input
-                        required
-                        type="text"
-                        name="no_blok"
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-2.5 text-[13px] bg-[#0b1120] border border-slate-700/80 rounded-md text-slate-200 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600/50 transition-all [color-scheme:dark]"
-                        placeholder="e.g. Blok 1"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-[11px] text-slate-400 font-semibold block">
-                        Luas Blok (Ha)
-                      </label>
-                      <input
-                        required
-                        type="number"
-                        step="0.01"
-                        name="luas_blok"
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-2.5 text-[13px] bg-[#0b1120] border border-slate-700/80 rounded-md text-slate-200 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600/50 transition-all [color-scheme:dark]"
-                      />
-                    </div>
+                <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2 custom-scrollbar">
+                  <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-3">
+                    <p className="text-[11px] text-blue-300 font-medium leading-relaxed">
+                      Lengkapi data klem pohon untuk{" "}
+                      <strong>semua petak</strong> di bawah ini. Identitas
+                      lokasi (KPH, RPH, Luas Baku, dll) sudah diisi otomatis
+                      sesuai data sistem.
+                    </p>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <label className="text-[11px] text-slate-400 font-semibold block">
-                        Jumlah Pohon
-                      </label>
-                      <input
-                        required
-                        type="number"
-                        name="jumlah_pohon"
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-2.5 text-[13px] bg-[#0b1120] border border-slate-700/80 rounded-md text-slate-200 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600/50 transition-all [color-scheme:dark]"
-                      />
+
+                  {formData.rekap_klem_list?.map((item: any, idx: number) => (
+                    <div
+                      key={idx}
+                      className="bg-slate-800/30 p-4 rounded-lg border border-slate-700/60 space-y-4"
+                    >
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-700/50 pb-2 gap-2">
+                        <p className="text-[12px] font-bold text-emerald-400 uppercase tracking-wider">
+                          Petak {item.petak} - {item.anak_petak}{" "}
+                          <span className="text-slate-400 font-normal">
+                            ({item.luas_rencana} Ha)
+                          </span>
+                        </p>
+                        <p className="text-[10px] text-slate-500 uppercase tracking-widest font-semibold">
+                          Kelas {item.kelas_hutan} &bull; {item.jenis_tanaman}{" "}
+                          &bull; T.T {item.tahun_tanam}
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        <div className="space-y-1.5">
+                          <label className="text-[11px] text-slate-400 font-semibold block">
+                            Nomor Blok
+                          </label>
+                          <input
+                            required
+                            type="text"
+                            value={item.no_blok || ""}
+                            onChange={(e) =>
+                              handleRekapKlemListChange(
+                                idx,
+                                "no_blok",
+                                e.target.value,
+                              )
+                            }
+                            className="w-full px-3 py-2 text-[12px] bg-[#0b1120] border border-slate-700/80 rounded-md text-slate-200 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600/50 transition-all"
+                            placeholder="Blok 1"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-[11px] text-slate-400 font-semibold block">
+                            Luas Blok (Ha)
+                          </label>
+                          <input
+                            required
+                            type="number"
+                            step="0.01"
+                            value={item.luas_blok || ""}
+                            onChange={(e) =>
+                              handleRekapKlemListChange(
+                                idx,
+                                "luas_blok",
+                                e.target.value,
+                              )
+                            }
+                            className="w-full px-3 py-2 text-[12px] bg-[#0b1120] border border-slate-700/80 rounded-md text-slate-200 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600/50 transition-all"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-[11px] text-slate-400 font-semibold block">
+                            Jml Pohon
+                          </label>
+                          <input
+                            required
+                            type="number"
+                            value={item.jumlah_pohon || ""}
+                            onChange={(e) =>
+                              handleRekapKlemListChange(
+                                idx,
+                                "jumlah_pohon",
+                                e.target.value,
+                              )
+                            }
+                            className="w-full px-3 py-2 text-[12px] bg-[#0b1120] border border-slate-700/80 rounded-md text-slate-200 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600/50 transition-all"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-[11px] text-slate-400 font-semibold block">
+                            Volume (m³)
+                          </label>
+                          <input
+                            required
+                            type="number"
+                            step="0.01"
+                            value={item.volume || ""}
+                            onChange={(e) =>
+                              handleRekapKlemListChange(
+                                idx,
+                                "volume",
+                                e.target.value,
+                              )
+                            }
+                            className="w-full px-3 py-2 text-[12px] bg-[#0b1120] border border-slate-700/80 rounded-md text-slate-200 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600/50 transition-all"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-[11px] text-slate-400 font-semibold block">
+                          Keterangan (Opsional)
+                        </label>
+                        <input
+                          type="text"
+                          value={item.keterangan || ""}
+                          onChange={(e) =>
+                            handleRekapKlemListChange(
+                              idx,
+                              "keterangan",
+                              e.target.value,
+                            )
+                          }
+                          className="w-full px-3 py-2 text-[12px] bg-[#0b1120] border border-slate-700/80 rounded-md text-slate-200 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600/50 transition-all"
+                          placeholder="Catatan tambahan..."
+                        />
+                      </div>
                     </div>
-                    <div className="space-y-2">
-                      <label className="text-[11px] text-slate-400 font-semibold block">
-                        Volume (m³)
-                      </label>
-                      <input
-                        required
-                        type="number"
-                        step="0.01"
-                        name="volume"
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-2.5 text-[13px] bg-[#0b1120] border border-slate-700/80 rounded-md text-slate-200 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600/50 transition-all [color-scheme:dark]"
-                      />
-                    </div>
-                  </div>
+                  ))}
                 </div>
               )}
 
               {activeModal === "klem_detail" && (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <label className="text-[11px] text-slate-400 font-semibold block">
-                        Nomor Pohon
-                      </label>
-                      <input
-                        required
-                        type="text"
-                        name="no_pohon"
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-2.5 text-[13px] bg-[#0b1120] border border-slate-700/80 rounded-md text-slate-200 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600/50 transition-all [color-scheme:dark]"
-                        placeholder="e.g. 001"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-[11px] text-slate-400 font-semibold block">
-                        Jenis Pohon
-                      </label>
-                      <input
-                        required
-                        type="text"
-                        name="jenis_pohon"
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-2.5 text-[13px] bg-[#0b1120] border border-slate-700/80 rounded-md text-slate-200 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600/50 transition-all [color-scheme:dark]"
-                        placeholder="e.g. Jati"
-                      />
-                    </div>
+                <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2 custom-scrollbar">
+                  <div className="flex items-center justify-between bg-emerald-900/20 border border-emerald-500/30 rounded-lg p-3">
+                    <p className="text-[11px] text-emerald-300 font-medium leading-relaxed">
+                      Lengkapi data detail pohon secara individu. Anda dapat
+                      menambahkan banyak pohon sekaligus.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={handleAddKlemDetailRow}
+                      className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold rounded flex items-center gap-1"
+                    >
+                      <Plus size={14} /> Tambah Pohon
+                    </button>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <label className="text-[11px] text-slate-400 font-semibold block">
-                        Keliling Batang (cm)
-                      </label>
-                      <input
-                        required
-                        type="number"
-                        step="0.1"
-                        name="keliling"
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-2.5 text-[13px] bg-[#0b1120] border border-slate-700/80 rounded-md text-slate-200 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600/50 transition-all [color-scheme:dark]"
-                      />
+
+                  {formData.klem_detail_list?.map((item: any, idx: number) => (
+                    <div
+                      key={idx}
+                      className="bg-slate-800/30 p-4 rounded-lg border border-slate-700/60 relative group space-y-4"
+                    >
+                      {formData.klem_detail_list.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveKlemDetailRow(idx)}
+                          className="absolute top-2 right-2 p-1.5 bg-red-900/30 text-red-400 hover:bg-red-600 hover:text-white rounded transition-colors"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
+
+                      <div className="grid grid-cols-2 sm:grid-cols-6 gap-3 pt-2 sm:pt-0">
+                        <div className="space-y-1.5">
+                          <label className="text-[11px] text-slate-400 font-semibold block">
+                            Nomor Blok
+                          </label>
+                          <input
+                            required
+                            type="text"
+                            value={item.no_blok || ""}
+                            onChange={(e) =>
+                              handleKlemDetailChange(
+                                idx,
+                                "no_blok",
+                                e.target.value,
+                              )
+                            }
+                            className="w-full px-3 py-2 text-[12px] bg-[#0b1120] border border-slate-700/80 rounded-md text-slate-200 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600/50 transition-all"
+                            placeholder=""
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-[11px] text-slate-400 font-semibold block">
+                            No Pohon
+                          </label>
+                          <input
+                            required
+                            type="text"
+                            value={item.no_pohon || ""}
+                            onChange={(e) =>
+                              handleKlemDetailChange(
+                                idx,
+                                "no_pohon",
+                                e.target.value,
+                              )
+                            }
+                            className="w-full px-3 py-2 text-[12px] bg-[#0b1120] border border-slate-700/80 rounded-md text-slate-200 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600/50 transition-all"
+                            placeholder=""
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-[11px] text-slate-400 font-semibold block">
+                            Jenis Pohon
+                          </label>
+                          <input
+                            required
+                            type="text"
+                            value={item.jenis_pohon || ""}
+                            onChange={(e) =>
+                              handleKlemDetailChange(
+                                idx,
+                                "jenis_pohon",
+                                e.target.value,
+                              )
+                            }
+                            className="w-full px-3 py-2 text-[12px] bg-[#0b1120] border border-slate-700/80 rounded-md text-slate-200 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600/50 transition-all"
+                            placeholder=""
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-[11px] text-slate-400 font-semibold block">
+                            Keliling (cm)
+                          </label>
+                          <input
+                            required
+                            type="number"
+                            step="0.1"
+                            value={item.keliling || ""}
+                            onChange={(e) =>
+                              handleKlemDetailChange(
+                                idx,
+                                "keliling",
+                                e.target.value,
+                              )
+                            }
+                            className="w-full px-3 py-2 text-[12px] bg-[#0b1120] border border-slate-700/80 rounded-md text-slate-200 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600/50 transition-all"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-[11px] text-slate-400 font-semibold block">
+                            Volume (m³)
+                          </label>
+                          <input
+                            required
+                            type="number"
+                            step="0.01"
+                            value={item.volume || ""}
+                            onChange={(e) =>
+                              handleKlemDetailChange(
+                                idx,
+                                "volume",
+                                e.target.value,
+                              )
+                            }
+                            className="w-full px-3 py-2 text-[12px] bg-[#0b1120] border border-slate-700/80 rounded-md text-slate-200 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600/50 transition-all"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-[11px] text-slate-400 font-semibold block">
+                            Keterangan
+                          </label>
+                          <input
+                            type="text"
+                            value={item.keterangan || ""}
+                            onChange={(e) =>
+                              handleKlemDetailChange(
+                                idx,
+                                "keterangan",
+                                e.target.value,
+                              )
+                            }
+                            className="w-full px-3 py-2 text-[12px] bg-[#0b1120] border border-slate-700/80 rounded-md text-slate-200 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600/50 transition-all"
+                            placeholder="..."
+                          />
+                        </div>
+                      </div>
                     </div>
-                    <div className="space-y-2">
-                      <label className="text-[11px] text-slate-400 font-semibold block">
-                        Volume (m³)
-                      </label>
-                      <input
-                        required
-                        type="number"
-                        step="0.01"
-                        name="volume"
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-2.5 text-[13px] bg-[#0b1120] border border-slate-700/80 rounded-md text-slate-200 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600/50 transition-all [color-scheme:dark]"
-                      />
-                    </div>
-                  </div>
+                  ))}
                 </div>
               )}
 
@@ -1609,7 +1909,7 @@ function RttDetailContent({ id }: { id: string }) {
                         name="nama_petugas"
                         onChange={handleInputChange}
                         className="w-full px-4 py-2.5 text-[13px] bg-[#0b1120] border border-slate-700/80 rounded-md text-slate-200 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600/50 transition-all [color-scheme:dark]"
-                        placeholder="e.g. Ahmad Subarjo"
+                        placeholder=""
                       />
                     </div>
                     <div className="space-y-2">
@@ -1622,7 +1922,7 @@ function RttDetailContent({ id }: { id: string }) {
                         name="jabatan"
                         onChange={handleInputChange}
                         className="w-full px-4 py-2.5 text-[13px] bg-[#0b1120] border border-slate-700/80 rounded-md text-slate-200 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600/50 transition-all [color-scheme:dark]"
-                        placeholder="e.g. Kepala KRPH"
+                        placeholder=""
                       />
                     </div>
                   </div>
@@ -1667,7 +1967,7 @@ function RttDetailContent({ id }: { id: string }) {
                         name="petak"
                         onChange={handleInputChange}
                         className="w-full px-4 py-2.5 text-[13px] bg-[#0b1120] border border-slate-700/80 rounded-md text-slate-200 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600/50 transition-all [color-scheme:dark]"
-                        placeholder="e.g. 12A"
+                        placeholder=""
                       />
                     </div>
                     <div className="space-y-2">
@@ -1680,7 +1980,7 @@ function RttDetailContent({ id }: { id: string }) {
                         name="anak_petak"
                         onChange={handleInputChange}
                         className="w-full px-4 py-2.5 text-[13px] bg-[#0b1120] border border-slate-700/80 rounded-md text-slate-200 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600/50 transition-all [color-scheme:dark]"
-                        placeholder="e.g. a"
+                        placeholder=""
                       />
                     </div>
                   </div>
@@ -1768,9 +2068,7 @@ function RttDetailContent({ id }: { id: string }) {
                 disabled={isSubmitting}
                 className="btn-primary w-full py-3.5 text-[13px] font-bold disabled:opacity-50"
               >
-                {isSubmitting
-                  ? "Transmitting Data..."
-                  : "Submit Transaksi Data"}
+                {isSubmitting ? "Transmitting Data..." : "Kirim"}
               </button>
             </form>
           </div>
@@ -1794,7 +2092,10 @@ function RttDetailContent({ id }: { id: string }) {
               Otorisasi Tanda Tangan
             </h3>
             <p className="text-slate-400 text-[13px] mb-6">
-              Masukkan <span className="text-emerald-400 font-bold">Private Key</span> Anda untuk memvalidasi dan mematenkan dokumen RTT ini menggunakan ECDSA.
+              Masukkan{" "}
+              <span className="text-emerald-400 font-bold">Private Key</span>{" "}
+              Anda untuk memvalidasi dan mematenkan dokumen RTT ini menggunakan
+              ECDSA.
             </p>
             <form onSubmit={handleSign} className="space-y-4">
               <div>

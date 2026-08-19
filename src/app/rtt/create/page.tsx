@@ -34,6 +34,11 @@ function RttCreateContent() {
   const [beritaAcara, setBeritaAcara] = useState<any[]>([{ tanggal: "", nama_petugas: "", jabatan: "", hasil_pemeriksaan: "" }]);
   const [pengesahan, setPengesahan] = useState<any[]>([{ nama_pejabat: "", jabatan: "", npk: "", tanggal: "" }]);
   const [petaFile, setPetaFile] = useState<File | null>(null);
+  const [petaMeta, setPetaMeta] = useState({
+    bagian_hutan: '', kelompok_hutan: '', petak: '', bkph: '',
+    rph: '', jenis_tanaman: '', kelas_hutan: '', tahun_tanam: '',
+    jarak_tanam: '', skala: '', luas_baku: '', panjang: ''
+  });
   const [lampiranFile, setLampiranFile] = useState<File | null>(null);
   const [lampiranJudul, setLampiranJudul] = useState('');
   const [lampiranKeterangan, setLampiranKeterangan] = useState('');
@@ -149,6 +154,8 @@ function RttCreateContent() {
         pForm.append('rtt_id', rttId.toString());
         pForm.append('type', 'peta');
         pForm.append('token', token || '');
+        // Kirim semua metadata peta
+        Object.entries(petaMeta).forEach(([k, v]) => pForm.append(k, v));
         await fetch(`${API}/rtt/upload_file.php`, { method: 'POST', body: pForm });
       }
       if (lampiranFile) {
@@ -366,17 +373,72 @@ function RttCreateContent() {
         {step === 5 && (
           <div className="space-y-5">
             <h3 className="text-white font-bold text-lg border-b border-slate-700/50 pb-3 mb-5">Peta Lokasi</h3>
+
+            {/* Upload File */}
+            <div className="bg-[#0b1120] p-6 rounded-lg border border-slate-700/50 space-y-3">
+              <label className={labelClass}>Upload File Peta (Opsional namun disarankan)</label>
+              <input
+                type="file"
+                accept=".pdf,.jpg,.jpeg,.png"
+                onChange={(e) => setPetaFile(e.target.files?.[0] || null)}
+                className="w-full px-4 py-3 text-[13px] bg-[#0f172a] border border-slate-700 rounded-md text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-[11px] file:font-bold file:uppercase file:tracking-wider file:bg-slate-800 file:text-slate-300 hover:file:bg-slate-700 transition-all cursor-pointer"
+              />
+              {petaFile && <p className="text-emerald-400 text-[11px] font-bold">✓ File peta siap diunggah: {petaFile.name}</p>}
+              <p className="text-slate-500 text-[11px] font-medium">Format didukung: PDF, JPG, PNG. Maksimal: 10MB</p>
+            </div>
+
+            {/* Metadata Peta */}
             <div className="bg-[#0b1120] p-6 rounded-lg border border-slate-700/50 space-y-4">
-              <div className="space-y-2">
-                <label className={labelClass}>Upload File Peta (Opsional namun disarankan)</label>
-                <input 
-                  type="file" 
-                  accept=".pdf,.jpg,.jpeg,.png"
-                  onChange={(e) => setPetaFile(e.target.files?.[0] || null)}
-                  className="w-full px-4 py-3 text-[13px] bg-[#0f172a] border border-slate-700 rounded-md text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-[11px] file:font-bold file:uppercase file:tracking-wider file:bg-slate-800 file:text-slate-300 hover:file:bg-slate-700 transition-all cursor-pointer"
-                />
-                {petaFile && <p className="text-emerald-400 text-[11px] font-bold mt-2">✓ File peta siap diunggah: {petaFile.name}</p>}
-                <p className="text-slate-500 text-[11px] font-medium mt-1">Format didukung: PDF, JPG, PNG. Maksimal: 10MB</p>
+              <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest border-b border-slate-700/50 pb-2">Keterangan Peta</p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label className={labelClass}>Bagian Hutan</label>
+                  <input className={inputClass} placeholder="cth: Hutan Kuningan" value={petaMeta.bagian_hutan} onChange={e => setPetaMeta({...petaMeta, bagian_hutan: e.target.value})} />
+                </div>
+                <div>
+                  <label className={labelClass}>Kelompok Hutan</label>
+                  <input className={inputClass} placeholder="cth: KH Kuningan Barat" value={petaMeta.kelompok_hutan} onChange={e => setPetaMeta({...petaMeta, kelompok_hutan: e.target.value})} />
+                </div>
+                <div>
+                  <label className={labelClass}>Petak</label>
+                  <input className={inputClass} placeholder="cth: 1A" value={petaMeta.petak} onChange={e => setPetaMeta({...petaMeta, petak: e.target.value})} />
+                </div>
+                <div>
+                  <label className={labelClass}>BKPH</label>
+                  <input className={inputClass} placeholder="cth: BKPH Kuningan" value={petaMeta.bkph} onChange={e => setPetaMeta({...petaMeta, bkph: e.target.value})} />
+                </div>
+                <div>
+                  <label className={labelClass}>RPH</label>
+                  <input className={inputClass} placeholder="cth: RPH Kuningan" value={petaMeta.rph} onChange={e => setPetaMeta({...petaMeta, rph: e.target.value})} />
+                </div>
+                <div>
+                  <label className={labelClass}>Jenis Tanaman</label>
+                  <input className={inputClass} placeholder="cth: Jati" value={petaMeta.jenis_tanaman} onChange={e => setPetaMeta({...petaMeta, jenis_tanaman: e.target.value})} />
+                </div>
+                <div>
+                  <label className={labelClass}>Kelas Hutan</label>
+                  <input className={inputClass} placeholder="cth: Kelas A" value={petaMeta.kelas_hutan} onChange={e => setPetaMeta({...petaMeta, kelas_hutan: e.target.value})} />
+                </div>
+                <div>
+                  <label className={labelClass}>Tahun Tanam</label>
+                  <input className={inputClass} placeholder="cth: 2002" type="number" value={petaMeta.tahun_tanam} onChange={e => setPetaMeta({...petaMeta, tahun_tanam: e.target.value})} />
+                </div>
+                <div>
+                  <label className={labelClass}>Jarak Tanam</label>
+                  <input className={inputClass} placeholder="cth: 3 x 3 m" value={petaMeta.jarak_tanam} onChange={e => setPetaMeta({...petaMeta, jarak_tanam: e.target.value})} />
+                </div>
+                <div>
+                  <label className={labelClass}>Skala Peta</label>
+                  <input className={inputClass} placeholder="cth: 1 : 5.000" value={petaMeta.skala} onChange={e => setPetaMeta({...petaMeta, skala: e.target.value})} />
+                </div>
+                <div>
+                  <label className={labelClass}>Luas Baku (Ha)</label>
+                  <input className={inputClass} placeholder="cth: 90.00" type="number" step="0.01" value={petaMeta.luas_baku} onChange={e => setPetaMeta({...petaMeta, luas_baku: e.target.value})} />
+                </div>
+                <div>
+                  <label className={labelClass}>Panjang</label>
+                  <input className={inputClass} placeholder="cth: 500 m" value={petaMeta.panjang} onChange={e => setPetaMeta({...petaMeta, panjang: e.target.value})} />
+                </div>
               </div>
             </div>
           </div>

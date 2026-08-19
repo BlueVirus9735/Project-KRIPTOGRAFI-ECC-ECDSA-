@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import DashboardLayout, { useAuth } from "@/components/DashboardLayout";
 import { Plus, Trash2, Save, ArrowLeft } from "lucide-react";
+import FieldHint from "@/components/FieldHint";
 import Link from "next/link";
 
 const API = "http://localhost:8000/api";
@@ -76,15 +77,21 @@ function RpkhCreateContent() {
               <input type="text" className={inputClass} value={form.wilayah} onChange={e => setForm({ ...form, wilayah: e.target.value })} placeholder="Jawa Barat dan Banten" required />
             </div>
             <div>
-              <label className={labelClass}>KPH</label>
+              <label className={labelClass}>
+                <FieldHint label="KPH" title="Kesatuan Pemangkuan Hutan" description="Unit pengelolaan hutan terkecil yang memiliki rencana pengelolaan tersendiri" position="bottom" />
+              </label>
               <input type="text" className={inputClass} value={form.kph} onChange={e => setForm({ ...form, kph: e.target.value })} placeholder="KPH Bandung Utara" required />
             </div>
             <div>
-              <label className={labelClass}>BKPH</label>
+              <label className={labelClass}>
+                <FieldHint label="BKPH" title="Bagian Kesatuan Pemangkuan Hutan" description="Sub-unit wilayah di bawah KPH, membawahi beberapa RPH" position="bottom" />
+              </label>
               <input type="text" className={inputClass} value={form.bkph} onChange={e => setForm({ ...form, bkph: e.target.value })} placeholder="BKPH Lembang" required />
             </div>
             <div>
-              <label className={labelClass}>RPH</label>
+              <label className={labelClass}>
+                <FieldHint label="RPH" title="Resort Pemangkuan Hutan" description="Unit terkecil pengelolaan hutan, dipimpin seorang Mandor" position="bottom" />
+              </label>
               <input type="text" className={inputClass} value={form.rph} onChange={e => setForm({ ...form, rph: e.target.value })} placeholder="RPH Ciater" required />
             </div>
             <div className="col-span-2 md:col-span-3">
@@ -115,11 +122,21 @@ function RpkhCreateContent() {
                   <th className="p-3 text-[10px] font-semibold text-slate-500 uppercase">Anak Petak</th>
                   <th className="p-3 text-[10px] font-semibold text-slate-500 uppercase">Luas (Ha)</th>
                   <th className="p-3 text-[10px] font-semibold text-slate-500 uppercase">Jenis Tanaman</th>
-                  <th className="p-3 text-[10px] font-semibold text-slate-500 uppercase">Kelas Hutan</th>
-                  <th className="p-3 text-[10px] font-semibold text-slate-500 uppercase">BON</th>
-                  <th className="p-3 text-[10px] font-semibold text-slate-500 uppercase">KBD</th>
-                  <th className="p-3 text-[10px] font-semibold text-slate-500 uppercase">DKN</th>
-                  <th className="p-3 text-[10px] font-semibold text-slate-500 uppercase">N/Ha</th>
+                  <th className="p-3 text-[10px] font-semibold text-slate-500 uppercase">
+                    <FieldHint label="Kelas Hutan" title="Kelas Umur Tegakan" description="Pengelompokan umur pohon: KU I (10 thn), KU II (20 thn), dst" position="bottom" />
+                  </th>
+                  <th className="p-3 text-[10px] font-semibold text-slate-500 uppercase">
+                    <FieldHint label="BON" title="Bonita" description="Kualitas tempat tumbuh pohon. B1 = terbaik, B5 = terburuk" position="bottom" align="right" />
+                  </th>
+                  <th className="p-3 text-[10px] font-semibold text-slate-500 uppercase">
+                    <FieldHint label="KBD" title="Kerapatan Bidang Dasar" description="Luas penampang batang pohon per hektar (m²/Ha). Ukuran kepadatan hutan" position="bottom" align="right" />
+                  </th>
+                  <th className="p-3 text-[10px] font-semibold text-slate-500 uppercase">
+                    <FieldHint label="DKN" title="Diameter Kuadrat Netto" description="Diameter rata-rata pohon hasil pengukuran, dipakai untuk menghitung volume kayu" position="bottom" align="right" />
+                  </th>
+                  <th className="p-3 text-[10px] font-semibold text-slate-500 uppercase">
+                    <FieldHint label="N/Ha" title="Jumlah Pohon per Hektar" description="Kepadatan tegakan: berapa batang pohon dalam 1 Hektar luas lahan" position="bottom" align="right" />
+                  </th>
                   <th className="p-3 text-[10px] font-semibold text-slate-500 uppercase">Keterangan</th>
                   <th className="p-3 w-10"></th>
                 </tr>
