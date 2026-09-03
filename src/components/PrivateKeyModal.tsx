@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState, useRef } from "react";
 import { Key, Lock, X, ShieldCheck, Upload, FileText } from "lucide-react";
 
@@ -59,37 +59,37 @@ export default function PrivateKeyModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4">
-      <div className="bg-[#0f172a] border border-amber-500/25 rounded-2xl p-7 w-full max-w-lg shadow-2xl shadow-black/80 animate-fade-in space-y-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 dark:bg-black/80 backdrop-blur-sm p-4">
+      <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-amber-500/25 rounded-2xl p-7 w-full max-w-lg shadow-2xl shadow-slate-900/20 dark:shadow-black/80 animate-fade-in space-y-4">
         {/* Header */}
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20">
-              <Key size={20} className="text-amber-400" />
+            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20">
+              <Key size={20} className="text-amber-600 dark:text-amber-400" />
             </div>
             <div>
-              <h3 className="text-white font-bold text-[15px]">{title}</h3>
+              <h3 className="text-slate-900 dark:text-white font-bold text-[15px]">{title}</h3>
               <p className="text-slate-500 text-[11px]">Kriptografi ECC (ECDSA / ECIES)</p>
             </div>
           </div>
           <button
             onClick={handleClose}
             disabled={loading}
-            className="text-slate-500 hover:text-white transition-colors"
+            className="text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors"
           >
             <X size={18} />
           </button>
         </div>
 
         {/* Warning / Description */}
-        <div className="bg-amber-500/5 border border-amber-500/15 rounded-xl px-4 py-3">
-          <p className="text-amber-300 text-[12px] leading-relaxed">{description}</p>
+        <div className="bg-amber-50/80 dark:bg-amber-500/5 border border-amber-200 dark:border-amber-500/15 rounded-xl px-4 py-3">
+          <p className="text-amber-900 dark:text-amber-300 text-[12px] leading-relaxed">{description}</p>
         </div>
 
         {/* Security Note */}
         <div className="flex items-center gap-2">
-          <ShieldCheck size={14} className="text-emerald-400 shrink-0" />
-          <span className="text-[11px] text-slate-400 font-medium">
+          <ShieldCheck size={14} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+          <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
             Private key hanya digunakan sesaat dalam memory untuk kalkulasi kriptografi dan tidak disimpan di server.
           </span>
         </div>
@@ -97,13 +97,13 @@ export default function PrivateKeyModal({
         {/* Key Input Section */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <label className="text-[11px] font-bold text-slate-300 uppercase tracking-wider">
+            <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
               Private Key (.pem)
             </label>
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="text-[11px] text-emerald-400 hover:text-emerald-300 font-semibold flex items-center gap-1.5 transition-colors"
+              className="text-[11px] text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 font-semibold flex items-center gap-1.5 transition-colors"
             >
               <Upload size={12} /> Unggah File .pem
             </button>
@@ -117,14 +117,14 @@ export default function PrivateKeyModal({
           </div>
 
           <textarea
-            className="glass-input w-full px-4 py-3 text-[11px] font-mono h-[160px] resize-none focus:border-amber-400/50"
+            className="glass-input w-full px-4 py-3 text-[11px] font-mono h-[160px] resize-none focus:border-emerald-600 dark:focus:border-amber-400/50 bg-slate-50/60 dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100"
             placeholder={"Tempel isi private key di sini atau klik 'Unggah File .pem' di atas:\n\n-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----"}
             value={privateKey}
             onChange={(e) => setPrivateKey(e.target.value)}
             spellCheck={false}
           />
           {privateKey && (
-            <div className="flex items-center gap-1.5 text-[11px] text-emerald-400 font-medium">
+            <div className="flex items-center gap-1.5 text-[11px] text-emerald-700 dark:text-emerald-400 font-medium">
               <FileText size={12} />
               <span>Private key terisi ({privateKey.length} karakter)</span>
             </div>
@@ -136,7 +136,7 @@ export default function PrivateKeyModal({
           <button
             onClick={handleClose}
             disabled={loading}
-            className="flex-1 py-2.5 rounded-xl border border-slate-700 text-slate-400 hover:text-white text-[13px] font-semibold transition-all disabled:opacity-50"
+            className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 text-[13px] font-semibold transition-all disabled:opacity-50"
           >
             Batal
           </button>

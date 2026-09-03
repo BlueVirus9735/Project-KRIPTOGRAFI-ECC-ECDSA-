@@ -1,9 +1,29 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 :root {
+  --bg-primary: #f8fafc;
+  --bg-secondary: #f1f5f9;
+  --bg-card: rgba(255, 255, 255, 0.98);
+  --bg-card-solid: #ffffff;
+  --bg-elevated: #ffffff;
+  --border-subtle: #e2e8f0;
+  --border-medium: #cbd5e1;
+  --border-strong: #94a3b8;
+  --accent-emerald: #059669;
+  --accent-teal: #0d9488;
+  --glow-emerald: rgba(5, 150, 105, 0.15);
+  --glow-blue: rgba(37, 99, 235, 0.08);
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+  --text-dim: #94a3b8;
+}
+
+.dark {
   --bg-primary: #0b1120;
   --bg-secondary: #111827;
-  --bg-card: rgba(17, 24, 39, 0.6);
+  --bg-card: rgba(17, 24, 39, 0.7);
   --bg-card-solid: #131c2e;
   --bg-elevated: rgba(30, 41, 59, 0.5);
   --border-subtle: rgba(148, 163, 184, 0.08);
@@ -51,33 +71,41 @@
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--border-subtle);
   border-radius: 16px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+}
+
+.dark .glass-card {
+  box-shadow: none;
 }
 
 .glass-card-hover:hover {
   border-color: var(--border-medium);
-  background: rgba(17, 24, 39, 0.8);
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.3),
-    0 0 0 1px var(--border-subtle);
+  background: var(--bg-card-solid);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
   transform: translateY(-2px);
 }
 
+.dark .glass-card-hover:hover {
+  background: rgba(17, 24, 39, 0.8);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px var(--border-subtle);
+}
+
 .glass-sidebar {
-  background: rgba(11, 17, 32, 0.85);
+  background: var(--bg-card-solid);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border-right: 1px solid var(--border-subtle);
 }
 
 .glass-header {
-  background: rgba(11, 17, 32, 0.7);
+  background: var(--bg-card-solid);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border-subtle);
 }
 
 .glass-input {
-  background: rgba(15, 23, 42, 0.8);
+  background: var(--bg-elevated);
   border: 1px solid var(--border-medium);
   border-radius: 12px;
   color: var(--text-primary);
@@ -300,9 +328,13 @@
 }
 
 .btn-secondary:hover {
-  background: rgba(51, 65, 85, 0.6);
+  background: var(--border-subtle);
   color: var(--text-primary);
   border-color: var(--border-strong);
+}
+
+.dark .btn-secondary:hover {
+  background: rgba(51, 65, 85, 0.6);
 }
 
 /* === Status badge === */
@@ -363,4 +395,29 @@ select.glass-input {
   background-position: right 12px center;
   padding-right: 36px;
 }
+
+/* === Light-mode overrides for inputs and legacy elements === */
+html:not(.dark) input.bg-\[\#0b1120\],
+html:not(.dark) select.bg-\[\#0b1120\],
+html:not(.dark) textarea.bg-\[\#0b1120\],
+html:not(.dark) input.bg-\[\#0f172a\],
+html:not(.dark) select.bg-\[\#0f172a\],
+html:not(.dark) textarea.bg-\[\#0f172a\] {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+  color-scheme: light !important;
 }
+
+html:not(.dark) input.bg-\[\#0b1120\]::placeholder,
+html:not(.dark) textarea.bg-\[\#0b1120\]::placeholder,
+html:not(.dark) input.bg-\[\#0f172a\]::placeholder,
+html:not(.dark) textarea.bg-\[\#0f172a\]::placeholder {
+  color: #94a3b8 !important;
+}
+
+html:not(.dark) [color-scheme\:dark] {
+  color-scheme: light !important;
+}
+}
+

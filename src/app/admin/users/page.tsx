@@ -230,6 +230,7 @@ export default function UserManagement() {
       kph: "bg-amber-500/20 text-amber-400 border-amber-500/30",
       phw: "bg-purple-500/20 text-purple-400 border-purple-500/30",
       divisi: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
+      direksi: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
       gis: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
       lapangan: "bg-slate-500/20 text-slate-400 border-slate-500/30",
     };

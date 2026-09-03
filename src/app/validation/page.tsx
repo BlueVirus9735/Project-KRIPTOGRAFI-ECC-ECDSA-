@@ -105,29 +105,29 @@ function ValidationContent() {
   };
 
   const StatusIcon = ({ status }: { status: string }) => {
-    if (status === "valid") return <CheckCircle size={28} className="text-emerald-400 mx-auto" />;
-    if (status === "invalid") return <XCircle size={28} className="text-red-400 mx-auto" />;
-    return <Clock size={28} className="text-amber-400 mx-auto" />;
+    if (status === "valid") return <CheckCircle size={28} className="text-emerald-500 dark:text-emerald-400 mx-auto" />;
+    if (status === "invalid") return <XCircle size={28} className="text-red-500 dark:text-red-400 mx-auto" />;
+    return <Clock size={28} className="text-amber-500 dark:text-amber-400 mx-auto" />;
   };
 
   const statusLabel: Record<string, { text: string; color: string; bg: string }> = {
-    valid:   { text: "VALID",   color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/15" },
-    invalid: { text: "INVALID", color: "text-red-400",     bg: "bg-red-500/10 border-red-500/15" },
-    pending: { text: "PENDING", color: "text-amber-400",   bg: "bg-amber-500/10 border-amber-500/15" },
+    valid:   { text: "VALID",   color: "text-emerald-800 dark:text-emerald-400", bg: "bg-emerald-50 border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/15" },
+    invalid: { text: "INVALID", color: "text-red-800 dark:text-red-400",     bg: "bg-red-50 border-red-200 dark:bg-red-500/10 dark:border-red-500/15" },
+    pending: { text: "PENDING", color: "text-amber-800 dark:text-amber-400",   bg: "bg-amber-50 border-amber-200 dark:bg-amber-500/10 dark:border-amber-500/15" },
   };
 
   return (
     <div className="max-w-[960px] mx-auto space-y-6 animate-fade-in">
-      <div className="pb-6 border-b border-white/[0.04]">
-        <h1 className="text-xl font-bold text-white">Validasi Dokumen RTT</h1>
-        <p className="text-slate-500 text-[13px] mt-1 font-medium">
+      <div className="pb-6 border-b border-slate-200 dark:border-white/[0.04]">
+        <h1 className="text-xl font-bold text-slate-900 dark:text-white">Validasi Dokumen RTT</h1>
+        <p className="text-slate-600 dark:text-slate-400 text-[13px] mt-1 font-medium">
           Verifikasi integritas, keaslian (ECDSA), dan kesesuaian data RTT terhadap RPKH
         </p>
       </div>
 
       {/* Select RTT */}
       <div className="glass-card p-7">
-        <label className="block text-[11px] font-semibold text-slate-400 mb-2">Pilih Dokumen RTT</label>
+        <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-2">Pilih Dokumen RTT</label>
         <select
           value={selectedRtt?.id || ""}
           onChange={e => handleSelectRtt(e.target.value)}
@@ -144,7 +144,7 @@ function ValidationContent() {
       {selectedRtt && encContent && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-white font-semibold text-[15px]">Isi Dokumen</h3>
+            <h3 className="text-slate-900 dark:text-white font-semibold text-[15px]">Isi Dokumen</h3>
             <button
               onClick={() => setShowValidateModal(true)}
               disabled={loading}
@@ -174,35 +174,35 @@ function ValidationContent() {
       {/* Hasil Validasi ECDSA + Hash + Relasi */}
       {result && (
         <div className="space-y-4 animate-slide-up">
-          <h3 className="text-white font-semibold text-[15px]">Hasil Verifikasi Kriptografi</h3>
+          <h3 className="text-slate-900 dark:text-white font-semibold text-[15px]">Hasil Verifikasi Kriptografi</h3>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 stagger-children">
             {/* Hash */}
             <div className={`glass-card p-6 border ${statusLabel[result.hash.status].bg} text-center`}>
               <StatusIcon status={result.hash.status} />
-              <h4 className="text-white font-bold mt-3 mb-1 text-[14px]">Integritas Hash</h4>
+              <h4 className="text-slate-900 dark:text-white font-bold mt-3 mb-1 text-[14px]">Integritas Hash</h4>
               <p className={`text-[13px] font-bold ${statusLabel[result.hash.status].color}`}>
                 {statusLabel[result.hash.status].text}
               </p>
               <div className="mt-3 flex items-center justify-center gap-1.5">
-                <Hash size={12} className="text-slate-500" />
-                <span className="text-[10px] text-slate-500 font-medium">SHA-256</span>
+                <Hash size={12} className="text-slate-600 dark:text-slate-400" />
+                <span className="text-[10px] text-slate-600 dark:text-slate-400 font-medium">SHA-256</span>
               </div>
-              <p className="text-[11px] text-slate-500 mt-2 font-medium">{result.hash.detail}</p>
+              <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-2 font-medium">{result.hash.detail}</p>
             </div>
 
             {/* Signature KPH */}
             <div className={`glass-card p-6 border ${statusLabel[result.signature.status].bg} text-center`}>
               <StatusIcon status={result.signature.status} />
-              <h4 className="text-white font-bold mt-3 mb-1 text-[14px]">Tanda Tangan KPH</h4>
+              <h4 className="text-slate-900 dark:text-white font-bold mt-3 mb-1 text-[14px]">Tanda Tangan KPH</h4>
               <p className={`text-[13px] font-bold ${statusLabel[result.signature.status].color}`}>
                 {statusLabel[result.signature.status].text}
               </p>
               <div className="mt-3 flex items-center justify-center gap-1.5">
-                <Shield size={12} className="text-slate-500" />
-                <span className="text-[10px] text-slate-500 font-medium">ECDSA (P-256)</span>
+                <Shield size={12} className="text-slate-600 dark:text-slate-400" />
+                <span className="text-[10px] text-slate-600 dark:text-slate-400 font-medium">ECDSA (P-256)</span>
               </div>
-              <p className="text-[11px] text-slate-500 mt-2 font-medium">
+              <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-2 font-medium">
                 {typeof result.signature.detail === "string" ? result.signature.detail : ""}
               </p>
             </div>
@@ -210,33 +210,33 @@ function ValidationContent() {
             {/* Relasi RPKH */}
             <div className={`glass-card p-6 border ${statusLabel[result.relasi.status].bg} text-center`}>
               <StatusIcon status={result.relasi.status} />
-              <h4 className="text-white font-bold mt-3 mb-1 text-[14px]">Relasi RTT ↔ RPKH</h4>
+              <h4 className="text-slate-900 dark:text-white font-bold mt-3 mb-1 text-[14px]">Relasi RTT ↔ RPKH</h4>
               <p className={`text-[13px] font-bold ${statusLabel[result.relasi.status].color}`}>
                 {statusLabel[result.relasi.status].text}
               </p>
               <div className="mt-3 flex items-center justify-center gap-1.5">
-                <Link2 size={12} className="text-slate-500" />
-                <span className="text-[10px] text-slate-500 font-medium">Validasi Petak</span>
+                <Link2 size={12} className="text-slate-600 dark:text-slate-400" />
+                <span className="text-[10px] text-slate-600 dark:text-slate-400 font-medium">Validasi Petak</span>
               </div>
-              <p className="text-[11px] text-slate-500 mt-2 font-medium">
+              <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-2 font-medium">
                 {result.relasi.detail?.message || ""}
               </p>
             </div>
           </div>
 
           {result.relasi.status === "invalid" && result.relasi.detail?.petak_tidak_cocok && (
-            <div className="glass-card p-5 border border-red-500/15 bg-red-500/5">
-              <p className="text-red-400 text-[12px] font-bold uppercase tracking-wider mb-3">Petak Tidak Cocok dengan RPKH:</p>
+            <div className="glass-card p-5 border border-red-200 dark:border-red-500/15 bg-red-50 dark:bg-red-500/5">
+              <p className="text-red-700 dark:text-red-400 text-[12px] font-bold uppercase tracking-wider mb-3">Petak Tidak Cocok dengan RPKH:</p>
               <div className="flex flex-wrap gap-2">
                 {result.relasi.detail.petak_tidak_cocok.map((p: string) => (
-                  <span key={p} className="px-2.5 py-1 bg-red-500/10 text-red-400 rounded-lg text-[12px] font-mono border border-red-500/15">{p}</span>
+                  <span key={p} className="px-2.5 py-1 bg-red-100 dark:bg-red-500/10 text-red-800 dark:text-red-400 rounded-lg text-[12px] font-mono border border-red-200 dark:border-red-500/15">{p}</span>
                 ))}
               </div>
             </div>
           )}
 
           {/* Action Buttons */}
-          <div className="flex items-center gap-4 mt-8 pt-6 border-t border-white/[0.04]">
+          <div className="flex items-center gap-4 mt-8 pt-6 border-t border-slate-200 dark:border-white/[0.04]">
             <button
               onClick={() => setShowApproveModal(true)}
               disabled={approving}
@@ -248,7 +248,7 @@ function ValidationContent() {
               }
             </button>
             <button onClick={handleReject}
-              className="btn-secondary flex-1 py-3 text-[13px] font-bold border-red-500/20 text-red-400 hover:bg-red-500/10">
+              className="btn-secondary flex-1 py-3 text-[13px] font-bold border-red-300 dark:border-red-500/20 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10">
               Tolak &amp; Kembalikan (Revisi)
             </button>
           </div>

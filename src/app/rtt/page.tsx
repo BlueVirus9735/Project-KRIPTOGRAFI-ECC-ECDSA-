@@ -22,51 +22,51 @@ const statusConfig: Record<
 > = {
   draft: {
     label: "Draft",
-    color: "text-slate-400",
+    color: "text-slate-700 dark:text-slate-400",
     dotColor: "bg-slate-400",
-    bg: "bg-slate-500/10 border-slate-500/20",
+    bg: "bg-slate-100 border-slate-300 dark:bg-slate-500/10 dark:border-slate-500/20",
   },
   menunggu_review_kph: {
     label: "Menunggu Review KPH",
-    color: "text-amber-400",
-    dotColor: "bg-amber-400",
-    bg: "bg-amber-500/10 border-amber-500/20",
+    color: "text-amber-800 dark:text-amber-400",
+    dotColor: "bg-amber-500",
+    bg: "bg-amber-50 border-amber-200 dark:bg-amber-500/10 dark:border-amber-500/20",
   },
   revisi_kph: {
     label: "Revisi KPH",
-    color: "text-rose-400",
-    dotColor: "bg-rose-400",
-    bg: "bg-rose-500/10 border-rose-500/20",
+    color: "text-rose-800 dark:text-rose-400",
+    dotColor: "bg-rose-500",
+    bg: "bg-rose-50 border-rose-200 dark:bg-rose-500/10 dark:border-rose-500/20",
   },
   menunggu_verifikasi_phw: {
     label: "Menunggu Verifikasi PHW",
-    color: "text-indigo-400",
-    dotColor: "bg-indigo-400",
-    bg: "bg-indigo-500/10 border-indigo-500/20",
+    color: "text-indigo-800 dark:text-indigo-400",
+    dotColor: "bg-indigo-500",
+    bg: "bg-indigo-50 border-indigo-200 dark:bg-indigo-500/10 dark:border-indigo-500/20",
   },
   revisi_phw: {
     label: "Revisi PHW",
-    color: "text-rose-400",
-    dotColor: "bg-rose-400",
-    bg: "bg-rose-500/10 border-rose-500/20",
+    color: "text-rose-800 dark:text-rose-400",
+    dotColor: "bg-rose-500",
+    bg: "bg-rose-50 border-rose-200 dark:bg-rose-500/10 dark:border-rose-500/20",
   },
   menunggu_pengesahan: {
     label: "Menunggu Pengesahan",
-    color: "text-blue-400",
-    dotColor: "bg-blue-400",
-    bg: "bg-blue-500/10 border-blue-500/20",
+    color: "text-blue-800 dark:text-blue-400",
+    dotColor: "bg-blue-500",
+    bg: "bg-blue-50 border-blue-200 dark:bg-blue-500/10 dark:border-blue-500/20",
   },
   disahkan: {
     label: "SAH • SIGNED",
-    color: "text-emerald-400",
-    dotColor: "bg-emerald-400",
-    bg: "bg-emerald-500/10 border-emerald-500/20",
+    color: "text-emerald-800 dark:text-emerald-400",
+    dotColor: "bg-emerald-500",
+    bg: "bg-emerald-50 border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/20",
   },
   ditolak: {
     label: "Ditolak",
-    color: "text-red-400",
-    dotColor: "bg-red-400",
-    bg: "bg-red-500/10 border-red-500/20",
+    color: "text-red-800 dark:text-red-400",
+    dotColor: "bg-red-500",
+    bg: "bg-red-50 border-red-200 dark:bg-red-500/10 dark:border-red-500/20",
   },
 };
 
@@ -120,12 +120,12 @@ function RttListContent() {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-white/[0.04]">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-200 dark:border-white/[0.04]">
         <div>
-          <h2 className="text-xl font-bold text-white tracking-tight">
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
             Daftar Dokumen RTT
           </h2>
-          <p className="text-[13px] text-slate-500 mt-1 font-medium">
+          <p className="text-[13px] text-slate-600 dark:text-slate-400 mt-1 font-medium">
             Arsip Rencana Teknik Tahunan per Wilayah KPH
           </p>
         </div>
@@ -134,7 +134,7 @@ function RttListContent() {
           <div className="relative group">
             <Search
               size={14}
-              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 transition-colors group-focus-within:text-emerald-400"
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 transition-colors group-focus-within:text-emerald-500"
             />
             <input
               type="text"
@@ -181,15 +181,15 @@ function RttListContent() {
                         title={isSigned ? "Dokumen yang sudah disahkan tidak dapat dihapus" : "Hapus dokumen"}
                         className={`p-1.5 rounded-lg transition-all ${
                           isSigned
-                            ? "text-slate-700 cursor-not-allowed"
-                            : "text-slate-600 hover:text-rose-400 hover:bg-rose-500/10"
+                            ? "text-slate-400 dark:text-slate-700 cursor-not-allowed"
+                            : "text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10"
                         }`}
                         disabled={isSigned}
                       >
                         <Trash2 size={15} />
                       </button>
                     )}
-                    <div className="text-slate-600 group-hover:text-slate-400 transition-colors">
+                    <div className="text-slate-400 group-hover:text-slate-600 dark:text-slate-600 dark:group-hover:text-slate-400 transition-colors">
                       <FileText size={20} />
                     </div>
                   </div>
@@ -197,16 +197,16 @@ function RttListContent() {
 
                 <div className="space-y-3">
                   <div className="space-y-1">
-                    <h3 className="text-[16px] font-bold text-white group-hover:text-emerald-400 transition-colors">
+                    <h3 className="text-[16px] font-bold text-slate-900 dark:text-white group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">
                       {rtt.nomor_dokumen || "Dokumen Tanpa Nomor"}
                     </h3>
-                    <p className="text-[12px] text-slate-400 font-medium">
+                    <p className="text-[12px] text-slate-600 dark:text-slate-400 font-medium">
                       {rtt.kph || "KPH Tidak Diketahui"} • Divisi Jawa Barat &
                       Banten
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-4 text-[11px] font-medium text-slate-500">
+                  <div className="flex items-center gap-4 text-[11px] font-medium text-slate-600 dark:text-slate-400">
                     <span className="flex items-center gap-1.5">
                       <MapPin size={12} /> Area Konsesi Hutan
                     </span>
@@ -217,16 +217,16 @@ function RttListContent() {
                   </div>
                 </div>
 
-                <div className="mt-5 flex items-center justify-between pt-4 border-t border-slate-700/50">
-                  <div className="text-[11px] text-slate-500 font-medium">
+                <div className="mt-5 flex items-center justify-between pt-4 border-t border-slate-200 dark:border-slate-700/50">
+                  <div className="text-[11px] text-slate-600 dark:text-slate-400 font-medium">
                     Diunggah:{" "}
-                    <span className="text-slate-300">
+                    <span className="text-slate-800 dark:text-slate-300 font-semibold">
                       Admin {rtt.kph || "KPH"}
                     </span>
                   </div>
                   <Link
                     href={`/rtt/${rtt.id}`}
-                    className="bg-[#0f172a] hover:bg-[#1e293b] border border-slate-700 text-slate-300 hover:text-white flex items-center gap-1.5 px-4 py-2 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all"
+                    className="bg-slate-100 hover:bg-slate-200 dark:bg-[#0f172a] dark:hover:bg-[#1e293b] border border-slate-200 dark:border-slate-700 text-slate-800 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white flex items-center gap-1.5 px-4 py-2 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all"
                   >
                     Buka Berkas <ChevronRight size={14} />
                   </Link>
@@ -240,24 +240,24 @@ function RttListContent() {
       {/* Dialog Konfirmasi Hapus */}
       {confirmDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="bg-[#0f172a] border border-slate-700 rounded-2xl p-7 w-full max-w-md shadow-2xl shadow-black/60 animate-fade-in">
+          <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-2xl p-7 w-full max-w-md shadow-2xl animate-fade-in">
             {/* Icon warning */}
             <div className="flex items-center justify-center w-14 h-14 rounded-full bg-rose-500/10 border border-rose-500/20 mx-auto mb-5">
-              <Trash2 size={24} className="text-rose-400" />
+              <Trash2 size={24} className="text-rose-500" />
             </div>
 
-            <h3 className="text-white font-bold text-center text-[16px] mb-2">
+            <h3 className="text-slate-900 dark:text-white font-bold text-center text-[16px] mb-2">
               Hapus Dokumen RTT?
             </h3>
-            <p className="text-slate-400 text-[13px] text-center mb-1">
+            <p className="text-slate-600 dark:text-slate-400 text-[13px] text-center mb-1">
               Dokumen berikut akan dihapus permanen:
             </p>
-            <p className="text-white font-semibold text-[13px] text-center mb-5">
+            <p className="text-slate-900 dark:text-white font-semibold text-[13px] text-center mb-5">
               &quot;{confirmDelete.nomor_dokumen || "Dokumen Tanpa Nomor"}&quot;
             </p>
 
-            <div className="bg-rose-500/5 border border-rose-500/20 rounded-xl px-4 py-3 mb-6">
-              <p className="text-rose-300 text-[12px] text-center">
+            <div className="bg-rose-50 dark:bg-rose-500/5 border border-rose-200 dark:border-rose-500/20 rounded-xl px-4 py-3 mb-6">
+              <p className="text-rose-700 dark:text-rose-300 text-[12px] text-center font-medium">
                 ⚠️ Tindakan ini tidak dapat dibatalkan. Semua data terkait RTT ini akan ikut terhapus.
               </p>
             </div>
@@ -266,7 +266,7 @@ function RttListContent() {
               <button
                 onClick={() => setConfirmDelete(null)}
                 disabled={deleting}
-                className="flex-1 py-2.5 rounded-xl border border-slate-700 text-slate-400 hover:text-white hover:border-slate-500 text-[13px] font-semibold transition-all disabled:opacity-50"
+                className="flex-1 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-400 dark:hover:border-slate-500 text-[13px] font-semibold transition-all disabled:opacity-50"
               >
                 Batal
               </button>

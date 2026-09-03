@@ -17,8 +17,12 @@ export interface User {
 const ROLE_HIERARCHY: Record<UserRole, number> = {
   sysadmin: 100,
   direksi: 80,
+  divisi: 80,
   phw: 60,
   kph: 40,
+  admin: 30,
+  gis: 20,
+  lapangan: 10,
 };
 
 // Permission definitions
@@ -115,8 +119,40 @@ const ROLE_PERMISSIONS: Record<UserRole, string[]> = {
     PERMISSIONS.DOCUMENT_VIEW,
     PERMISSIONS.PDF_GENERATE,
     PERMISSIONS.DASHBOARD_VIEW,
-    PERMISSIONS.VALIDATION_VIEW,
     PERMISSIONS.REPORT_VIEW,
+  ],
+
+  divisi: [
+    PERMISSIONS.DOCUMENT_FINALIZE,
+    PERMISSIONS.DOCUMENT_VIEW,
+    PERMISSIONS.PDF_GENERATE,
+    PERMISSIONS.DASHBOARD_VIEW,
+    PERMISSIONS.REPORT_VIEW,
+  ],
+
+  admin: [
+    PERMISSIONS.DOCUMENT_CREATE,
+    PERMISSIONS.DOCUMENT_EDIT,
+    PERMISSIONS.RTT_SUMMARY_EDIT,
+    PERMISSIONS.RTT_NETT_EDIT,
+    PERMISSIONS.DASHBOARD_VIEW,
+    PERMISSIONS.DOCUMENT_VIEW,
+    PERMISSIONS.RPKH_VIEW,
+    PERMISSIONS.REPORT_VIEW,
+  ],
+
+  gis: [
+    PERMISSIONS.PETA_LOKASI_EDIT,
+    PERMISSIONS.PETA_BAP_EDIT,
+    PERMISSIONS.DASHBOARD_VIEW,
+    PERMISSIONS.DOCUMENT_VIEW,
+  ],
+
+  lapangan: [
+    PERMISSIONS.KLEM_DAFTAR_EDIT,
+    PERMISSIONS.KLEM_REKAP_EDIT,
+    PERMISSIONS.BERITA_ACARA_EDIT,
+    PERMISSIONS.DOCUMENT_VIEW,
   ],
 };
 
@@ -142,6 +178,10 @@ export function getRoleDisplayName(role: UserRole): string {
     kph: 'Kepala KPH (Pembuat)',
     phw: 'Verifikator PHW',
     direksi: 'Direksi (Pengesah)',
+    divisi: 'Kepala Divisi',
+    admin: 'Administrator',
+    gis: 'GIS / Pemetaan',
+    lapangan: 'Petugas Lapangan',
   };
   return displayNames[role] || role;
 }
@@ -152,6 +192,10 @@ export function getRoleDescription(role: UserRole): string {
     kph: 'Membuat dokumen RTT, menginput data teknis, dan mengajukan persetujuan RTT tingkat lokal.',
     phw: 'Meninjau teknis lapangan dan memverifikasi kesesuaian RTT terhadap RPKH',
     direksi: 'Pengesahan final tingkat akhir dan menyematkan Tanda Tangan ECDSA.',
+    divisi: 'Kepala Divisi Regional - Pengesahan dokumen RTT',
+    admin: 'Administrator data dan penyusunan teknis',
+    gis: 'Pengelolaan data spasial dan peta digital',
+    lapangan: 'Pemeriksaan fisik tegakan dan inventarisasi hutan',
   };
   return descriptions[role] || '';
 }

@@ -47,6 +47,35 @@ function RttDetailContent({ id }: { id: string }) {
   const [privateKeyInput, setPrivateKeyInput] = useState("");
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [showPrintModal, setShowPrintModal] = useState(false);
+  const [authorizingPrint, setAuthorizingPrint] = useState(false);
+
+  const handleAuthorizePrint = async (privateKey: string) => {
+    setAuthorizingPrint(true);
+    try {
+      const token = localStorage.getItem("token") || "";
+      const res = await fetch("http://localhost:8000/api/rtt/auth_pdf.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          token,
+          rtt_id: id,
+          private_key: privateKey,
+        }),
+      });
+      const result = await res.json();
+      if (result.status === "success" && result.url) {
+        setShowPrintModal(false);
+        window.open(result.url, "_blank");
+      } else {
+        alert(result.message || "Gagal mengotorisasi Private Key.");
+      }
+    } catch (err: any) {
+      alert("Terjadi kesalahan koneksi server: " + (err.message || err));
+    } finally {
+      setAuthorizingPrint(false);
+    }
+  };
 
   const fetchWorkspace = () => {
     setLoading(true);
@@ -654,19 +683,19 @@ function RttDetailContent({ id }: { id: string }) {
     <>
       <div className="space-y-6 animate-fade-in pb-20 max-w-5xl mx-auto">
         {/* Top Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-700/50">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-700/50">
           <div className="flex items-center gap-4">
             <Link
               href="/rtt"
-              className="w-9 h-9 rounded-md bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400 hover:text-white transition-all"
+              className="w-9 h-9 rounded-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all"
             >
               <ArrowLeft size={16} />
             </Link>
             <div>
-              <h2 className="text-xl font-bold text-white tracking-tight">
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
                 Berkas RTT: {rtt.nomor_dokumen || "Tanpa Nomor"}
               </h2>
-              <p className="text-[12px] text-slate-500 font-medium mt-0.5 uppercase tracking-wider">
+              <p className="text-[12px] text-slate-600 dark:text-slate-400 font-medium mt-0.5 uppercase tracking-wider">
                 Kesatuan Pemangkuan Hutan {rtt.kph}
               </p>
             </div>
@@ -674,7 +703,7 @@ function RttDetailContent({ id }: { id: string }) {
 
           <div className="flex items-center gap-3">
             <div
-              className={`px-3 py-1.5 rounded-md border text-[11px] font-bold tracking-wider uppercase ${isSah ? "bg-emerald-900/30 border-emerald-500/50 text-emerald-400" : "bg-slate-800 border-slate-700 text-slate-400"}`}
+              className={`px-3 py-1.5 rounded-md border text-[11px] font-bold tracking-wider uppercase ${isSah ? "bg-emerald-50 border-emerald-300 text-emerald-800 dark:bg-emerald-900/30 dark:border-emerald-500/50 dark:text-emerald-400" : "bg-slate-100 border-slate-300 text-slate-700 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400"}`}
             >
               Status:{" "}
               {isSah ? "SAH & TERENKRIPSI" : rtt.status.replace(/_/g, " ")}
@@ -683,16 +712,16 @@ function RttDetailContent({ id }: { id: string }) {
         </div>
 
         {/* Security & Audit Info */}
-        <div className="bg-[#0f172a] border border-slate-700/50 rounded-lg p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div className="glass-card border border-slate-200 dark:border-slate-700/50 rounded-lg p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="flex items-start gap-4">
-            <div className="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400 shrink-0 mt-0.5">
+            <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-400 shrink-0 mt-0.5">
               <ShieldCheck size={20} />
             </div>
             <div>
-              <h3 className="text-[14px] font-bold text-white">
+              <h3 className="text-[14px] font-bold text-slate-900 dark:text-white">
                 Jejak Audit Kriptografi
               </h3>
-              <p className="text-[11px] text-slate-400 font-mono mt-1">
+              <p className="text-[11px] text-slate-600 dark:text-slate-400 font-mono mt-1">
                 Hash ID: {rtt.hash || "Menunggu finalisasi dokumen..."}
               </p>
             </div>
@@ -712,24 +741,21 @@ function RttDetailContent({ id }: { id: string }) {
                 <Lock size={14} /> {submitting ? "Menandatangani..." : "Ajukan & Tandatangani ke PHW"}
               </button>
             ) : rtt.status === "menunggu_verifikasi_phw" ? (
-              <div className="px-4 py-2 bg-indigo-900/30 border border-indigo-700/50 text-indigo-400 rounded-md text-[11px] font-bold">
+              <div className="px-4 py-2 bg-indigo-50 border border-indigo-200 text-indigo-800 dark:bg-indigo-900/30 dark:border-indigo-700/50 dark:text-indigo-400 rounded-md text-[11px] font-bold">
                 Menunggu Verifikasi PHW
               </div>
             ) : rtt.status === "menunggu_pengesahan" ? (
-              <div className="px-4 py-2 bg-amber-900/30 border border-amber-700/50 text-amber-400 rounded-md text-[11px] font-bold">
+              <div className="px-4 py-2 bg-amber-50 border border-amber-200 text-amber-800 dark:bg-amber-900/30 dark:border-amber-700/50 dark:text-amber-400 rounded-md text-[11px] font-bold">
                 Menunggu Pengesahan Final
               </div>
             ) : isSah ? (
               <>
                 <button
-                  onClick={() =>
-                    window.open(
-                      `http://localhost:8000/api/rtt/generate_pdf.php?id=${id}`,
-                    )
-                  }
-                  className="px-4 py-2 bg-slate-800 border border-slate-600 hover:bg-slate-700 text-white rounded-md text-[11px] font-bold flex items-center gap-2 transition-all"
+                  onClick={() => setShowPrintModal(true)}
+                  className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-800 dark:text-white rounded-md text-[11px] font-bold flex items-center gap-2 transition-all cursor-pointer shadow-xs hover:border-emerald-500 hover:text-emerald-700 dark:hover:text-emerald-400"
+                  title="Otorisasi Private Key untuk Cetak / Download PDF Resmi"
                 >
-                  <Printer size={14} /> Cetak PDF
+                  <Printer size={14} className="text-emerald-600 dark:text-emerald-400" /> Cetak / Download PDF
                 </button>
                 <div className="flex gap-2">
                   <button
@@ -738,7 +764,7 @@ function RttDetailContent({ id }: { id: string }) {
                         `http://localhost:8000/api/rtt/download_bundle.php?id=${id}&type=sig`,
                       )
                     }
-                    className="px-3 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-md text-[10px] font-bold text-slate-300 flex items-center gap-1.5 transition-all"
+                    className="px-3 py-2 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 rounded-md text-[10px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5 transition-all"
                   >
                     <Download size={12} /> .SIG
                   </button>
@@ -748,14 +774,14 @@ function RttDetailContent({ id }: { id: string }) {
                         `http://localhost:8000/api/rtt/download_bundle.php?id=${id}&type=pub`,
                       )
                     }
-                    className="px-3 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-md text-[10px] font-bold text-slate-300 flex items-center gap-1.5 transition-all"
+                    className="px-3 py-2 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 rounded-md text-[10px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5 transition-all"
                   >
                     <Key size={12} /> .PEM
                   </button>
                 </div>
               </>
             ) : (
-              <div className="px-4 py-2 bg-slate-800/50 border border-slate-700/50 text-slate-500 rounded-md text-[11px] font-bold">
+              <div className="px-4 py-2 bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 text-slate-600 dark:text-slate-500 rounded-md text-[11px] font-bold">
                 {doneCount < 8
                   ? `Modul Tersisa: ${8 - doneCount}`
                   : "Menunggu Proses"}
@@ -765,24 +791,24 @@ function RttDetailContent({ id }: { id: string }) {
         </div>
 
         {/* Progress & Modules List */}
-        <div className="bg-[#0b1120] border border-slate-700/50 rounded-lg overflow-hidden shadow-2xl">
-          <div className="p-5 border-b border-slate-700/50 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[#0f172a]">
+        <div className="glass-card border border-slate-200 dark:border-slate-700/50 rounded-lg overflow-hidden shadow-sm">
+          <div className="p-5 border-b border-slate-200 dark:border-slate-700/50 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-50/70 dark:bg-[#0f172a]">
             <div>
-              <h3 className="text-[15px] font-bold text-white">
+              <h3 className="text-[15px] font-bold text-slate-900 dark:text-white">
                 Kelengkapan Lampiran Dokumen
               </h3>
-              <p className="text-[12px] text-slate-400 mt-0.5">
+              <p className="text-[12px] text-slate-600 dark:text-slate-400 mt-0.5">
                 Lengkapi seluruh formulir dan unggahan berkas di bawah ini.
               </p>
             </div>
             <div className="w-full md:w-64">
-              <div className="flex justify-between text-[11px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">
+              <div className="flex justify-between text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wider">
                 <span>Progres Pengisian</span>
-                <span className="text-emerald-400">
+                <span className="text-emerald-600 dark:text-emerald-400">
                   {Math.round((doneCount / 8) * 100)}%
                 </span>
               </div>
-              <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+              <div className="h-1.5 w-full bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-emerald-500 transition-all duration-500"
                   style={{ width: `${(doneCount / 8) * 100}%` }}
@@ -791,7 +817,7 @@ function RttDetailContent({ id }: { id: string }) {
             </div>
           </div>
 
-          <div className="divide-y divide-slate-700/50">
+          <div className="divide-y divide-slate-200 dark:divide-slate-700/50">
             {docModules.map((doc, idx) => {
               const isMyRole =
                 user?.role === "sysadmin" || user?.role === "kph";
@@ -800,17 +826,17 @@ function RttDetailContent({ id }: { id: string }) {
               return (
                 <div
                   key={idx}
-                  className={`p-4 flex flex-col gap-3 hover:bg-slate-800/30 transition-colors ${hasWarning ? "border-l-2 border-amber-500/70" : ""}`}
+                  className={`p-4 flex flex-col gap-3 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors ${hasWarning ? "border-l-2 border-amber-500/70" : ""}`}
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
                       <div
                         className={`w-10 h-10 rounded-lg flex items-center justify-center border shrink-0 ${
                           hasWarning
-                            ? "bg-amber-900/20 border-amber-500/50 text-amber-400"
+                            ? "bg-amber-50 border-amber-200 text-amber-700 dark:bg-amber-900/20 dark:border-amber-500/50 dark:text-amber-400"
                             : doc.done
-                            ? "bg-emerald-900/20 border-emerald-500/30 text-emerald-400"
-                            : "bg-slate-800/50 border-slate-700 text-slate-500"
+                            ? "bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-900/20 dark:border-emerald-500/30 dark:text-emerald-400"
+                            : "bg-slate-100 border-slate-200 text-slate-500 dark:bg-slate-800/50 dark:border-slate-700 dark:text-slate-500"
                         }`}
                       >
                         {hasWarning ? (
@@ -822,15 +848,15 @@ function RttDetailContent({ id }: { id: string }) {
                         )}
                       </div>
                       <div>
-                        <h4 className="text-[13px] font-bold text-slate-200 flex items-center gap-2">
+                        <h4 className="text-[13px] font-bold text-slate-900 dark:text-slate-200 flex items-center gap-2">
                           {doc.name}
                           {hasWarning && (
-                            <span className="text-[9px] font-bold bg-amber-500/20 border border-amber-500/40 text-amber-400 px-1.5 py-0.5 rounded uppercase tracking-wider">
+                            <span className="text-[9px] font-bold bg-amber-100 dark:bg-amber-500/20 border border-amber-300 dark:border-amber-500/40 text-amber-800 dark:text-amber-400 px-1.5 py-0.5 rounded uppercase tracking-wider">
                               Tidak Sesuai RPKH
                             </span>
                           )}
                         </h4>
-                        <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed hidden sm:block">
+                        <p className="text-[11px] text-slate-600 dark:text-slate-500 mt-0.5 leading-relaxed hidden sm:block">
                           {doc.desc}
                         </p>
                       </div>
@@ -845,16 +871,16 @@ function RttDetailContent({ id }: { id: string }) {
                           onClick={() => handleOpenModal(doc.key)}
                           className={`w-24 py-1.5 text-[11px] font-bold rounded border transition-all ${
                             hasWarning
-                              ? "bg-amber-600/20 border-amber-500/50 text-amber-400 hover:bg-amber-600/40"
+                              ? "bg-amber-50 dark:bg-amber-600/20 border-amber-300 dark:border-amber-500/50 text-amber-800 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-600/40"
                               : doc.done
-                              ? "bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700"
-                              : "bg-blue-600/20 border-blue-500/50 text-blue-400 hover:bg-blue-600/40 hover:text-blue-300"
+                              ? "bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-800 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+                              : "bg-blue-50 dark:bg-blue-600/20 border-blue-300 dark:border-blue-500/50 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-600/40"
                           }`}
                         >
                           {doc.done ? "Ubah" : "Lengkapi"}
                         </button>
                       ) : (
-                        <div className="w-24 text-right sm:text-center text-[10px] text-slate-600 font-bold uppercase">
+                        <div className="w-24 text-right sm:text-center text-[10px] text-slate-500 font-bold uppercase">
                           {doc.done ? "Tersimpan" : "-"}
                         </div>
                       )}
@@ -884,9 +910,9 @@ function RttDetailContent({ id }: { id: string }) {
 
       {/* Modal */}
       {activeModal && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-6 bg-slate-900/80 backdrop-blur-sm [color-scheme:dark] animate-fade-in">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm animate-fade-in">
           <div
-            className={`bg-[#0f172a] border border-slate-700/80 rounded-xl shadow-2xl p-8 w-full shadow-2xl relative animate-scale-in max-h-[90vh] overflow-y-auto ${
+            className={`bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700/80 rounded-xl shadow-2xl p-8 w-full relative animate-scale-in max-h-[90vh] overflow-y-auto ${
               activeModal === "klem_detail" ||
               activeModal === "klem" ||
               activeModal === "rekap_klem"
@@ -896,19 +922,19 @@ function RttDetailContent({ id }: { id: string }) {
           >
             <button
               onClick={() => setActiveModal(null)}
-              className="absolute top-5 right-5 text-slate-500 hover:text-white transition-colors"
+              className="absolute top-5 right-5 text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors"
             >
               <X size={20} />
             </button>
             <div className="mb-6 space-y-1">
-              <h3 className="text-xl font-bold text-white">
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white">
                 Input Data{" "}
-                <span className="text-emerald-400">
+                <span className="text-emerald-600 dark:text-emerald-400">
                   {docModules.find((m) => m.key === activeModal)?.name ||
                     activeModal}
                 </span>
               </h3>
-              <p className="text-slate-400 text-[13px]">
+              <p className="text-slate-600 dark:text-slate-400 text-[13px]">
                 Lengkapi data spesifik untuk modul ini sebelum pengesahan.
               </p>
             </div>
@@ -2300,36 +2326,36 @@ function RttDetailContent({ id }: { id: string }) {
 
       {/* Finalize Key Modal */}
       {finalizeKeyModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-slate-900/80 backdrop-blur-sm [color-scheme:dark] animate-fade-in">
-          <div className="bg-[#0f172a] border border-slate-700/80 rounded-xl shadow-2xl p-8 max-w-lg w-full shadow-2xl relative animate-scale-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700/80 rounded-xl shadow-2xl p-8 max-w-lg w-full relative animate-scale-in">
             <button
               onClick={() => setFinalizeKeyModal(false)}
-              className="absolute top-5 right-5 text-slate-500 hover:text-white transition-colors"
+              className="absolute top-5 right-5 text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors"
             >
               <X size={20} />
             </button>
-            <div className="w-16 h-16 rounded-full bg-emerald-900/40 border border-emerald-500/50 flex items-center justify-center text-emerald-400 mx-auto mb-4 shadow-[0_0_20px_rgba(16,185,129,0.3)]">
+            <div className="w-16 h-16 rounded-full bg-emerald-50 dark:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-500/50 flex items-center justify-center text-emerald-600 dark:text-emerald-400 mx-auto mb-4 shadow-sm">
               <Zap size={32} />
             </div>
-            <h3 className="text-xl font-bold text-white mb-2">
+            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
               Otorisasi Tanda Tangan
             </h3>
-            <p className="text-slate-400 text-[13px] mb-6">
+            <p className="text-slate-600 dark:text-slate-400 text-[13px] mb-6">
               Masukkan{" "}
-              <span className="text-emerald-400 font-bold">Private Key</span>{" "}
+              <span className="text-emerald-600 dark:text-emerald-400 font-bold">Private Key</span>{" "}
               Anda untuk memvalidasi dan mematenkan dokumen RTT ini menggunakan
               ECDSA.
             </p>
             <form onSubmit={handleSign} className="space-y-4">
               <div>
-                <label className="text-[11px] text-slate-400 font-semibold block text-left mb-1.5 uppercase tracking-wider">
+                <label className="text-[11px] text-slate-700 dark:text-slate-400 font-semibold block text-left mb-1.5 uppercase tracking-wider">
                   Private Key (Format Hex/PEM)
                 </label>
                 <textarea
                   required
                   value={privateKeyInput}
                   onChange={(e) => setPrivateKeyInput(e.target.value)}
-                  className="w-full px-4 py-2.5 text-[13px] bg-[#0b1120] border border-slate-700/80 rounded-md text-slate-200 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600/50 transition-all [color-scheme:dark] font-mono min-h-[100px]"
+                  className="w-full px-4 py-2.5 text-[13px] bg-slate-50 dark:bg-[#0b1120] border border-slate-300 dark:border-slate-700/80 rounded-md text-slate-900 dark:text-slate-200 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600/50 transition-all font-mono min-h-[100px]"
                   placeholder="-----BEGIN EC PRIVATE KEY-----&#10;..."
                 />
               </div>
@@ -2391,6 +2417,17 @@ function RttDetailContent({ id }: { id: string }) {
         description="Dokumen akan ditandatangani secara digital menggunakan ECDSA (private key KPH) dan dienkripsi menggunakan ECC untuk PHW. Masukkan private key KPH untuk melanjutkan."
         actionLabel="Tandatangani & Kirim ke PHW"
         loading={submitting}
+      />
+
+      {/* Modal Otorisasi Private Key Cetak / Download PDF */}
+      <PrivateKeyModal
+        isOpen={showPrintModal}
+        onClose={() => setShowPrintModal(false)}
+        onConfirm={handleAuthorizePrint}
+        loading={authorizingPrint}
+        title="Otorisasi Private Key Cetak Dokumen"
+        description={`Dokumen resmi RTT (${data?.rtt?.nomor_dokumen || "RTT"}) dilindungi enkripsi kriptografi ECC. Unggah file Private Key (.pem / .key) atau tempelkan kuncinya untuk mengotorisasi pencetakan atau pengunduhan file PDF resmi.`}
+        actionLabel={authorizingPrint ? "Memverifikasi Kunci..." : "Verifikasi & Buka PDF"}
       />
     </>
   );

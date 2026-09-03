@@ -68,13 +68,70 @@ if (!$rtt_id) {
 }
 
 // ─────────────────────────────────────────────
-// Ambil semua data RTT dari database
+// Ambil data RTT dari database
 // ─────────────────────────────────────────────
 $stmt = $pdo->prepare("SELECT r.*, rp.wilayah as rpkh_wilayah, rp.tahun_mulai, rp.tahun_selesai FROM rtt r LEFT JOIN rpkh rp ON r.rpkh_id = rp.id WHERE r.id = ?");
 $stmt->execute([$rtt_id]); $rtt = $stmt->fetch();
 if (!$rtt) {
     header('Content-Type: application/json');
     echo json_encode(['status' => 'error', 'message' => 'RTT tidak ditemukan']);
+    exit;
+}
+
+// ─────────────────────────────────────────────
+// WAJIB: Validasi Otorisasi Kriptografi (Print Token)
+// ─────────────────────────────────────────────
+$print_token = trim($_GET['token'] ?? $_POST['token'] ?? '');
+$clean_token = preg_replace('/[^a-zA-Z0-9_-]/', '', $print_token);
+$temp_dir    = __DIR__ . '/../uploads/temp/';
+$token_file  = $temp_dir . 'print_token_' . $clean_token . '.json';
+
+$auth_data = null;
+if (!empty($clean_token) && file_exists($token_file)) {
+    $token_content = json_decode(file_get_contents($token_file), true);
+    if ($token_content && isset($token_content['rtt_id']) && (int)$token_content['rtt_id'] === $rtt_id) {
+        if (time() <= ($token_content['expires_at'] ?? 0)) {
+            $auth_data = $token_content;
+        }
+    }
+}
+
+if (!$auth_data) {
+    http_response_code(403);
+    header('Content-Type: text/html; charset=utf-8');
+    echo '<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>403 Akses Ditolak - Dokumen Terenkripsi ECC | Perum Perhutani</title>
+  <style>
+    body { font-family: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif; background: #0b1120; color: #f8fafc; margin: 0; padding: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+    .box { max-width: 580px; width: 90%; background: #0f172a; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 20px; padding: 36px 32px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+    .badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(239, 68, 68, 0.12); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 999px; padding: 6px 16px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px; }
+    h1 { font-size: 20px; margin: 0 0 12px; font-weight: 800; color: #ffffff; }
+    p { font-size: 13px; color: #94a3b8; line-height: 1.6; margin: 0 0 24px; }
+    .highlight { background: rgba(15, 23, 42, 0.8); border: 1px solid #1e293b; border-radius: 12px; padding: 14px; text-align: left; font-size: 12px; color: #cbd5e1; margin-bottom: 26px; }
+    .highlight-item { display: flex; gap: 8px; margin-bottom: 6px; }
+    .highlight-item:last-child { margin-bottom: 0; }
+    .highlight-key { font-weight: 700; color: #f1f5f9; min-width: 140px; }
+    .btn { display: inline-block; background: linear-gradient(135deg, #059669, #0d9488); color: #ffffff; text-decoration: none; font-size: 12px; font-weight: 700; padding: 10px 24px; border-radius: 12px; transition: opacity 0.2s; }
+    .btn:hover { opacity: 0.9; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <div class="badge">🛡️ Akses Ditolak (403 Forbidden)</div>
+    <h1>Dokumen Terlindungi Enkripsi Kriptografi</h1>
+    <p>Dokumen Rencana Teknik Tahunan (RTT) ini berstatus rahasia dinas Perum Perhutani dan dienkripsi dengan algoritma <strong>ECC SECP256K1 &amp; ECIES</strong>. URL dokumen tidak dapat dibuka langsung tanpa otorisasi kunci privat resmi.</p>
+    <div class="highlight">
+      <div class="highlight-item"><span class="highlight-key">Nomor Dokumen:</span> <span>' . safe_html($rtt['nomor_dokumen'] ?? ('ID #' . $rtt_id)) . '</span></div>
+      <div class="highlight-item"><span class="highlight-key">Kebutuhan Akses:</span> <span>Upload Private Key ECC (.pem / .key)</span></div>
+      <div class="highlight-item"><span class="highlight-key">Lokasi Otorisasi:</span> <span>Menu Laporan (Reports)</span></div>
+    </div>
+    <a href="http://localhost:3000/reports" class="btn">Buka Menu Laporan untuk Otorisasi Kunci</a>
+  </div>
+</body>
+</html>';
     exit;
 }
 
@@ -216,9 +273,112 @@ table.data-table tr.total-row td { background: #e8f0f7; font-weight: bold; color
 body { counter-reset: page; }
 .page-num-footer { text-align: right; font-size: 9pt; color: #6b7280; margin-top: 10px; border-top: 1px solid #e5e7eb; padding-top: 4px; }
 
-@media print { body { background: none; } .print-container { padding: 0; max-width: none; } }
+/* Floating Action Bar Styling */
+@media screen {
+  body { padding-top: 92px !important; background: #f8fafc !important; }
+  .print-container { background: #fff; padding: 30px 40px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); border-radius: 12px; margin: 24px auto !important; border: 1px solid #e2e8f0; }
+}
+@media print {
+  .no-print { display: none !important; }
+  body { padding-top: 0 !important; background: none !important; }
+  .print-container { padding: 0; max-width: none; border: none; box-shadow: none; }
+}
+
+.action-bar-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 99999;
+  background: #0f172a;
+  color: #fff;
+  border-bottom: 2px solid #059669;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  font-family: Arial, Helvetica, sans-serif;
+}
+.action-bar {
+  max-width: 1140px;
+  margin: auto;
+  padding: 10px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.action-title { font-size: 13px; font-weight: bold; color: #ffffff; }
+.action-desc { font-size: 11px; color: #10b981; font-weight: 600; margin-top: 2px; }
+.action-buttons { display: flex; gap: 10px; align-items: center; }
+.btn-download-pdf {
+  background: linear-gradient(135deg, #059669, #0d9488);
+  color: #ffffff;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(5,150,105,0.3);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+.btn-download-pdf:hover { opacity: 0.92; transform: translateY(-1px); }
+.btn-print-doc {
+  background: #1e293b;
+  color: #f1f5f9;
+  border: 1px solid #475569;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-print-doc:hover { background: #334155; }
+.btn-close-doc {
+  background: transparent;
+  color: #94a3b8;
+  border: none;
+  padding: 8px 12px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.btn-close-doc:hover { color: #ffffff; }
+.action-tip {
+  background: #064e3b;
+  color: #a7f3d0;
+  font-size: 11.5px;
+  padding: 7px 24px;
+  text-align: center;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  line-height: 1.4;
+}
 </style>
 </head><body>
+
+<!-- Floating Toolbar untuk Download & Cetak -->
+<div class="no-print action-bar-wrapper">
+  <div class="action-bar">
+    <div>
+      <div class="action-title">📄 Dokumen RTT: ' . safe_html($rtt['nomor_dokumen']) . '</div>
+      <div class="action-desc">Status: SAH (Tersertifikasi Kriptografi ECC) | Wilayah: ' . safe_html($rtt['kph']) . '</div>
+    </div>
+    <div class="action-buttons">
+      <button onclick="window.print()" class="btn-download-pdf" title="Download / Simpan sebagai file PDF">
+        ⬇️ Download / Simpan PDF
+      </button>
+      <button onclick="window.print()" class="btn-print-doc">
+        🖨️ Cetak Printer
+      </button>
+      <button onclick="window.close()" class="btn-close-doc">
+        ✕ Tutup
+      </button>
+    </div>
+  </div>
+  <div class="action-tip">
+    💡 <strong>Cara Menyimpan sebagai File PDF di Laptop:</strong> Pada jendela cetak yang muncul, ubah pilihan <strong>Tujuan (Destination)</strong> menjadi <strong>"Simpan sebagai PDF" / "Save as PDF"</strong>, lalu klik tombol <strong>Simpan</strong>.
+  </div>
+</div>
+
 <div class="print-container">';
 
 // ═══════════════════════════════════════════════════════
@@ -694,10 +854,30 @@ $html .= '    </div>
     </div>
 </div>';
 
-$html .= '<div class="page-num-footer" style="margin-top:20px;">Halaman 7 (Terakhir) | RTT Nomor: ' . safe_html($rtt['nomor_dokumen']) . ' | Dicetak: ' . date('d-m-Y H:i:s') . '</div>';
+if ($auth_data) {
+    $html .= '<div style="margin-top:14px; padding:9px 14px; background:#ecfdf5; border:1.5px solid #059669; border-radius:8px; font-size:8pt; color:#065f46; display:flex; justify-content:space-between; align-items:center;">
+        <div>
+            <strong>🔐 OTORISASI AKSES PENCETAKAN RESMI:</strong><br>
+            Dicetak oleh: <strong>' . safe_html($auth_data['nama']) . '</strong> (' . safe_html(strtoupper($auth_data['role'])) . ') &nbsp;|&nbsp; 
+            Otorisasi via: <em>' . safe_html($auth_data['auth_via']) . '</em><br>
+            Token ID: <span style="font-family:monospace; font-weight:bold;">' . substr($auth_data['print_token'], 0, 16) . '...</span> &nbsp;|&nbsp; 
+            Waktu Otorisasi: ' . date('d F Y H:i:s', $auth_data['created_at']) . ' WIB
+        </div>
+        <div style="text-align:right; font-weight:bold; color:#059669; font-size:10pt;">
+            ✓ TERVERIFIKASI ECC
+        </div>
+    </div>';
+}
 
-$html .= '</div></body>';
-$html .= '<script>window.onload = function() { window.print(); }</script>';
+$html .= '<div class="page-num-footer" style="margin-top:16px;">Halaman 7 (Terakhir) | RTT Nomor: ' . safe_html($rtt['nomor_dokumen']) . ' | Dicetak: ' . date('d-m-Y H:i:s') . '</div>';
+
+$html .= '<script>
+  window.onload = function() {
+    setTimeout(function() {
+      window.print();
+    }, 700);
+  };
+</script>';
 $html .= '</html>';
 
 header('Content-Type: text/html; charset=utf-8');

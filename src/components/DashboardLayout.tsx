@@ -3,7 +3,8 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Sidebar from "./Sidebar";
-import { LogOut, Bell, Search, Hexagon } from "lucide-react";
+import { LogOut, Bell, Search, Hexagon, Sun, Moon } from "lucide-react";
+import { useTheme } from "@/context/ThemeContext";
 
 interface AuthContextType {
   user: any;
@@ -27,6 +28,7 @@ export default function DashboardLayout({
 }) {
   const router = useRouter();
   const pathname = usePathname();
+  const { theme, toggleTheme } = useTheme();
   const [user, setUser] = useState<any>(null);
   const [token, setToken] = useState<string>("");
   const [loading, setLoading] = useState(true);
@@ -41,7 +43,6 @@ export default function DashboardLayout({
   };
 
   const getPageDesc = () => {
-    // if (pathname === "/") return "Ringkasan data operasional";
     if (pathname.startsWith("/rtt"))
       return "Kelola dokumen rencana teknik tahunan";
     if (pathname.startsWith("/rpkh")) return "Pengelolaan kelestarian hutan";
@@ -89,7 +90,7 @@ export default function DashboardLayout({
 
   if (loading)
     return (
-      <div className="flex h-screen items-center justify-center bg-[#0b1120] bg-mesh">
+      <div className="flex h-screen items-center justify-center bg-slate-50 dark:bg-[#0b1120] bg-mesh">
         <div className="flex flex-col items-center gap-4">
           <div className="w-10 h-10 border-[3px] border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin" />
           <p className="text-sm text-slate-500 font-medium animate-pulse">
@@ -103,35 +104,58 @@ export default function DashboardLayout({
 
   return (
     <AuthContext.Provider value={{ user, token }}>
-      <div className="flex h-screen w-full bg-[#0b1120] text-slate-100 font-sans overflow-hidden">
+      <div className="flex h-screen w-full bg-slate-50 dark:bg-[#0b1120] text-slate-900 dark:text-slate-100 font-sans overflow-hidden transition-colors duration-150">
         {/* Sidebar */}
         <Sidebar user={user} />
 
         {/* Content Area */}
-        <div className="flex-1 flex flex-col h-full min-w-0 bg-[#0b1120] relative">
+        <div className="flex-1 flex flex-col h-full min-w-0 bg-slate-50 dark:bg-[#0b1120] relative">
           {/* Top Header */}
-          <header className="bg-[#0f172a] border-b border-slate-800 h-[72px] flex items-center justify-between px-8 z-40 shrink-0">
+          <header className="bg-white dark:bg-[#0f172a] border-b border-slate-200 dark:border-slate-800 h-[72px] flex items-center justify-between px-8 z-40 shrink-0 transition-colors duration-150 shadow-sm dark:shadow-none">
             <div className="flex flex-col">
-              <h1 className="text-[15px] font-bold text-white">
+              <h1 className="text-[15px] font-bold text-slate-900 dark:text-white">
                 {getPageTitle()}
               </h1>
-              <p className="text-[11px] text-slate-500 font-medium">
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
                 {getPageDesc()}
               </p>
             </div>
 
             <div className="flex items-center gap-3">
+              {/* Theme Toggle Button */}
+              <button
+                type="button"
+                onClick={toggleTheme}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100/90 dark:bg-slate-800/80 text-slate-700 dark:text-slate-200 hover:text-emerald-700 dark:hover:text-emerald-400 hover:border-emerald-500/40 transition-all text-[12px] font-semibold shadow-xs"
+                title={theme === "light" ? "Beralih ke Mode Gelap (Dark Mode)" : "Beralih ke Mode Terang (Light Mode)"}
+              >
+                {theme === "light" ? (
+                  <>
+                    <Moon size={15} className="text-slate-700" />
+                    <span className="hidden sm:inline">Tema Terang</span>
+                  </>
+                ) : (
+                  <>
+                    <Sun size={15} className="text-amber-400" />
+                    <span className="hidden sm:inline">Tema Gelap</span>
+                  </>
+                )}
+              </button>
+
               {/* Divider */}
-              <div className="w-px h-8 bg-white/[0.06]" />
+              <div className="w-px h-7 bg-slate-200 dark:bg-white/[0.08]" />
 
               {/* User */}
               <div className="flex items-center gap-3">
                 <div className="text-right hidden sm:block">
-                  <p className="text-[10px] text-slate-500 font-medium">
+                  <p className="text-[11px] font-bold text-slate-800 dark:text-slate-200 leading-tight">
+                    {user?.nama || user?.username}
+                  </p>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider">
                     {user?.role}
                   </p>
                 </div>
-                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-slate-700 to-slate-800 border border-slate-600/50 flex items-center justify-center text-[11px] font-bold text-slate-300">
+                <div className="w-9 h-9 rounded-full bg-emerald-100 dark:bg-slate-800 border border-emerald-300 dark:border-slate-600/50 flex items-center justify-center text-[12px] font-extrabold text-emerald-800 dark:text-emerald-400 shadow-xs">
                   {(user?.nama || user?.username)
                     ?.substring(0, 2)
                     .toUpperCase()}
@@ -141,7 +165,7 @@ export default function DashboardLayout({
               {/* Logout */}
               <button
                 onClick={handleLogout}
-                className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-600 hover:text-rose-400 hover:bg-rose-500/10 transition-all"
+                className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-rose-600 hover:bg-rose-500/10 transition-all"
                 title="Keluar"
               >
                 <LogOut size={17} />

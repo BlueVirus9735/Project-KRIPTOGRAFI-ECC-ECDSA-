@@ -29,24 +29,26 @@ function SectionHeader({ icon, title, open, onToggle, isDecrypted }: {
     <button
       onClick={onToggle}
       className={`w-full flex items-center justify-between px-5 py-3.5 rounded-xl transition-all ${
-        isDecrypted ? "bg-emerald-500/5 hover:bg-emerald-500/10 border border-emerald-500/15" : "bg-slate-800/60 hover:bg-slate-700/60 border border-white/[0.04]"
+        isDecrypted
+          ? "bg-emerald-50/70 dark:bg-emerald-500/5 hover:bg-emerald-100/70 dark:hover:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/15"
+          : "bg-slate-100/90 dark:bg-slate-800/60 hover:bg-slate-200/80 dark:hover:bg-slate-700/60 border border-slate-200 dark:border-white/[0.04]"
       }`}
     >
-      <div className="flex items-center gap-2.5 text-slate-200 font-bold text-[13px]">
+      <div className="flex items-center gap-2.5 text-slate-800 dark:text-slate-200 font-bold text-[13px]">
         {icon}
         <span>{title}</span>
         {!isDecrypted && (
-          <span className="text-[10px] font-mono font-bold text-amber-400 bg-amber-500/15 px-2 py-0.5 rounded border border-amber-500/20">
+          <span className="text-[10px] font-mono font-bold text-amber-800 dark:text-amber-400 bg-amber-100 dark:bg-amber-500/15 px-2 py-0.5 rounded border border-amber-300 dark:border-amber-500/20">
             🔒 ENCRYPTED
           </span>
         )}
         {isDecrypted && (
-          <span className="text-[10px] font-mono font-bold text-emerald-400 bg-emerald-500/15 px-2 py-0.5 rounded border border-emerald-500/20">
+          <span className="text-[10px] font-mono font-bold text-emerald-800 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-500/15 px-2 py-0.5 rounded border border-emerald-300 dark:border-emerald-500/20">
             ✓ DECRYPTED
           </span>
         )}
       </div>
-      {open ? <ChevronDown size={16} className="text-slate-400" /> : <ChevronRight size={16} className="text-slate-400" />}
+      {open ? <ChevronDown size={16} className="text-slate-500 dark:text-slate-400" /> : <ChevronRight size={16} className="text-slate-500 dark:text-slate-400" />}
     </button>
   );
 }
@@ -55,17 +57,17 @@ function FieldCell({ label, value, isDecrypted, unit }: { label: string; value: 
   if (value === null || value === undefined || value === "") return null;
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between py-2.5 px-4 border-b border-white/[0.03] last:border-0 hover:bg-white/[0.01]">
-      <span className="text-[12px] text-slate-400 font-medium w-[180px] shrink-0">{label}</span>
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between py-2.5 px-4 border-b border-slate-200/70 dark:border-white/[0.03] last:border-0 hover:bg-slate-50/50 dark:hover:bg-white/[0.01]">
+      <span className="text-[12px] text-slate-600 dark:text-slate-400 font-medium w-[180px] shrink-0">{label}</span>
       <div className="mt-1 sm:mt-0">
         {!isDecrypted ? (
-          <span className="font-mono text-[11px] text-amber-300/90 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-md inline-flex items-center gap-1.5 shadow-sm">
-            <Lock size={10} className="text-amber-400 shrink-0" />
+          <span className="font-mono text-[11px] text-amber-900 dark:text-amber-300/90 bg-amber-50 dark:bg-amber-500/10 border border-amber-300 dark:border-amber-500/20 px-2.5 py-1 rounded-md inline-flex items-center gap-1.5 shadow-xs">
+            <Lock size={10} className="text-amber-600 dark:text-amber-400 shrink-0" />
             {String(value)}
           </span>
         ) : (
-          <span className="text-[13px] text-emerald-300 font-semibold font-mono flex items-center gap-1">
-            {String(value)} {unit ? <span className="text-[11px] text-slate-400 font-normal">{unit}</span> : ""}
+          <span className="text-[13px] text-emerald-700 dark:text-emerald-300 font-semibold font-mono flex items-center gap-1">
+            {String(value)} {unit ? <span className="text-[11px] text-slate-500 dark:text-slate-400 font-normal">{unit}</span> : ""}
           </span>
         )}
       </div>
@@ -166,20 +168,20 @@ export default function EncryptedDocumentViewer({
       {/* 1. TOP STATUS BANNER (LOCKED vs UNLOCKED)                 */}
       {/* ========================================================= */}
       {!isDecrypted ? (
-        <div className="glass-card border border-amber-500/30 bg-amber-500/10 p-5 rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-lg shadow-black/40">
+        <div className="glass-card border border-amber-300 dark:border-amber-500/30 bg-amber-50/80 dark:bg-amber-500/10 p-5 rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-sm dark:shadow-lg dark:shadow-black/40">
           <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center shrink-0">
-              <Lock size={22} className="text-amber-400 animate-pulse" />
+            <div className="w-12 h-12 rounded-xl bg-amber-100 dark:bg-amber-500/20 border border-amber-200 dark:border-amber-500/30 flex items-center justify-center shrink-0">
+              <Lock size={22} className="text-amber-600 dark:text-amber-400 animate-pulse" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-amber-300 font-bold text-[14px]">Dokumen Terenkripsi (ECC ECIES)</h3>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/30 text-amber-300 font-bold uppercase">
+                <h3 className="text-amber-900 dark:text-amber-300 font-bold text-[14px]">Dokumen Terenkripsi (ECC ECIES)</h3>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-500/20 border border-amber-300 dark:border-amber-500/30 text-amber-800 dark:text-amber-300 font-bold uppercase">
                   Terkunci
                 </span>
               </div>
-              <p className="text-[12px] text-slate-300 mt-0.5">
-                Teks isi tabel di bawah dalam bentuk <strong>Ciphertext</strong>. Hanya dapat dibuka menggunakan Private Key <span className="uppercase font-bold text-amber-300">{encryptedFor || mode}</span>.
+              <p className="text-[12px] text-slate-600 dark:text-slate-300 mt-0.5">
+                Teks isi tabel di bawah dalam bentuk <strong>Ciphertext</strong>. Hanya dapat dibuka menggunakan Private Key <span className="uppercase font-bold text-amber-800 dark:text-amber-300">{encryptedFor || mode}</span>.
               </p>
             </div>
           </div>
@@ -187,29 +189,29 @@ export default function EncryptedDocumentViewer({
           <button
             onClick={() => setShowKeyModal(true)}
             disabled={decrypting}
-            className="w-full md:w-auto px-6 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-[13px] transition-all shadow-lg flex items-center justify-center gap-2 shrink-0 disabled:opacity-50"
+            className="w-full md:w-auto px-6 py-3 rounded-xl bg-amber-600 hover:bg-amber-500 dark:bg-amber-500 dark:hover:bg-amber-400 text-white dark:text-slate-950 font-extrabold text-[13px] transition-all shadow-md flex items-center justify-center gap-2 shrink-0 disabled:opacity-50"
           >
             {decrypting ? (
-              <><div className="w-4 h-4 border-2 border-slate-900 border-t-transparent rounded-full animate-spin" /> Mendekripsi...</>
+              <><div className="w-4 h-4 border-2 border-white dark:border-slate-900 border-t-transparent rounded-full animate-spin" /> Mendekripsi...</>
             ) : (
               <><Key size={16} /> Buka Dokumen (Input Private Key)</>
             )}
           </button>
         </div>
       ) : (
-        <div className="glass-card border border-emerald-500/30 bg-emerald-500/10 p-5 rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-lg shadow-black/40 animate-slide-up">
+        <div className="glass-card border border-emerald-300 dark:border-emerald-500/30 bg-emerald-50/80 dark:bg-emerald-500/10 p-5 rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-sm dark:shadow-lg dark:shadow-black/40 animate-slide-up">
           <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center shrink-0">
-              <Unlock size={22} className="text-emerald-400" />
+            <div className="w-12 h-12 rounded-xl bg-emerald-100 dark:bg-emerald-500/20 border border-emerald-200 dark:border-emerald-500/30 flex items-center justify-center shrink-0">
+              <Unlock size={22} className="text-emerald-600 dark:text-emerald-400" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-emerald-300 font-bold text-[14px]">Dokumen Berhasil Didekripsi &amp; Terbuka</h3>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 font-bold uppercase">
+                <h3 className="text-emerald-900 dark:text-emerald-300 font-bold text-[14px]">Dokumen Berhasil Didekripsi &amp; Terbuka</h3>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-500/20 border border-emerald-300 dark:border-emerald-500/30 text-emerald-800 dark:text-emerald-300 font-bold uppercase">
                   Terbuka
                 </span>
               </div>
-              <p className="text-[12px] text-slate-300 mt-0.5">
+              <p className="text-[12px] text-slate-600 dark:text-slate-300 mt-0.5">
                 Kunci privat cocok! Seluruh nilai tabel di bawah telah ditransformasikan ke teks asli.
               </p>
             </div>
@@ -217,15 +219,15 @@ export default function EncryptedDocumentViewer({
 
           <div className="flex items-center gap-2">
             {hasKphSignature && (
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/15 border border-emerald-500/25">
-                <ShieldCheck size={13} className="text-emerald-400" />
-                <span className="text-[11px] text-emerald-400 font-bold">ECDSA KPH: VALID</span>
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-100 dark:bg-emerald-500/15 border border-emerald-300 dark:border-emerald-500/25">
+                <ShieldCheck size={13} className="text-emerald-700 dark:text-emerald-400" />
+                <span className="text-[11px] text-emerald-800 dark:text-emerald-400 font-bold">ECDSA KPH: VALID</span>
               </div>
             )}
             {hasPhwSignature && (
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-500/15 border border-blue-500/25">
-                <ShieldCheck size={13} className="text-blue-400" />
-                <span className="text-[11px] text-blue-400 font-bold">ECDSA PHW: VALID</span>
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-100 dark:bg-blue-500/15 border border-blue-300 dark:border-blue-500/25">
+                <ShieldCheck size={13} className="text-blue-700 dark:text-blue-400" />
+                <span className="text-[11px] text-blue-800 dark:text-blue-400 font-bold">ECDSA PHW: VALID</span>
               </div>
             )}
           </div>
@@ -235,7 +237,7 @@ export default function EncryptedDocumentViewer({
       {/* ========================================================= */}
       {/* 2. IDENTITAS DOKUMEN RTT                                  */}
       {/* ========================================================= */}
-      <div className="glass-card rounded-2xl overflow-hidden border border-white/[0.05]">
+      <div className="glass-card rounded-2xl overflow-hidden border border-slate-200 dark:border-white/[0.05]">
         <SectionHeader icon={<FileText size={15} />} title="Identitas Dokumen RTT" open={sections.identitas} onToggle={() => toggle("identitas")} isDecrypted={isDecrypted} />
         {sections.identitas && (
           <div className="p-2 space-y-0.5">
@@ -278,7 +280,7 @@ export default function EncryptedDocumentViewer({
       {/* 3. RINGKASAN TEBANGAN (SUMMARY)                          */}
       {/* ========================================================= */}
       {summary && (
-        <div className="glass-card rounded-2xl overflow-hidden border border-white/[0.05]">
+        <div className="glass-card rounded-2xl overflow-hidden border border-slate-200 dark:border-white/[0.05]">
           <SectionHeader icon={<Table size={15} />} title="Ringkasan Rencana Tebangan (Summary)" open={sections.summary} onToggle={() => toggle("summary")} isDecrypted={isDecrypted} />
           {sections.summary && (
             <div className="p-2 space-y-0.5">
@@ -298,7 +300,7 @@ export default function EncryptedDocumentViewer({
       {/* 4. DATA NETT (PERENCANAAN PETAK)                          */}
       {/* ========================================================= */}
       {nett && (
-        <div className="glass-card rounded-2xl overflow-hidden border border-white/[0.05]">
+        <div className="glass-card rounded-2xl overflow-hidden border border-slate-200 dark:border-white/[0.05]">
           <SectionHeader icon={<MapPin size={15} />} title="Rencana Petak (NETT)" open={sections.nett} onToggle={() => toggle("nett")} isDecrypted={isDecrypted} />
           {sections.nett && (
             <div className="p-2 space-y-0.5">
@@ -320,75 +322,75 @@ export default function EncryptedDocumentViewer({
       {/* 5. TABEL REKAP KLEM                                       */}
       {/* ========================================================= */}
       {rekapKlem && rekapKlem.length > 0 && (
-        <div className="glass-card rounded-2xl overflow-hidden border border-white/[0.05]">
+        <div className="glass-card rounded-2xl overflow-hidden border border-slate-200 dark:border-white/[0.05]">
           <SectionHeader icon={<TreePine size={15} />} title={`Tabel Rekap Klem (${rekapKlem.length} Baris Data)`} open={sections.rekap} onToggle={() => toggle("rekap")} isDecrypted={isDecrypted} />
           {sections.rekap && (
             <div className="overflow-x-auto">
               <table className="w-full text-[12px]">
                 <thead>
-                  <tr className="border-b border-white/[0.06] bg-slate-900/60">
+                  <tr className="border-b border-slate-200 dark:border-white/[0.06] bg-slate-100/90 dark:bg-slate-900/60">
                     {["Petak", "Anak Petak", "Kelas Hutan", "Luas Rencana", "Jumlah Pohon", "Volume"].map((h) => (
-                      <th key={h} className="px-4 py-3 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                      <th key={h} className="px-4 py-3 text-left text-[11px] font-bold text-slate-700 dark:text-slate-400 uppercase tracking-wider">
                         {h}
                       </th>
                     ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/[0.03]">
+                <tbody className="divide-y divide-slate-100 dark:divide-white/[0.03]">
                   {rekapKlem.slice(0, 15).map((row: any, i: number) => (
-                    <tr key={i} className="hover:bg-white/[0.02]">
+                    <tr key={i} className="hover:bg-slate-50 dark:hover:bg-white/[0.02]">
                       <td className="px-4 py-3">
                         {!isDecrypted ? (
-                          <span className="font-mono text-[10px] text-amber-300/90 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+                          <span className="font-mono text-[10px] text-amber-900 dark:text-amber-300/90 bg-amber-50 dark:bg-amber-500/10 px-2 py-0.5 rounded border border-amber-200 dark:border-amber-500/20">
                             🔒 {row.petak}
                           </span>
                         ) : (
-                          <span className="text-slate-200 font-mono font-semibold">{row.petak}</span>
+                          <span className="text-slate-900 dark:text-slate-200 font-mono font-semibold">{row.petak}</span>
                         )}
                       </td>
                       <td className="px-4 py-3">
                         {!isDecrypted ? (
-                          <span className="font-mono text-[10px] text-amber-300/90 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+                          <span className="font-mono text-[10px] text-amber-900 dark:text-amber-300/90 bg-amber-50 dark:bg-amber-500/10 px-2 py-0.5 rounded border border-amber-200 dark:border-amber-500/20">
                             🔒 {row.anak_petak}
                           </span>
                         ) : (
-                          <span className="text-slate-200 font-mono font-semibold">{row.anak_petak}</span>
+                          <span className="text-slate-900 dark:text-slate-200 font-mono font-semibold">{row.anak_petak}</span>
                         )}
                       </td>
                       <td className="px-4 py-3">
                         {!isDecrypted ? (
-                          <span className="font-mono text-[10px] text-amber-300/90 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+                          <span className="font-mono text-[10px] text-amber-900 dark:text-amber-300/90 bg-amber-50 dark:bg-amber-500/10 px-2 py-0.5 rounded border border-amber-200 dark:border-amber-500/20">
                             🔒 {row.kelas_hutan}
                           </span>
                         ) : (
-                          <span className="text-slate-300">{row.kelas_hutan}</span>
+                          <span className="text-slate-700 dark:text-slate-300">{row.kelas_hutan}</span>
                         )}
                       </td>
                       <td className="px-4 py-3">
                         {!isDecrypted ? (
-                          <span className="font-mono text-[10px] text-amber-300/90 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+                          <span className="font-mono text-[10px] text-amber-900 dark:text-amber-300/90 bg-amber-50 dark:bg-amber-500/10 px-2 py-0.5 rounded border border-amber-200 dark:border-amber-500/20">
                             🔒 {row.luas_rencana}
                           </span>
                         ) : (
-                          <span className="text-emerald-300 font-mono">{row.luas_rencana} Ha</span>
+                          <span className="text-emerald-700 dark:text-emerald-300 font-mono font-semibold">{row.luas_rencana} Ha</span>
                         )}
                       </td>
                       <td className="px-4 py-3">
                         {!isDecrypted ? (
-                          <span className="font-mono text-[10px] text-amber-300/90 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+                          <span className="font-mono text-[10px] text-amber-900 dark:text-amber-300/90 bg-amber-50 dark:bg-amber-500/10 px-2 py-0.5 rounded border border-amber-200 dark:border-amber-500/20">
                             🔒 {row.jumlah_pohon}
                           </span>
                         ) : (
-                          <span className="text-slate-200 font-mono">{row.jumlah_pohon}</span>
+                          <span className="text-slate-900 dark:text-slate-200 font-mono">{row.jumlah_pohon}</span>
                         )}
                       </td>
                       <td className="px-4 py-3">
                         {!isDecrypted ? (
-                          <span className="font-mono text-[10px] text-amber-300/90 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+                          <span className="font-mono text-[10px] text-amber-900 dark:text-amber-300/90 bg-amber-50 dark:bg-amber-500/10 px-2 py-0.5 rounded border border-amber-200 dark:border-amber-500/20">
                             🔒 {row.volume}
                           </span>
                         ) : (
-                          <span className="text-emerald-300 font-mono font-bold">{row.volume} m³</span>
+                          <span className="text-emerald-700 dark:text-emerald-300 font-mono font-bold">{row.volume} m³</span>
                         )}
                       </td>
                     </tr>
@@ -396,7 +398,7 @@ export default function EncryptedDocumentViewer({
                 </tbody>
               </table>
               {rekapKlem.length > 15 && (
-                <p className="text-[11px] text-slate-500 px-4 py-2 bg-slate-900/40">
+                <p className="text-[11px] text-slate-500 px-4 py-2 bg-slate-50 dark:bg-slate-900/40 border-t border-slate-100 dark:border-white/[0.04]">
                   ...dan {rekapKlem.length - 15} baris data lainnya
                 </p>
               )}
@@ -409,7 +411,7 @@ export default function EncryptedDocumentViewer({
       {/* 6. BERITA ACARA PEMERIKSAAN                               */}
       {/* ========================================================= */}
       {beritaAcara && (
-        <div className="glass-card rounded-2xl overflow-hidden border border-white/[0.05]">
+        <div className="glass-card rounded-2xl overflow-hidden border border-slate-200 dark:border-white/[0.05]">
           <SectionHeader icon={<FileText size={15} />} title="Berita Acara Pemeriksaan (BAP)" open={sections.ba} onToggle={() => toggle("ba")} isDecrypted={isDecrypted} />
           {sections.ba && (
             <div className="p-2 space-y-0.5">
@@ -425,7 +427,7 @@ export default function EncryptedDocumentViewer({
       {/* ========================================================= */}
       {/* 7. LAMPIRAN FILE & PETA                                   */}
       {/* ========================================================= */}
-      <div className="glass-card rounded-2xl overflow-hidden border border-white/[0.05]">
+      <div className="glass-card rounded-2xl overflow-hidden border border-slate-200 dark:border-white/[0.05]">
         <SectionHeader icon={<FileImage size={15} />} title="Lampiran File &amp; Peta Spasial" open={sections.lampiran} onToggle={() => toggle("lampiran")} isDecrypted={isDecrypted} />
         {sections.lampiran && (
           <div className="p-4 space-y-2">
@@ -433,18 +435,18 @@ export default function EncryptedDocumentViewer({
               <div className="space-y-2">
                 {encContent?.masked_files && encContent.masked_files.length > 0 ? (
                   encContent.masked_files.map((f: any, i: number) => (
-                    <div key={i} className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-between">
+                    <div key={i} className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 flex items-center justify-between shadow-2xs">
                       <div className="flex items-center gap-3">
-                        <FileImage size={18} className="text-amber-400 shrink-0" />
+                        <FileImage size={18} className="text-amber-600 dark:text-amber-400 shrink-0" />
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="text-[12px] font-bold text-white">{f.tipe}</span>
-                            <span className="text-[10px] font-mono text-slate-400">({f.nama_file})</span>
+                            <span className="text-[12px] font-bold text-slate-900 dark:text-white">{f.tipe}</span>
+                            <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400">({f.nama_file})</span>
                           </div>
-                          <p className="font-mono text-[11px] text-amber-300/90 mt-0.5">🔒 {f.cipher}</p>
+                          <p className="font-mono text-[11px] text-amber-800 dark:text-amber-300/90 mt-0.5">🔒 {f.cipher}</p>
                         </div>
                       </div>
-                      <span className="text-[10px] font-mono font-bold text-amber-400 bg-amber-500/15 px-2.5 py-1 rounded-md border border-amber-500/25 shrink-0">
+                      <span className="text-[10px] font-mono font-bold text-amber-800 dark:text-amber-400 bg-amber-100 dark:bg-amber-500/15 px-2.5 py-1 rounded-md border border-amber-300 dark:border-amber-500/25 shrink-0">
                         🔒 TERENKRIPSI ECC
                       </span>
                     </div>
@@ -456,16 +458,16 @@ export default function EncryptedDocumentViewer({
             ) : (
               <div className="space-y-2">
                 {petaList.map((p: any, i: number) => (
-                  <div key={'peta-' + i} className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-between">
+                  <div key={'peta-' + i} className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 flex items-center justify-between shadow-2xs">
                     <div className="flex items-center gap-3">
-                      <FileImage size={18} className="text-emerald-400 shrink-0" />
+                      <FileImage size={18} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
                       <div>
-                        <p className="text-[12px] font-bold text-emerald-200">Peta Lokasi Tebangan {p.bagian_hutan ? `— ${p.bagian_hutan}` : ''}</p>
-                        <p className="text-[11px] text-slate-400 font-mono">{p.file_path ? p.file_path.split('/').pop()?.replace('.enc', '') : 'peta.pdf'}</p>
+                        <p className="text-[12px] font-bold text-emerald-950 dark:text-emerald-200">Peta Lokasi Tebangan {p.bagian_hutan ? `— ${p.bagian_hutan}` : ''}</p>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">{p.file_path ? p.file_path.split('/').pop()?.replace('.enc', '') : 'peta.pdf'}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/20 px-2.5 py-1 rounded">TERVERIFIKASI</span>
+                      <span className="text-[10px] text-emerald-800 dark:text-emerald-400 font-bold bg-emerald-100 dark:bg-emerald-500/20 px-2.5 py-1 rounded border border-emerald-200 dark:border-transparent">TERVERIFIKASI</span>
                       {p.file_path && (
                         <button
                           type="button"
