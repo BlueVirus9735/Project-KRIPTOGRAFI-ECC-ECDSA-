@@ -56,7 +56,7 @@ try {
                 $item['luas_rencana'] ?? null, 
                 $item['tahun_tanam'] ?? null, 
                 $item['jenis_tanaman'] ?? '', 
-                $item['no_blok'] ?? 'Blok 1', 
+                $item['no_blok'] ?? '', 
                 $item['luas_blok'] ?? 0, 
                 $item['jumlah_pohon'] ?? 0, 
                 $item['volume'] ?? 0, 

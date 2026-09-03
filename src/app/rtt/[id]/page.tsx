@@ -4,7 +4,9 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import DashboardLayout, { useAuth } from "@/components/DashboardLayout";
 import FieldHint from "@/components/FieldHint";
+import PrivateKeyModal from "@/components/PrivateKeyModal";
 import Link from "next/link";
+
 import {
   ArrowLeft,
   CheckCircle2,
@@ -43,6 +45,8 @@ function RttDetailContent({ id }: { id: string }) {
   const [uploadKeterangan, setUploadKeterangan] = useState("");
   const [finalizeKeyModal, setFinalizeKeyModal] = useState(false);
   const [privateKeyInput, setPrivateKeyInput] = useState("");
+  const [showSubmitModal, setShowSubmitModal] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const fetchWorkspace = () => {
     setLoading(true);
@@ -59,7 +63,27 @@ function RttDetailContent({ id }: { id: string }) {
   }, [id]);
 
   const handleInputChange = (e: any) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    if (activeModal === "nett" && name === "petak") {
+      const detail = rpkhDetails.find((x: any) => x.petak === value);
+      const matchedTebangan = data?.tebangan?.find((t: any) => t.petak === value);
+      if (detail) {
+        setFormData((prev: any) => ({
+          ...prev,
+          petak: value,
+          anak_petak_baru: matchedTebangan?.anak_petak || prev.anak_petak_baru || "",
+          luas_baku: detail.luas || prev.luas_baku || "",
+          jenis_tanaman: detail.jenis_tanaman || prev.jenis_tanaman || "",
+          kelas_hutan: detail.kelas_hutan || prev.kelas_hutan || "",
+          bon: detail.bon || prev.bon || "",
+          kbd: detail.kbd || prev.kbd || "",
+          dkn: detail.dkn || prev.dkn || "",
+          n_per_ha: detail.n_per_ha || prev.n_per_ha || "",
+        }));
+        return;
+      }
+    }
+    setFormData({ ...formData, [name]: value });
   };
 
   const handlePetakChange = (e: any) => {
@@ -163,8 +187,130 @@ function RttDetailContent({ id }: { id: string }) {
               },
             ];
       setFormData({ klem_detail_list: initialTrees });
+    } else if (key === "nett" && data) {
+      const existing = data.nett || {};
+      const defaultPetak =
+        existing.petak ||
+        data.tebangan?.[0]?.petak ||
+        rpkhDetails?.[0]?.petak ||
+        "";
+      const matchedDetail = rpkhDetails.find(
+        (x: any) => x.petak === defaultPetak,
+      );
+      const matchedTebangan = data.tebangan?.find(
+        (t: any) => t.petak === defaultPetak,
+      );
+
+      setFormData({
+        ...existing,
+        bagian_hutan:
+          existing.bagian_hutan ||
+          data.rtt?.kph ||
+          data.rtt?.rpkh_wilayah ||
+          "",
+        bkph: existing.bkph || data.rtt?.bkph || "",
+        rph: existing.rph || data.rtt?.rph || "",
+        petak: defaultPetak,
+        anak_petak_baru:
+          existing.anak_petak_baru ||
+          matchedTebangan?.anak_petak ||
+          data.tebangan?.[0]?.anak_petak ||
+          "",
+        luas_baku:
+          existing.luas_baku ||
+          matchedDetail?.luas ||
+          matchedTebangan?.luas ||
+          "",
+        jenis_tanaman:
+          existing.jenis_tanaman ||
+          matchedDetail?.jenis_tanaman ||
+          matchedTebangan?.jenis_tanaman ||
+          "",
+        kelas_hutan: existing.kelas_hutan || matchedDetail?.kelas_hutan || "",
+        bon: existing.bon || matchedDetail?.bon || "",
+        kbd: existing.kbd || matchedDetail?.kbd || "",
+        dkn: existing.dkn || matchedDetail?.dkn || "",
+        n_per_ha: existing.n_per_ha || matchedDetail?.n_per_ha || "",
+      });
+    } else if (key === "summary" && data) {
+      const existing = data.summary || {};
+      const totalLuas = data.tebangan?.reduce(
+        (s: number, t: any) => s + (parseFloat(t.luas) || 0),
+        0,
+      );
+      const totalPohon = data.tebangan?.reduce(
+        (s: number, t: any) => s + (parseInt(t.jumlah_pohon) || 0),
+        0,
+      );
+      const totalVolume = data.tebangan?.reduce(
+        (s: number, t: any) => s + (parseFloat(t.volume) || 0),
+        0,
+      );
+      setFormData({
+        ...existing,
+        luas: existing.luas || (totalLuas > 0 ? totalLuas.toString() : ""),
+        jumlah_pohon:
+          existing.jumlah_pohon ||
+          (totalPohon > 0 ? totalPohon.toString() : ""),
+        bentuk_tebangan:
+          existing.bentuk_tebangan ||
+          `Tebangan RTT ${data.rtt?.kph || ""}`.trim(),
+        jenis_kayu:
+          existing.jenis_kayu ||
+          data.tebangan?.[0]?.jenis_tanaman ||
+          "Jati",
+        kayu_perkakas:
+          existing.kayu_perkakas ||
+          (totalVolume > 0 ? totalVolume.toString() : ""),
+      });
+    } else if (key === "peta" && data) {
+      const existing = data.peta?.[0] || {};
+      const defaultPetak =
+        existing.petak ||
+        data.tebangan?.[0]?.petak ||
+        rpkhDetails?.[0]?.petak ||
+        "";
+      const matchedDetail = rpkhDetails.find(
+        (x: any) => x.petak === defaultPetak,
+      );
+      setFormData({
+        ...existing,
+        bagian_hutan:
+          existing.bagian_hutan ||
+          data.rtt?.kph ||
+          data.rtt?.rpkh_wilayah ||
+          "",
+        kelompok_hutan:
+          existing.kelompok_hutan ||
+          data.rtt?.rpkh_wilayah ||
+          data.rtt?.kph ||
+          "",
+        bkph: existing.bkph || data.rtt?.bkph || "",
+        rph: existing.rph || data.rtt?.rph || "",
+        petak: defaultPetak,
+        jenis_tanaman:
+          existing.jenis_tanaman ||
+          matchedDetail?.jenis_tanaman ||
+          data.tebangan?.[0]?.jenis_tanaman ||
+          "",
+        kelas_hutan:
+          existing.kelas_hutan ||
+          matchedDetail?.kelas_hutan ||
+          data.nett?.kelas_hutan ||
+          "",
+        luas_baku:
+          existing.luas_baku ||
+          matchedDetail?.luas ||
+          data.tebangan?.[0]?.luas ||
+          "",
+        tahun_tanam:
+          existing.tahun_tanam ||
+          data.rtt?.rpkh_tahun ||
+          data.nett?.tahun_tanam ||
+          "",
+      });
     } else {
-      setFormData({});
+      setFormData(data?.[key] || {});
     }
     setActiveModal(key);
   };
@@ -368,6 +514,72 @@ function RttDetailContent({ id }: { id: string }) {
     peta_bap,
   } = data;
 
+  // ── Validasi Kesesuaian dengan RPKH ──────────────────────────────────────
+  const rpkhWarnings: Record<string, string[]> = {};
+
+  // 1. NETT: luas_baku tidak boleh melebihi kuota luas petak di RPKH
+  if (nett && rpkhDetails.length > 0) {
+    const rpkhPetak = rpkhDetails.find((x: any) => x.petak === nett.petak);
+    if (rpkhPetak) {
+      if (parseFloat(nett.luas_baku) > parseFloat(rpkhPetak.luas)) {
+        rpkhWarnings["nett"] = rpkhWarnings["nett"] || [];
+        rpkhWarnings["nett"].push(
+          `Luas baku (${nett.luas_baku} Ha) melebihi kuota RPKH petak ${nett.petak} (${rpkhPetak.luas} Ha)`
+        );
+      }
+      if (nett.jenis_tanaman && rpkhPetak.jenis_tanaman &&
+        nett.jenis_tanaman.toLowerCase() !== rpkhPetak.jenis_tanaman.toLowerCase()) {
+        rpkhWarnings["nett"] = rpkhWarnings["nett"] || [];
+        rpkhWarnings["nett"].push(
+          `Jenis tanaman "${nett.jenis_tanaman}" tidak sesuai RPKH ("${rpkhPetak.jenis_tanaman}")`
+        );
+      }
+    }
+  }
+
+  // 2. Rekap Klem: total volume tidak boleh melebihi volume rencana tebangan
+  if (rekap_klem.length > 0 && data.tebangan?.length > 0) {
+    const totalVolRencana = data.tebangan.reduce(
+      (s: number, t: any) => s + (parseFloat(t.volume) || 0), 0
+    );
+    const totalVolKlem = rekap_klem.reduce(
+      (s: number, rk: any) => s + (parseFloat(rk.volume) || 0), 0
+    );
+    if (totalVolKlem > totalVolRencana * 1.05) {
+      rpkhWarnings["rekap_klem"] = [
+        `Total volume Rekap Klem (${totalVolKlem.toFixed(2)} m³) melebihi rencana tebangan (${totalVolRencana.toFixed(2)} m³)`
+      ];
+    }
+  }
+
+  // 3. Summary: luas tidak boleh melebihi total luas rencana tebangan
+  if (summary && data.tebangan?.length > 0) {
+    const totalLuasRencana = data.tebangan.reduce(
+      (s: number, t: any) => s + (parseFloat(t.luas) || 0), 0
+    );
+    if (parseFloat(summary.luas) > totalLuasRencana * 1.05) {
+      rpkhWarnings["summary"] = [
+        `Luas Summary (${summary.luas} Ha) melebihi total luas rencana tebangan RTT (${totalLuasRencana.toFixed(2)} Ha)`
+      ];
+    }
+  }
+
+  // 4. Rekap Klem: periksa apakah semua petak tebangan sudah terwakili
+  if (rekap_klem.length > 0 && data.tebangan?.length > 0) {
+    const petakTebangan = data.tebangan.map((t: any) => t.petak);
+    const petakKlem = rekap_klem.map((rk: any) => rk.petak);
+    const petakTidakAda = petakTebangan.filter(
+      (p: string) => !petakKlem.includes(p)
+    );
+    if (petakTidakAda.length > 0) {
+      rpkhWarnings["rekap_klem"] = rpkhWarnings["rekap_klem"] || [];
+      rpkhWarnings["rekap_klem"].push(
+        `Petak ${petakTidakAda.join(", ")} belum ada di Rekap Klem`
+      );
+    }
+  }
+  // ─────────────────────────────────────────────────────────────────────────
+
   const docModules = [
     {
       key: "summary",
@@ -493,33 +705,11 @@ function RttDetailContent({ id }: { id: string }) {
               rtt.status === "revisi_kph") &&
             (user?.role === "sysadmin" || user?.role === "kph") ? (
               <button
-                onClick={async () => {
-                  if (!confirm("Kirim dokumen ini ke PHW untuk diverifikasi?"))
-                    return;
-                  try {
-                    const res = await fetch(
-                      `http://localhost:8000/api/rtt/submit.php`,
-                      {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                          rtt_id: id,
-                          token: localStorage.getItem("token"),
-                        }),
-                      },
-                    );
-                    const d = await res.json();
-                    if (d.status === "success") {
-                      alert("Berhasil dikirim ke PHW!");
-                      fetchWorkspace();
-                    } else alert(d.message);
-                  } catch (e) {
-                    alert("Error server");
-                  }
-                }}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 border border-blue-500 text-white rounded-md text-[12px] font-bold transition-all shadow-lg"
+                onClick={() => setShowSubmitModal(true)}
+                disabled={submitting}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 border border-blue-500 text-white rounded-md text-[12px] font-bold transition-all shadow-lg flex items-center gap-2 disabled:opacity-50"
               >
-                Ajukan Verifikasi ke PHW
+                <Lock size={14} /> {submitting ? "Menandatangani..." : "Ajukan & Tandatangani ke PHW"}
               </button>
             ) : rtt.status === "menunggu_verifikasi_phw" ? (
               <div className="px-4 py-2 bg-indigo-900/30 border border-indigo-700/50 text-indigo-400 rounded-md text-[11px] font-bold">
@@ -605,44 +795,86 @@ function RttDetailContent({ id }: { id: string }) {
             {docModules.map((doc, idx) => {
               const isMyRole =
                 user?.role === "sysadmin" || user?.role === "kph";
+              const warnings = rpkhWarnings[doc.key] || [];
+              const hasWarning = warnings.length > 0;
               return (
                 <div
                   key={idx}
-                  className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-800/30 transition-colors"
+                  className={`p-4 flex flex-col gap-3 hover:bg-slate-800/30 transition-colors ${hasWarning ? "border-l-2 border-amber-500/70" : ""}`}
                 >
-                  <div className="flex items-center gap-4">
-                    <div
-                      className={`w-10 h-10 rounded-lg flex items-center justify-center border shrink-0 ${doc.done ? "bg-emerald-900/20 border-emerald-500/30 text-emerald-400" : "bg-slate-800/50 border-slate-700 text-slate-500"}`}
-                    >
-                      {doc.done ? <CheckCircle2 size={18} /> : doc.icon}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                      <div
+                        className={`w-10 h-10 rounded-lg flex items-center justify-center border shrink-0 ${
+                          hasWarning
+                            ? "bg-amber-900/20 border-amber-500/50 text-amber-400"
+                            : doc.done
+                            ? "bg-emerald-900/20 border-emerald-500/30 text-emerald-400"
+                            : "bg-slate-800/50 border-slate-700 text-slate-500"
+                        }`}
+                      >
+                        {hasWarning ? (
+                          <span className="text-base leading-none">⚠️</span>
+                        ) : doc.done ? (
+                          <CheckCircle2 size={18} />
+                        ) : (
+                          doc.icon
+                        )}
+                      </div>
+                      <div>
+                        <h4 className="text-[13px] font-bold text-slate-200 flex items-center gap-2">
+                          {doc.name}
+                          {hasWarning && (
+                            <span className="text-[9px] font-bold bg-amber-500/20 border border-amber-500/40 text-amber-400 px-1.5 py-0.5 rounded uppercase tracking-wider">
+                              Tidak Sesuai RPKH
+                            </span>
+                          )}
+                        </h4>
+                        <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed hidden sm:block">
+                          {doc.desc}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="text-[13px] font-bold text-slate-200">
-                        {doc.name}
-                      </h4>
-                      <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed hidden sm:block">
-                        {doc.desc}
-                      </p>
+
+                    <div className="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto mt-2 sm:mt-0">
+                      {isMyRole &&
+                      (rtt.status === "draft" ||
+                        rtt.status === "revisi_phw" ||
+                        rtt.status === "revisi_kph") ? (
+                        <button
+                          onClick={() => handleOpenModal(doc.key)}
+                          className={`w-24 py-1.5 text-[11px] font-bold rounded border transition-all ${
+                            hasWarning
+                              ? "bg-amber-600/20 border-amber-500/50 text-amber-400 hover:bg-amber-600/40"
+                              : doc.done
+                              ? "bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700"
+                              : "bg-blue-600/20 border-blue-500/50 text-blue-400 hover:bg-blue-600/40 hover:text-blue-300"
+                          }`}
+                        >
+                          {doc.done ? "Ubah" : "Lengkapi"}
+                        </button>
+                      ) : (
+                        <div className="w-24 text-right sm:text-center text-[10px] text-slate-600 font-bold uppercase">
+                          {doc.done ? "Tersimpan" : "-"}
+                        </div>
+                      )}
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto mt-2 sm:mt-0">
-                    {isMyRole &&
-                    (rtt.status === "draft" ||
-                      rtt.status === "revisi_phw" ||
-                      rtt.status === "revisi_kph") ? (
-                      <button
-                        onClick={() => handleOpenModal(doc.key)}
-                        className={`w-24 py-1.5 text-[11px] font-bold rounded border transition-all ${doc.done ? "bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700" : "bg-blue-600/20 border-blue-500/50 text-blue-400 hover:bg-blue-600/40 hover:text-blue-300"}`}
-                      >
-                        {doc.done ? "Ubah" : "Lengkapi"}
-                      </button>
-                    ) : (
-                      <div className="w-24 text-right sm:text-center text-[10px] text-slate-600 font-bold uppercase">
-                        {doc.done ? "Tersimpan" : "-"}
-                      </div>
-                    )}
-                  </div>
+                  {/* Detail Warning Ketidaksesuaian RPKH */}
+                  {hasWarning && (
+                    <div className="ml-14 space-y-1">
+                      {warnings.map((w, wi) => (
+                        <div
+                          key={wi}
+                          className="flex items-start gap-2 text-[11px] text-amber-300 bg-amber-900/10 border border-amber-500/20 rounded-md px-3 py-1.5"
+                        >
+                          <span className="shrink-0 mt-0.5">⚠</span>
+                          <span>{w}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -996,6 +1228,7 @@ function RttDetailContent({ id }: { id: string }) {
 
               {activeModal === "nett" && (
                 <div className="space-y-6">
+                  {/* Banner Terintegrasi Otomatis */}
                   <div className="space-y-4">
                     <p className="text-[11px] font-bold text-emerald-400 uppercase tracking-wider border-b border-white/[0.06] pb-2">
                       Identitas Petak
@@ -1617,15 +1850,6 @@ function RttDetailContent({ id }: { id: string }) {
 
               {activeModal === "rekap_klem" && (
                 <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2 custom-scrollbar">
-                  <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-3">
-                    <p className="text-[11px] text-blue-300 font-medium leading-relaxed">
-                      Lengkapi data klem pohon untuk{" "}
-                      <strong>semua petak</strong> di bawah ini. Identitas
-                      lokasi (KPH, RPH, Luas Baku, dll) sudah diisi otomatis
-                      sesuai data sistem.
-                    </p>
-                  </div>
-
                   {formData.rekap_klem_list?.map((item: any, idx: number) => (
                     <div
                       key={idx}
@@ -1661,7 +1885,6 @@ function RttDetailContent({ id }: { id: string }) {
                               )
                             }
                             className="w-full px-3 py-2 text-[12px] bg-[#0b1120] border border-slate-700/80 rounded-md text-slate-200 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600/50 transition-all"
-                            placeholder="Blok 1"
                           />
                         </div>
                         <div className="space-y-1.5">
@@ -2127,6 +2350,48 @@ function RttDetailContent({ id }: { id: string }) {
           </div>
         </div>
       )}
+
+      {/* ===== MODAL SUBMIT KPH: ECDSA + ECC ENKRIPSI ===== */}
+      <PrivateKeyModal
+        isOpen={showSubmitModal}
+        onClose={() => setShowSubmitModal(false)}
+        onConfirm={async (privateKey: string) => {
+          setShowSubmitModal(false);
+          setSubmitting(true);
+          try {
+            const res = await fetch("http://localhost:8000/api/rtt/submit.php", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                rtt_id: id,
+                token: localStorage.getItem("token"),
+                private_key: privateKey,
+              }),
+            });
+            const d = await res.json();
+            if (d.status === "success") {
+              alert(
+                "✅ Dokumen berhasil dikirim ke PHW!\n\n" +
+                "📋 Dokumen telah ditandatangani secara digital (ECDSA) oleh KPH\n" +
+                "🔒 Dokumen telah dienkripsi menggunakan ECC untuk PHW\n\n" +
+                "KPH Hash: " + d.kph_hash
+              );
+              fetchWorkspace();
+            } else {
+              alert("❌ " + d.message + (d.detail ? "\n\nDetail: " + d.detail : ""));
+            }
+
+          } catch (e) {
+            alert("Error server");
+          } finally {
+            setSubmitting(false);
+          }
+        }}
+        title="Tanda Tangan Digital & Enkripsi Dokumen RTT"
+        description="Dokumen akan ditandatangani secara digital menggunakan ECDSA (private key KPH) dan dienkripsi menggunakan ECC untuk PHW. Masukkan private key KPH untuk melanjutkan."
+        actionLabel="Tandatangani & Kirim ke PHW"
+        loading={submitting}
+      />
     </>
   );
 }

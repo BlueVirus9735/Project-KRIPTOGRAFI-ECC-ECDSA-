@@ -243,47 +243,6 @@ function DigitalValidationContent() {
           </div>
 
           {/* Crypto Details */}
-          {rttDetail && (
-            <div className="glass-card p-6 space-y-5">
-              <h3 className="text-white font-bold text-[14px] flex items-center gap-2">
-                <Fingerprint size={16} className="text-emerald-400" /> Detail
-                Kriptografi
-              </h3>
-
-              <div className="grid grid-cols-1 gap-4">
-                {/* Hash */}
-                <div className="bg-slate-900/50 rounded-xl p-4 border border-white/[0.04]">
-                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
-                    Document Hash (SHA-256)
-                  </p>
-                  <p className="font-mono text-emerald-300 text-[12px] break-all leading-relaxed">
-                    {rttDetail.hash || "N/A"}
-                  </p>
-                </div>
-
-                {/* Signature */}
-                <div className="bg-slate-900/50 rounded-xl p-4 border border-white/[0.04]">
-                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
-                    Digital Signature (ECDSA)
-                  </p>
-                  <p className="font-mono text-blue-300 text-[11px] break-all leading-relaxed">
-                    {rttDetail.signature || "N/A"}
-                  </p>
-                </div>
-
-                {/* Public Key */}
-                <div className="bg-slate-900/50 rounded-xl p-4 border border-white/[0.04]">
-                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
-                    Public Key (PEM)
-                  </p>
-                  <pre className="font-mono text-amber-300 text-[10px] break-all leading-relaxed whitespace-pre-wrap">
-                    {rttDetail.public_key || "N/A"}
-                  </pre>
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* Invalid Petak Detail */}
           {result.relasi.status === "invalid" &&
             result.relasi.detail?.petak_tidak_cocok && (
@@ -303,32 +262,6 @@ function DigitalValidationContent() {
                 </div>
               </div>
             )}
-
-          {/* Info */}
-          <div className="glass-card p-6">
-            <h3 className="text-white font-bold text-[14px] mb-3">
-              Bagaimana Validasi Digital Bekerja?
-            </h3>
-            <div className="space-y-2.5 text-[12px] text-slate-500 font-medium">
-              <p>
-                • <span className="text-slate-300">Integritas (Hash)</span> —
-                Sistem merekonstruksi payload kanonik dari database, menghitung
-                SHA-256, lalu mencocokkannya dengan hash yang tersimpan.
-              </p>
-              <p>
-                •{" "}
-                <span className="text-slate-300">Autentikasi (Signature)</span>{" "}
-                — Script Python memverifikasi bahwa Signature ECDSA cocok dengan
-                Public Key dan Hash dokumen menggunakan kurva{" "}
-                <span className="text-emerald-400">SECP256K1</span>.
-              </p>
-              <p>
-                • <span className="text-slate-300">Konsistensi (Relasi)</span> —
-                Setiap Petak/Anak Petak di RTT di-cross-check terhadap data
-                induk RPKH untuk mencegah data fiktif.
-              </p>
-            </div>
-          </div>
         </div>
       )}
     </div>

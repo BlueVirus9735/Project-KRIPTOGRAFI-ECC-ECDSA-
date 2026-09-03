@@ -23,7 +23,9 @@ import {
   Eye,
   LockOpen,
   ShieldCheck,
+  Key,
 } from "lucide-react";
+
 import {
   hasPermission,
   hasAnyPermission,
@@ -207,6 +209,11 @@ export default function Sidebar({ user }: SidebarProps) {
         title: "Administrasi",
         items: [
           {
+            name: "Otoritas Kunci (CA)",
+            path: "/admin/keys",
+            icon: <ShieldCheck size={18} />,
+          },
+          {
             name: "Kelola User",
             path: "/admin/users",
             icon: <UserCog size={18} />,
@@ -220,8 +227,23 @@ export default function Sidebar({ user }: SidebarProps) {
       });
     }
 
+
+    // 6. KEY MANAGEMENT - Semua user yang login
+    groups.push({
+      title: "Kriptografi",
+      items: [
+        {
+          name: "Key Pair Saya",
+          path: "/settings",
+          icon: <Key size={18} />,
+          show: true,
+        },
+      ].filter(item => item.show),
+    });
+
     return groups.filter((group) => group.items.length > 0);
   };
+
 
   const navGroups = buildNavGroups();
 

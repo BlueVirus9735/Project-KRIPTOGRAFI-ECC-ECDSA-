@@ -60,4 +60,11 @@ api/uploads/peta_bap/*
 !api/uploads/peta_bap/.gitkeep
 api/rtt/*.log
 api/rtt/*.json
+api/validation/*.log
+*.log
 crypto_venv/
+crypto/*.pdf*
+crypto/*.enc
+crypto/*.sig
+cek_relasi.php
+

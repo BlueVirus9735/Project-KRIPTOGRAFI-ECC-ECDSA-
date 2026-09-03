@@ -19,6 +19,18 @@ function getCanonicalPayload($pdo, $rtt_id) {
     ];
 
     foreach ($exclude_cols as $col) unset($rtt[$col]);
+
+    // Dynamic cryptographic columns must be normalized to empty strings
+    // so the canonical payload is identical at submit time, PHW validation time, and Divisi finalize time.
+    $crypto_cols = [
+        'kph_hash', 'kph_signature', 'kph_public_key',
+        'phw_hash', 'phw_signature', 'phw_public_key',
+        'encrypted_payload', 'encrypted_for'
+    ];
+    foreach ($crypto_cols as $col) {
+        $rtt[$col] = "";
+    }
+
     $payload = ["rtt" => $rtt];
 
     // 2. Fetch ALL Related Business Data Tables

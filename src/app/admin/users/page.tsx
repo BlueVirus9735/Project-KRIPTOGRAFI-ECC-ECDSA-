@@ -27,10 +27,14 @@ interface User {
   username: string;
   email: string;
   role: UserRole;
+  wilayah_kph?: string;
+  wilayah_phw?: string;
+  public_key?: string;
   is_active: number;
   created_at: string;
   last_login: string | null;
 }
+
 
 const ROLE_OPTIONS: UserRole[] = [
   "sysadmin",
@@ -119,8 +123,16 @@ export default function UserManagement() {
       if (formData.email !== editingUser.email)
         updateData.email = formData.email;
       if (formData.role !== editingUser.role) updateData.role = formData.role;
-      if (formData.role === "kph" && formData.wilayah_kph !== editingUser.wilayah_kph) updateData.wilayah_kph = formData.wilayah_kph;
-      if ((formData.role === "kph" || formData.role === "phw") && formData.wilayah_phw !== editingUser.wilayah_phw) updateData.wilayah_phw = formData.wilayah_phw;
+      if (
+        formData.role === "kph" &&
+        formData.wilayah_kph !== editingUser.wilayah_kph
+      )
+        updateData.wilayah_kph = formData.wilayah_kph;
+      if (
+        (formData.role === "kph" || formData.role === "phw") &&
+        formData.wilayah_phw !== editingUser.wilayah_phw
+      )
+        updateData.wilayah_phw = formData.wilayah_phw;
       if (formData.is_active !== !!editingUser.is_active)
         updateData.is_active = formData.is_active;
       if (formData.password) updateData.password = formData.password;
@@ -330,12 +342,13 @@ export default function UserManagement() {
                           <p className="text-xs text-slate-500">
                             @{user.username}
                           </p>
-                          {user.role === 'kph' && user.wilayah_kph && (
+                          {user.role === "kph" && user.wilayah_kph && (
                             <p className="text-[10px] font-bold text-amber-400 mt-0.5">
-                              {user.wilayah_kph} {user.wilayah_phw ? `(${user.wilayah_phw})` : ''}
+                              {user.wilayah_kph}{" "}
+                              {user.wilayah_phw ? `(${user.wilayah_phw})` : ""}
                             </p>
                           )}
-                          {user.role === 'phw' && user.wilayah_phw && (
+                          {user.role === "phw" && user.wilayah_phw && (
                             <p className="text-[10px] font-bold text-indigo-400 mt-0.5">
                               {user.wilayah_phw}
                             </p>
@@ -400,33 +413,6 @@ export default function UserManagement() {
               </tbody>
             </table>
           )}
-        </div>
-
-        <div className="glass-card p-4">
-          <h3 className="text-sm font-semibold text-slate-300 mb-3">
-            Keterangan Role
-          </h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {ROLE_OPTIONS.map((role) => (
-              <div key={role} className="flex items-start gap-2">
-                <span
-                  className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${getRoleBadgeColor(role)}`}
-                >
-                  {getRoleDisplayName(role)}
-                </span>
-              </div>
-            ))}
-          </div>
-          <div className="mt-4 space-y-1 text-xs text-slate-500">
-            {ROLE_OPTIONS.map((role) => (
-              <p key={role}>
-                <span className="font-medium text-slate-400">
-                  {getRoleDisplayName(role)}:
-                </span>{" "}
-                {getRoleDescription(role)}
-              </p>
-            ))}
-          </div>
         </div>
       </div>
       {showModal && (
@@ -537,14 +523,20 @@ export default function UserManagement() {
                 )}
                 {(formData.role === "kph" || formData.role === "phw") && (
                   <div className="animate-fade-in">
-                    <label className={`block text-xs font-medium mb-1.5 ${formData.role === 'kph' ? 'text-slate-400' : 'text-indigo-400'}`}>
-                      {formData.role === "kph" ? "Di Bawah Naungan PHW *" : "Wilayah PHW *"}
+                    <label
+                      className={`block text-xs font-medium mb-1.5 ${formData.role === "kph" ? "text-slate-400" : "text-indigo-400"}`}
+                    >
+                      {formData.role === "kph"
+                        ? "Di Bawah Naungan PHW *"
+                        : "Wilayah PHW *"}
                     </label>
                     <input
                       type="text"
-                      required={formData.role === "kph" || formData.role === "phw"}
+                      required={
+                        formData.role === "kph" || formData.role === "phw"
+                      }
                       placeholder="Contoh: SPHW I"
-                      className={`glass-input w-full px-3 py-2 text-sm ${formData.role === 'phw' ? 'border-indigo-500/30 bg-indigo-500/5 focus:border-indigo-500/50' : ''}`}
+                      className={`glass-input w-full px-3 py-2 text-sm ${formData.role === "phw" ? "border-indigo-500/30 bg-indigo-500/5 focus:border-indigo-500/50" : ""}`}
                       value={formData.wilayah_phw}
                       onChange={(e) =>
                         setFormData({
@@ -553,9 +545,11 @@ export default function UserManagement() {
                         })
                       }
                     />
-                    <p className={`text-xs mt-1 ${formData.role === 'kph' ? 'text-slate-500' : 'text-indigo-500/70'}`}>
-                      {formData.role === "kph" 
-                        ? "PHW mana yang akan memverifikasi dokumen dari KPH ini?" 
+                    <p
+                      className={`text-xs mt-1 ${formData.role === "kph" ? "text-slate-500" : "text-indigo-500/70"}`}
+                    >
+                      {formData.role === "kph"
+                        ? "PHW mana yang akan memverifikasi dokumen dari KPH ini?"
                         : "Wajib diisi untuk membatasi akses verifikasi PHW."}
                     </p>
                   </div>

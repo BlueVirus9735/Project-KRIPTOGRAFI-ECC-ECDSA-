@@ -19,8 +19,9 @@ def decrypt_file(private_key_path, input_path, output_path):
 
     ephemeral_pub_bytes = data[:EPHEMERAL_PUBKEY_LEN]
     ephemeral_public_key = ec.EllipticCurvePublicKey.from_encoded_point(
-        ec.SECP256K1(), ephemeral_pub_bytes
+        private_key.curve, ephemeral_pub_bytes
     )
+
 
     nonce = data[EPHEMERAL_PUBKEY_LEN : EPHEMERAL_PUBKEY_LEN + NONCE_LEN]
 

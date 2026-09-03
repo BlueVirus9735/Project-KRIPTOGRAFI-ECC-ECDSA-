@@ -1,7 +1,8 @@
 // Role-Based Access Control Utilities
 // PERUM_PERHUTANI - Sistem Pengelolaan RTT
 
-export type UserRole = 'sysadmin' | 'kph' | 'phw' | 'direksi';
+export type UserRole = 'sysadmin' | 'kph' | 'phw' | 'direksi' | 'admin' | 'gis' | 'lapangan' | 'divisi';
+
 
 export interface User {
   id: number;
